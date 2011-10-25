@@ -1,4 +1,4 @@
-umentclass[a4wide, 11pt]{article}
+\documentclass[a4wide, 11pt]{article}
 \usepackage{a4, fullpage}
 \setlength{\parskip}{0.3cm}
 \setlength{\parindent}{0cm}
@@ -9,7 +9,8 @@ umentclass[a4wide, 11pt]{article}
 
 \title{MAlice Language Specification}
 
-\author{Tim Kimber \and Paul Kelly \and Nicolas Loriant}
+\author{Robert Kruszewski \and Piotr Bar \and Łukasz Koprowski}
+
 
 \date{\today}         % inserts today's date
 
@@ -32,12 +33,26 @@ environment instead.
 \section{BNF Grammar} 
 
 \begin{verbatim}
-    The verbatim environment outputs the source without changing
-    it in any way. 
-          This
-              includes line breaks
-       and indentation. 
-    It is useful to reproduce code snippets.
+      expression := id operator expressions
+                 | id function_name
+                 | id function_name expressions
+                 | numeral
+                 | id
+                 | numeral operator expressions
+
+      expressions := expression separators expressions
+                  | expression separators
+                  | un_operator expression
+                  | expression
+
+       separators := separator
+                  | separator separators
+
+        separator := ',' | 'then' | 'or' | 'and' | 'too' ...
+
+     bin_operator := '+'  | '-' ...
+      un_operator := '~'
+
 \end{verbatim}
 
 To include maths formulas in text put them between \$ symbols like this
