@@ -33,26 +33,24 @@ environment instead.
 \section{BNF Grammar} 
 
 \begin{verbatim}
-      expression := id operator expressions
-                 | id function_name
-                 | id function_name expressions
-                 | numeral
-                 | id
-                 | numeral operator expressions
+      assignment  := id function_name type assign_term
+                  | id function_name expression 
+                  | 'Alice' function_call expression
 
-      expressions := expression separators expressions
-                  | expression separators
-                  | un_operator expression
-                  | expression
+      assign_term := separator
+                  | separator assignment
 
-       separators := separator
-                  | separator separators
+      expression  := expression bin_op expression 
+                  | un_op id
+                  | id
+                  | numeral
 
-        separator := ',' | 'then' | 'or' | 'and' | 'too' ...
+      type        := 'letter' | 'number'
 
-     bin_operator := '+'  | '-' ...
-      un_operator := '~'
+      separator   := '.' | ',' | 'then' | 'or' | 'and' | 'too'
 
+      bin_op      := '+'  | '-' | '/' | '%' | '^' | '&' | '|'
+      un_op       := '~'
 \end{verbatim}
 
 To include maths formulas in text put them between \$ symbols like this
