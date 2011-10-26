@@ -56,7 +56,7 @@ From BNF you can easily see that MAlice supports two types: number and letter.
 
 \begin{enumerate}
      \item
-     number is a 64-bit floating point number
+     number is a 64-bit floating point number. Due to this format restriction and lack of special way of representing big numbers this is also the limit to calculations results. However, nothing stops the programmer from implementing this feature by himself
 
      \item
      letter is a character and it occupies 8-bit of memory
@@ -95,7 +95,12 @@ Operators have their usual meaning as used in other programming languages. All a
     
 \end{itemize}
 
+When it comes to precedence of operators it is given by the following sequence
 
+\begin{center} \~, /, \%, +, -, \&, \^, | \end{center}
+
+Operators precedence decreases from left to right. Therefore \emph{\~} has highes precedence and \emph{|} lowest.
+All of the operators are only valid for numbers as they meanings for letters would be unintuitive and best if would be left to the programmer to make the decision.
 
 %Finally for this document, if you want to include a reference
 %then you put it into a \texttt{thebibliography\{...\}}
