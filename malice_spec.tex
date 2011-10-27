@@ -9,7 +9,7 @@
 
 \title{MAlice Language Specification}
 
-\author{Robert Kruszewski \and Piotr Bar \and Łukasz Koprowski}
+\author{Robert Kruszewski \and Piotr Bar \and Lukasz Koprowski}
 
 
 \date{\today}         % inserts today's date
@@ -81,6 +81,10 @@ MAlice has a couple of predefined functions which perform certain operations on 
 \textit{cat drank} $\to cat--;$
 \subsection{Types}
 
+\textbf{found} - prints value of evaluated expression, used with Alice id
+\textit{Alice found exp} $\cout << exp;$
+\subsection{Types}
+
 From BNF you can easily see that MAlice supports two types: number and letter. Once defined variable cannot be redifined.
 
 \begin{enumerate}
@@ -140,9 +144,9 @@ All of the operators are only valid for numbers as they meanings for letters wou
 
 \begin{thebibliography}{9}
 
-\bibitem{lamport94}
-  Leslie Lamport,
-  \emph{\LaTeX: A Document Preparation System}.
+\bibitem{bnfc}
+  C syntax in BNF,
+  \emph{\http://www.cs.man.ac.uk/~pjj/bnf/c_syntax.bnf\}.
   Addison Wesley, Massachusetts,
   2nd Edition,
   1994.
