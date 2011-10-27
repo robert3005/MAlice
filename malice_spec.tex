@@ -30,21 +30,35 @@ it comes to language design.
 \begin{verbatim}
       assignment  := id function_name type assign_term
                   | id function_name expression 
-                  | 'Alice' function_call expression
+                  | 'Alice' function_name expression
 
       assign_term := separator
                   | separator assignment
 
-      expression  := expression bin_op expression 
-                  | un_op id
-                  | id
-                  | numeral
+      expression  := expression | or_expression
+
+      or_expression := xor_expression
+                    | or_expression '|' xor_expression
+      xor_expression := and_expression
+                     | xor_expression '^' and_expression 
+      and_expression := add_expression
+                     | and_expression '&' add_expression
+      add_expression := mul_expression
+                     | add_expression '+' mul_expression
+                     | add_expression '-' mul_expression
+      mul_expression := unary_expression
+                     | mul_expression '*' unary_expression
+                     | mul_expression '/' unary_expression
+                     | mul_expression '%' unary_expression
+      unary_expression := primitive_expression
+                       | un_op primitive_expression
+
+      primitive_expression := id | numeral | '(' expression ')'
 
       type        := 'letter' | 'number'
 
       separator   := '.' | ',' | 'then' | 'or' | 'and' | 'too'
 
-      bin_op      := '+'  | '-' | '/' | '%' | '^' | '&' | '|'
       un_op       := '~'
 \end{verbatim}
 
@@ -66,6 +80,9 @@ From BNF you can easily see that MAlice supports two types: number and letter.
 \subsection{Operators}
 
 Operators have their usual meaning as used in other programming languages. All arithmetic operations are defined in the subset of $\mathbb{R}$ which is representable in 64-bit floating point representation.
+
+bin_op      := '+' | '*'  | '-' | '/' | '\%' | '\^' | '\&' | '|'
+
 
 \begin{itemize}
 
