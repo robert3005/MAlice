@@ -51,7 +51,7 @@ it comes to language design.
       unary_expression := primitive_expression
                        | un_op primitive_expression
 
-      primitive_expression := id | numeral | letter | '(' expression ')'
+      primitive_expression := id | numeral | letter | '(' expression ')' | \epsilon
 
       type        := 'letter' | 'number'
 
@@ -61,6 +61,21 @@ it comes to language design.
 \end{verbatim}
 
 \section{Semantics}
+
+\subsection{Functions}
+
+MAlice has a couple of predefined functions which perform certain operations on ids.
+\begin{tabbing}
+\+ was - defines an id
+\+ became - assigns value to an id
+\+ drank - decrements value
+\+ ate - increments value
+
+cat was a number \=\/\/ int cat;
+cat became 3 \> cat = 3;
+cat ate \> cat++;
+cat drank \> cat--;
+\end{tabbing}
 
 \subsection{Types}
 
