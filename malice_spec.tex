@@ -64,11 +64,11 @@ it comes to language design.
 
 \subsection{Types}
 
-From BNF you can easily see that MAlice supports two types: number and letter.
+From BNF you can easily see that MAlice supports two types: number and letter. Once defined variable cannot be redifined.
 
 \begin{enumerate}
      \item
-     number is a 64-bit floating point number. Due to this format restriction and lack of special way of representing big numbers this is also the limit to calculations results. However, nothing stops the programmer from implementing this feature by himself
+     number is a 8-bit positive integer number. Due to this format restriction and lack of special way of representing big numbers this is also the limit to calculations results. However, nothing stops the programmer from implementing additional features by himself.  
 
      \item
      letter is a character and it occupies 8-bit of memory
@@ -77,7 +77,7 @@ From BNF you can easily see that MAlice supports two types: number and letter.
 
 \subsection{Operators}
 
-Operators have their usual meaning as used in other programming languages. All arithmetic operations are defined in the subset of $\mathbb{R}$ which is representable in 64-bit floating point representation.
+Operators have their usual meaning as used in other programming languages. All arithmetic operations are defined in the subset of $\mathbb{N+}$ which is representable as a 8-bit integer. In case of an overflow, MAlice returns biggest number it can represent.
 
 \begin{itemize}
 
@@ -85,10 +85,10 @@ Operators have their usual meaning as used in other programming languages. All a
     \textit{+} - represents addition of two numbers, i.e. $ 2 + 3 = 5 $
 
     \item
-    \textit{-} - represents subtraction of two numbers, i.e. $ 5 - 1 = 4 $. Given that and the type specification subtraction is allowed 
+    \textit{-} - represents subtraction of two numbers, i.e. $ 5 - 1 = 4 $. If the result of a substration is negative, MAlice returns 0.
 
     \item
-    \textit{/} - is division of two numbers which always returns a \emph{number}, i.e. $ 6 / 3 = 2.0 $. Bear in mind that compiler will treat $ 23 / 0 $ as valid expression. Such error will be a runtime exception
+    \textit{/} - is division of two numbers which always returns a \emph{number}, i.e. $ 6 / 3 = 2 $. Bear in mind that compiler will treat $ 23 / 0 $ as valid expression and returns 136.
 
     \item
     \textit{\%} - means a modulo operator, i.e. $ 4 \% 3 = 1 $
