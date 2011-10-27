@@ -30,7 +30,6 @@ it comes to language design.
 \begin{verbatim}
       assignment  := id function_name type assign_term
                   | id function_name expression 
-                  | 'Alice' function_name expression
 
       assign_term := separator
                   | separator assignment
@@ -53,11 +52,11 @@ it comes to language design.
       unary_expression := primitive_expression
                        | un_op primitive_expression
 
-      primitive_expression := id | numeral | '(' expression ')'
+      primitive_expression := id | numeral | letter | '(' expression ')'
 
       type        := 'letter' | 'number'
 
-      separator   := '.' | ',' | 'then' | 'or' | 'and' | 'too'
+      separator   := '.' | ',' | 'then' | 'or' | 'and' | 'too' | 'but'
 
       un_op       := '~'
 \end{verbatim}
