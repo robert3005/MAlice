@@ -2,7 +2,7 @@
 \usepackage{a4, fullpage, amssymb}
 \setlength{\parskip}{0.3cm}
 \setlength{\parindent}{0cm}
-
+\newcommand\xor{\mathbin{\char `\^}}
 % This is the preamble section where you can include extra packages etc.
 
 \begin{document}
@@ -94,24 +94,24 @@ Operators have their usual meaning as used in other programming languages. All a
     \textit{\%} - means a modulo operator, i.e. $ 4 \% 3 = 1 $
 
     \item
-    \textit{\^} - represents bitwise xor of two numbers, $ 0111011 ^ 0110010 = 0001001 $
+    \textit{\textasciicircum{}} - represents bitwise xor of two numbers, $ 0111011 \xor  0110010 = 0001001 $
 
     \item
     \textit{\&} - is used to represent bitwise and operation between two numbers,  $ 1101 \& 0110 = 0100 $
 
     \item
-    \textit{|} - represents bitwise or of two numbers, i.e. $ 10110 | 01001 = 10111 $
+    \textit{$|$} - represents bitwise or of two numbers, i.e. $ 10110 | 01001 = 10111 $
 
     \item
-    \textit{\~} - is a unary operator which gives the bitwise inverse, $ \sim(010) = 101 $
+    \textit{$\sim$} - is a unary operator which gives the bitwise inverse, $ \sim(010) = 101 $
     
 \end{itemize}
 
 When it comes to precedence of operators it is given by the following sequence
 
-\begin{center} \~, /, \%, +, -, \&, \^, | \end{center}
+\begin{center} $\sim$, /, \%, +, -, \&, \textasciicircum{}, $|$ \end{center}
 
-Operators precedence decreases from left to right. Therefore \emph{\~} has highes precedence and \emph{|} lowest.
+Operators precedence decreases from left to right. Therefore \emph{\textasciicircum{}} has highes precedence and \emph{$|$} lowest.
 All of the operators are only valid for numbers as they meanings for letters would be unintuitive and best if would be left to the programmer to make the decision.
 
 %Finally for this document, if you want to include a reference
