@@ -1,5 +1,5 @@
 \documentclass[a4wide, 11pt]{article}
-\usepackage{a4, fullpage, amssymb}
+\usepackage{a4, fullpage, amssymb, hyperref}
 \setlength{\parskip}{0.3cm}
 \setlength{\parindent}{0cm}
 \newcommand\xor{\mathbin{\char `\^}}
@@ -79,10 +79,9 @@ MAlice has a couple of predefined functions which perform certain operations on 
 
 \textbf{ate} - increments value
 \textit{cat drank} $\to cat--;$
-\subsection{Types}
 
-\textbf{found} - prints value of evaluated expression, used with Alice id
-\textit{Alice found exp} $\cout << exp;$
+\textbf{found} - prints value of the expression, used with Alice
+\textit{Alice found exp} $\to cout << exp;$
 \subsection{Types}
 
 From BNF you can easily see that MAlice supports two types: number and letter. Once defined variable cannot be redifined.
@@ -146,10 +145,7 @@ All of the operators are only valid for numbers as they meanings for letters wou
 
 \bibitem{bnfc}
   C syntax in BNF,
-  \emph{\http://www.cs.man.ac.uk/~pjj/bnf/c_syntax.bnf\}.
-  Addison Wesley, Massachusetts,
-  2nd Edition,
-  1994.
+  \url{http://www.cs.man.ac.uk/~pjj/bnf/c_syntax.bnf}
 
 \end{thebibliography}
 
