@@ -65,19 +65,20 @@ it comes to language design.
 \subsection{Functions}
 
 MAlice has a couple of predefined functions which perform certain operations on ids.
-\begin{tabbing}
-was - defines an id
-became - assigns value to an id
-drank - decrements value
-ate - increments value
+
+\textbf{was} - defines an id
+\textit{cat was a number} $\to$ \emph{int cat;}
+
+\textbf{became} - assigns value to an id
+\textit{cat became 3} $\to$ \emph{cat = 3;}
 
 
-cat was a number \=\/\/ int cat;\\
-cat became 3 \> cat = 3;\\
-cat ate \> cat++;\\
-cat drank \> cat--;\\
-\end{tabbing}
+\textbf{drank} - decrements value
+\textit{cat ate} $\to cat++;$
 
+
+\textbf{ate} - increments value
+\textit{cat drank} $\to cat--;$
 \subsection{Types}
 
 From BNF you can easily see that MAlice supports two types: number and letter. Once defined variable cannot be redifined.
