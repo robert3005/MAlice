@@ -46,7 +46,6 @@ it comes to language design.
                      | add_expression '+' mul_expression
                      | add_expression '-' mul_expression
       mul_expression := unary_expression
-                     | mul_expression '*' unary_expression
                      | mul_expression '/' unary_expression
                      | mul_expression '%' unary_expression
       unary_expression := primitive_expression
@@ -80,9 +79,6 @@ From BNF you can easily see that MAlice supports two types: number and letter.
 
 Operators have their usual meaning as used in other programming languages. All arithmetic operations are defined in the subset of $\mathbb{R}$ which is representable in 64-bit floating point representation.
 
-bin_op      := '+' | '*'  | '-' | '/' | '\%' | '\^' | '\&' | '|'
-
-
 \begin{itemize}
 
     \item
@@ -107,7 +103,7 @@ bin_op      := '+' | '*'  | '-' | '/' | '\%' | '\^' | '\&' | '|'
     \textit{|} - represents bitwise or of two numbers, i.e. $ 10110 | 01001 = 10111 $
 
     \item
-    \textit{\~} - is a unary operator which gives the bitwise inverse, $ ~(010) = 101 $
+    \textit{\~} - is a unary operator which gives the bitwise inverse, $ \sim(010) = 101 $
     
 \end{itemize}
 
