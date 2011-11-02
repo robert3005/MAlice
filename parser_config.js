@@ -1,13 +1,11 @@
 [*
 
 class Node
-	constructor: (@type) ->
-		(@value) ->
-		(@children) ->
+	constructor: (@type, @value, @children) ->
 
 createNode = (type, value, children) ->
 	n = new Node type value
-	n.children = child for child in arguments[2...arguments.length]
+	n.children = (child for child in arguments[2...arguments.length])
 	n
 
 NODE_OP		= 0
