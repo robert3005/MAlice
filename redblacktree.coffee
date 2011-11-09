@@ -108,8 +108,8 @@ class RedBlackTree
 		k2.left = k1
 		k2
 
-	@header
-	@nullNode = new RedBlackNode null
+	header:
+	nullNode: new RedBlackNode null
 	nullNode.left = nullNode.right = nullNode
 
 	BLACK = 1
