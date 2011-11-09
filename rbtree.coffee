@@ -7,7 +7,7 @@ class RBNode
 		@color = null
 		@left = null
 		@right = null
-		@p = null
+		@parent = null
 
 
 class RBTree
@@ -16,97 +16,98 @@ class RBTree
 		nil.color = BLACK
 		@root = nil
 
-	rbFind: (T, k) ->
-		x = T.root
-		while x isnt T.nil and k isnt x.key
-			if k < x.key
-				x = x.left
+	rbFind: (key) ->
+		current = @root
+		while current isnt @nil and key isnt current.key
+			if key < current.key
+				current = current.left
 			else
-				x = x.right
-		x
+				current = current.right
+		current
+
+	rbInsert: (nodeIn) ->
+		previous = @nil
+		current = @root
+		while current isnt @nil
+			previous = current
+			if nodeIn.key < current.key
+				current = current.left
+			else
+				current = current.right
+		nodeIn.parent = previous
+		if previous is @nil
+			@root = nodeIn
+		else
+			if nodeIn.key < previous.key
+				previous.left = nodeIn
+			else
+				previous.right = nodeIn
+		nodeIn.left = @nil
+		nodeIn.right = @nil
+		nodeIn.color = RED
+		rbInsertFixup nodeIn		
 	
-	leftRotate: (T, x) ->
-		y = x.right
-		x.right = y.left
-		if y.left isnt T.nil
-			y.left.p = x
-		y.p = x.p
-		if x.p is T.nil
-			T.root = y
+	leftRotate: (node1) ->
+		node2 = node1.right
+		node1.right = node2.left
+		if node2.left isnt @nil
+			node2.left.parent = node1
+		node2.parent = node1.parent
+		if node1.parent is @nil
+			@root = node2
 		else
-			if x is x.p.left
-				x.p.left = y
+			if node1 is node1.parent.left
+				node1.parent.left = node2
 			else
-				x.p.right = y
-		y.left = x
-		x.p = y
+				node1.parent.right = node2
+		node2.left = node1
+		node1.parent = node2
 
-	rightRotate: (T, x) ->
-		y = x.left
-		x.left = y.right
-		if y.right isnt T.nil
-			y.right.p = x
-		y.p = x.p
-		if x.p is T.nil
-			T.root = y
+	rightRotate: (node1) ->
+		node2 = node1.left
+		node1.left = node2.right
+		if node2.right isnt @nil
+			node2.right.parent = node1
+		node2.parent = node1.parent
+		if node1.parent is @nil
+			@root = node2
 		else
-			if x is x.p.right
-				x.p.right = y
+			if node1 is node1.parent.right
+				node1.parent.right = node2
 			else
-				x.p.left = y
-		y.right = x
-		x.p = y
-
-	rbInsert: (T, z) ->
-		y = T.nil
-		x = T.root
-		while x isnt T.nil
-			y = x
-			if z.key < x.key
-				x = x.left
-			else
-				x = x.right
-		z.p = y
-		if y is T.nil
-			T.root = z
-		else
-			if z.key < y.key
-				y.left = z
-			else
-				y.right = z
-		z.left = T.nil
-		z.right = T.nil
-		z.color = RED
-		rbInsertFixup T z
+				node1.parent.left = node2
+		node2.right = node1
+		node1.parent = node2
 		
-	rbInsertFixup: (T, z) ->
-		while z.p.color is RED
-			if z.p is z.p.p.left
-				y = z.p.p.right
-				if y.color is RED
-					z.p.color = BLACK
-					y.color = BLACK
-					z.p.p.color = RED
-					z = z.p.p
+	rbInsertFixup: (node) ->
+		while node.parent.color is RED
+			if node.parent is node.parent.parent.left
+				uncle = node.parent.parent.right
+				if uncle.color is RED
+					node.parent.color = BLACK
+					uncle.color = BLACK
+					node.parent.parent.color = RED
+					node = node.parent.parent
 				else
-					if z is z.p.right
-						z = z.p
-						leftRotate T z
-					z.p.color = BLACK
-					z.p.p.color = RED
-					rigthRotate T z
+					if node is node.parent.right
+						node = node.parent
+						leftRotate node
+					node.parent.color = BLACK
+					node.parent.parent.color = RED
+					rigthRotate node
 			else
-				y = z.p.p.left
-				if y.color is RED
-					z.p.color = BLACK
-					y.color = BLACK
-					z.p.p.color = RED
-					z = z.p.p
+				uncle = node.parent.parent.left
+				if uncle.color is RED
+					node.parent.color = BLACK
+					uncle.color = BLACK
+					node.parent.parent.color = RED
+					node = node.parent.parent
 				else
-					if z is z.p.left
-						z = z.p
-						rightRotate T z
-					z.p.color = BLACK
-					z.p.p.color = RED
-					leftRotate T z
-		T.root.color = BLACK
+					if node is node.parent.left
+						node = node.parent
+						rightRotate node
+					node.parent.color = BLACK
+					node.parent.parent.color = RED
+					leftRotate node
+		@root.color = BLACK
+		
