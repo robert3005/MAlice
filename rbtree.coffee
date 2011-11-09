@@ -14,7 +14,7 @@ class RBTree
 	constructor: ->
 		@nil = new RBNode
 		nil.color = BLACK
-		@root = null
+		@root = nil
 
 	rbFind: (T, k) ->
 		x = T.root
