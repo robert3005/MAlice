@@ -9,7 +9,7 @@ function NODE()
 }
 
 //Management functions
-function createNode( type, value, childs )
+function createNode( type, value, children )
 {
 	var n = new NODE();
 	n.type = type;
@@ -40,10 +40,9 @@ OP_NEG		= 10
 
 *]
 
-!	' |\r|\n|\t'
+!	' |\r|\n|\t';
 
-	';'
-	'='
+<	'='
 	'\+'
 	'\-'
 	'/'
@@ -54,6 +53,8 @@ OP_NEG		= 10
 	'\^'
 	'\&'
 	'\%'
+	;
+	
 	'#'
 	'.'
 	','
@@ -63,9 +64,9 @@ OP_NEG		= 10
 	'too'
 	'but'
 	'~'
-	'[A-Za-z]*'					function_name
-	'letter'					number
-	'number'					letter
+	'[A-Za-z_]*'					function_name
+	'letter'					letter
+	'number'					number
 	'[A-Za-z_][A-Za-z0-9_]*'	id
 	'\'([^\']|\'\')\''			letter
 	'[0-9]+'					numeral
@@ -146,7 +147,7 @@ var error_la	= new Array();
 if( ( error_cnt = __NODEJS_parse( str, error_off, error_la ) ) > 0 )
 {
 	for( i = 0; i < error_cnt; i++ )
-		alert( "Parse error near >" 
+		console.log( "Parse error near >" 
 			+ str.substr( error_off[i], 30 ) + "<, expecting \"" + error_la[i].join() + "\"" );
 }
 *]
