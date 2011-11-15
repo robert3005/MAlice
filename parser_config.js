@@ -1,12 +1,26 @@
 [*
 
-class Node
-	constructor: (@type, @value, @children) ->
+//Structs
+function NODE()
+{
+	var type;
+	var value;
+	var children;
+}
 
-createNode = (type, value, children) ->
-	n = new Node type value
-	n.children = (child for child in arguments[2...arguments.length])
-	n
+//Management functions
+function createNode( type, value, childs )
+{
+	var n = new NODE();
+	n.type = type;
+	n.value = value;	
+	n.children = new Array();
+	
+	for( var i = 2; i < arguments.length; i++ )
+		n.children.push( arguments[i] );
+		
+	return n;
+}
 
 NODE_OP		= 0
 NODE_VAR	= 1
@@ -24,7 +38,6 @@ OP_MOD		= 8
 OP_UNR		= 9
 OP_NEG		= 10
 
-
 *]
 
 !	' |\r|\n|\t'
@@ -37,7 +50,22 @@ OP_NEG		= 10
 	'\*'
 	'\('
 	'\)'
+	'\|'
+	'\^'
+	'\&'
+	'\%'
 	'#'
+	'.'
+	','
+	'then'
+	'and'
+	'or'
+	'too'
+	'but'
+	'~'
+	'[A-Za-z]*'					function_name
+	'letter'					number
+	'number'					letter
 	'[A-Za-z_][A-Za-z0-9_]*'	id
 	'\'([^\']|\'\')\''			letter
 	'[0-9]+'					numeral
@@ -45,12 +73,13 @@ OP_NEG		= 10
 
 ##
 
-assignment:				id function_name type separator         [* %% = createNode( NODE_OP, %2, %1, %3) *]       
-						| id function_name expression			[* %% = createNode( NODE_OP, %2, %1, %3 ) *]
-						;
-
 assignment_list:		assignment_list assignment				[* %% = createNode( NODE_OP, OP_NONE, %1, %2 ) *]
 						|
+						;
+
+
+assignment:				id function_name type separator         [* %% = createNode( NODE_OP, %2, %1, %3) *]       
+						| id function_name expression			[* %% = createNode( NODE_OP, %2, %1, %3 ) *]
 						;
 
 expression:				expression 								[* %% = createNode( NODE_OP, %1 ) *]
@@ -109,11 +138,13 @@ un_op:					'~'										[* %% = createNode( NODE_OP, OP_NEG) *]
 
 [*
 
+var str = prompt( "Please enter an XPL-script to be executed:",
+	"say \'Hello World\'; i = 0; do { write i; i = i + 1; } while i < 10;" );
 var error_cnt 	= 0;
 var error_off	= new Array();
 var error_la	= new Array();
 
-if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 )
+if( ( error_cnt = __NODEJS_parse( str, error_off, error_la ) ) > 0 )
 {
 	for( i = 0; i < error_cnt; i++ )
 		alert( "Parse error near >" 
