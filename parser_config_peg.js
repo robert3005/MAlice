@@ -27,7 +27,7 @@ NODE_CONST	= 2
 NODE_TYPE	= 3
 
 OP_NONE		= -1
-OP_ADD          = 1
+OP_ADD      = 1
 OP_OR		= 2
 OP_XOR		= 3
 OP_AND		= 4
@@ -42,12 +42,12 @@ OP_NEG		= 10
 start
 = single:assignment sep:separator list:start {return createNode( NODE_OP, OP_NONE, list, single ) }
 / single:assignment enter:newLine list:start  {return createNode( NODE_OP, OP_NONE, list, single ) }
-/ EOF
 / [\n] list:start {return createNode( NODE_OP, OP_NONE, list ) }
+/ EOF
 
 assignment
-= identifier:id ' ' name:function_name ' ' type:typeName { return createNode( NODE_OP, name, identifier, type ) }
- / identifier:id ' ' name:function_name ' ' expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
+= identifier:id ' ' name:function_name type:typeName { return createNode( NODE_OP, name, identifier, type ) }
+ / identifier:id ' ' name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
 / EOF
 
 expression
@@ -77,27 +77,32 @@ mul_expression
 / unExpr:unary_expression
 
 unary_expression
-= primExpr:primitive_expression
-/ unOP:un_op primEpxr:primitive_expression { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) }
+= unOP:un_op primEpxr:primitive_expression { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) }
+/ primExpr:primitive_expression
 
 primitive_expression
 = num:[0-9]+ { return createNode( NODE_CONST, num.join("") ) }
 / letter:([\'][A-Za-z][\']) { return createNode( NODE_CONST, letter ) }
 / identifier:id
+/ '(' expr:expression ')'
+/ ''
 
 typeName
 = type:'letter' { return createNode( NODE_TYPE, type) }
 / type:'number' { return createNode( NODE_TYPE, type) }
 
 id
-= identifier:[A-Za-z][A-Za-z_]* { return identifier }
+= identifier:([A-Za-z_]+) { return identifier }
 
 function_name
-= funcName:'was a' { return funcName }
-/ funcName:'became' { return funcName }
+= funcName:'was a ' { return funcName }
+/ funcName:'became ' { return funcName }
+/ funcName:'drank' { return funcName }
+/ funcName:'ate' { return funcName }
 
 newLine
-= sep:([\.] EOF) { return createNode( NODE_OP, OP_NONE) }
+= sep:([ ]'too'[\.]) { return createNode( NODE_OP, OP_NONE) }
+/ sep:([\.] EOF) { return createNode( NODE_OP, OP_NONE) }
 / sep:([\.][\n]) { return createNode( NODE_OP, OP_NONE) }
 / sep:([\,][\n]) { return createNode( NODE_OP, OP_NONE) }
 
