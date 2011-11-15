@@ -138,8 +138,7 @@ un_op:					'~'										[* %% = createNode( NODE_OP, OP_NEG) *]
 
 [*
 
-var str = prompt( "Please enter an XPL-script to be executed:",
-	"say \'Hello World\'; i = 0; do { write i; i = i + 1; } while i < 10;" );
+var str = "x was a number and x became 42. y was a number, y became 30. z was a number but z became x + y. z spoke." 
 var error_cnt 	= 0;
 var error_off	= new Array();
 var error_la	= new Array();
