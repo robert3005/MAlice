@@ -45,8 +45,6 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> op = NEG;
 	} 
 
-	printf("D %s\n", args.c_str());
-
 	this -> data = args;
 }
 
@@ -137,15 +135,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 }
 
 Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
-	
-	printf( "CR DATA %s\n", simpleNode.getData().c_str() );
-
 	Node * node = new OPNode( simpleNode );
-
-	printf("%s\n", node -> getData().c_str());
-	printf("%d\n", node -> getOP());
-	printf("%d\n", node -> getType());
-	printf("%d\n", node -> getId());
 
 	std::size_t pos;
 
@@ -153,9 +143,7 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 	std::string childIdRaw;
 	string data = node -> getData(); 
 
-	printf( "DATA %s\n", data.c_str() );
-
-	while( std::string::npos != ( pos = ( node -> getData() ).find( "," ) ) ){
+	while( data.length() > 0 && std::string::npos != ( pos = ( node -> getData() ).find( "," ) ) ){
 		childIdRaw = data.substr( 0, pos );
 
 		printf( "CID %s\n", childIdRaw.c_str() );
@@ -192,11 +180,6 @@ Value* CONSTNode::codeGenNUMBER(){
 	return ConstantInt::get( TheModule->getContext(), APInt( valueInt ) );
 }*/
 OPNode::OPNode( SimpleNode& s){
-	printf("CN%s\n", s.getData().c_str());
-	printf("CN%d\n", s.getOP());
-	printf("CN%d\n", s.getType());
-	printf("CN%d\n", s.getId());
-	
 	uniqueId = s.getId();
 	type = s.getType();
 	op = s.getOP();
