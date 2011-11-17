@@ -98,7 +98,7 @@ int main(){
 
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
-	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE##1|2#CONST#NONE##2|";
+	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
