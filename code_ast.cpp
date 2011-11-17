@@ -164,9 +164,6 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 		if(data.length() > pos) data = data.substr( pos + 1 );
 	}
 
-	printf("CONSTNode created\n");
-	node -> debug();
-
 	return node;
 }
 
@@ -201,9 +198,6 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 	
 		i++;
 	}
-
-	printf("CONSTNode created\n");
-	node -> debug();
 
 	return node;
 

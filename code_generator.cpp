@@ -117,6 +117,13 @@ int main(){
 
 	Node * ast = Node::createAST( dataFromParser );
 
+	if( DEBUG ){
+		map<int, SimpleNode*>::iterator it;
+		for( it = dataFromParser.begin(); it != dataFromParser.end(); it++ ){
+			((Node)(*it).second) -> debug();
+		}
+	}
+
 	delete codeGen;
 	return 0;
 }
