@@ -16,12 +16,16 @@
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/Support/IRBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
 enum NodeType {OP = 0, VAR, CONST, TYPE};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG};
 enum VarType {STRING = 0, NUMBER};
+
+static llvm::Module *TheModule;
+static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
 /*
 typedef Value* Valueptr
 typedef Value * (*OPGenFunction)( *Module, *Builder );
@@ -32,12 +36,14 @@ class SymbolTable{
 */
 class SimpleNode{
 	public:
+		SimpleNode();
 		SimpleNode( std::string, std::string, std::string, std::string );
 
 		NodeType getType();
 		int getId();
 		std::string getData();
 
+		void debug();
 	protected:
 		int uniqueId; 
 
@@ -53,14 +59,14 @@ class SimpleNode{
 
 class Node : public SimpleNode{
 	public:
-		virtual Value *codeGen( Module&, Builder& ) = 0;
+		Node();
+		virtual llvm::Value *codeGen() = 0;
 		void addChild( Node* );
 
-		static Node createAST( std::map<int, SimpleNode>& ); //Factory
+		static Node * createAST( std::map<int, SimpleNode*> & ); //Factory
 	
 	protected:
 		Node( SimpleNode );
-		Value * (*OPGenFunction)( *Module, *Builder ) codeGenFunctions[11] = { NULL };
 
 		static Node * createOPNode( const SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createVARNode( const SimpleNode&, std::list<std::pair<int, int> >& );
@@ -76,48 +82,56 @@ class Node : public SimpleNode{
 		std::string valueString;
 
 		//children
-		std::vector<SimpleNode> children;
+		std::vector<Node> children;
 
 };
 
 class OPNode : public Node{
 	public:
-		Value *codeGen( Module&, Builder& );
+		OPNode();
+		OPNode( const SimpleNode& s){};
+		llvm::Value *codeGen();
 
 	protected:
 
-		Value *lhs;
-		Value *rhs;
+		llvm::Value *lhs;
+		llvm::Value *rhs;
 
-		Value *codeGenAdd();
-		Value *codeGenOR();
-		Value *codeGenXOR();
-		Value *codeGenAND();
-		Value *codeGenSUB(); 
-		Value *codeGenMUL();
-		Value *codeGenDIV();
-		Value *codeGenUNR();
-		Value *codeGenNEG();
+		static llvm::Value *codeGenADD( const OPNode& );
+		static llvm::Value *codeGenOR( const OPNode& );
+		static llvm::Value *codeGenXOR( const OPNode& );
+		static llvm::Value *codeGenAND( const OPNode& );
+		static llvm::Value *codeGenSUB( const OPNode& ); 
+		static llvm::Value *codeGenMUL( const OPNode& );
+		static llvm::Value *codeGenDIV( const OPNode& );
+		static llvm::Value *codeGenUNR( const OPNode& );
+		static llvm::Value *codeGenNEG( const OPNode& );
 };
 
 class VARNode : public Node{
 		public:
-		Value *codeGen( Module&, Builder& );
+		VARNode();
+		VARNode( const SimpleNode& s){};
+		llvm::Value *codeGen();
 };
 
 class CONSTNode : public Node{
 	public:
-		Value *codeGen( Module&, Builder& );	
+		CONSTNode();
+		CONSTNode( const SimpleNode& s){};
+		llvm::Value *codeGen();	
 
 	protected:
 
-		Value *codeGenSTRING( Module&, Builder& );
-		Value *codeGenNUMBER( Module&, Builder& );
+		static llvm::Value *codeGenSTRING( const OPNode& ){};
+		static llvm::Value *codeGenNUMBER( const OPNode& ){};
 };
 
 class TYPENode : public Node{
 	public:
-		Value *codeGen( Module&, Builder& );	
+		TYPENode();
+		TYPENode( const SimpleNode& s){};
+		llvm::Value *codeGen();	
 };
 
 #endif

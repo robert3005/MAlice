@@ -1,7 +1,14 @@
+#include <cstdio>
+
 #include "code_ast.hpp"
 
+using namespace llvm;
+using namespace std;
+
 //SimpleNode
-SimpleNode::SimpleNode( uniqueId, type, op, args ){
+SimpleNode::SimpleNode(){}
+
+SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, std::string args ){
 	this -> uniqueId = atoi( uniqueId.c_str() );
 
 	if( type.compare( "OP" ) == 0 ){
@@ -41,12 +48,16 @@ SimpleNode::SimpleNode( uniqueId, type, op, args ){
 	this -> data = args;
 }
 
+void SimpleNode::debug(){
+	printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
+}
+
 NodeType SimpleNode::getType(){
 	return type;
 }
 
 //Node
-static Node * Node::createAST( sn ){
+Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 	std::list<std::pair<int, int> > connectionsQueue;
 	std::list<std::pair<int, int> >::iterator conIt;
 
@@ -57,14 +68,14 @@ static Node * Node::createAST( sn ){
 	Node * root;
 
 	switch( (*it).second -> getType() ){
-		case OP: 	root = Node::createOPNode( (*it).second, connectionsQueue ); break;
-		case VAR: 	root = Node::createVARNode( (*it).second, connectionsQueue ); break;
-		case CONST: root = Node::createCONSTNode( (*it).second, connectionsQueue ); break;
-		case TYPE:	root = Node::createTYPENode( (*it).second, connectionsQueue );  break;
-		case default: break;
+		case OP: 	root = Node::createOPNode( *(*it).second, connectionsQueue ); break;
+		case VAR: 	root = Node::createVARNode( *(*it).second, connectionsQueue ); break;
+		case CONST: root = Node::createCONSTNode( *(*it).second, connectionsQueue ); break;
+		case TYPE:	root = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
+		default: break;
 	}
 
-	nodes[root -> getId()] = &root;
+	nodes[root -> getId()] = root;
 	it++;
 
 	SimpleNode* processed;
@@ -73,17 +84,17 @@ static Node * Node::createAST( sn ){
 	//Generate children
 
 	while( it != sn.end() ){
-		processed = &( (*( ++it )).second );
+		processed = ( (*( ++it )).second );
 
 		switch( processed -> getType() ){
-			case OP: 	newNode = Node::createOPNode( (*it).second, connectionsQueue ); break;
-			case VAR: 	newNode = Node::createVARNode( (*it).second, connectionsQueue ); break;
-			case CONST: newNode = Node::createCONSTNode( (*it).second, connectionsQueue ); break;
-			case TYPE:	newNode = Node::createTYPENode( (*it).second, connectionsQueue );  break;
-			case default: break;
+			case OP: 	newNode = Node::createOPNode( *(*it).second, connectionsQueue ); break;
+			case VAR: 	newNode = Node::createVARNode( *(*it).second, connectionsQueue ); break;
+			case CONST: newNode = Node::createCONSTNode( *(*it).second, connectionsQueue ); break;
+			case TYPE:	newNode = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
+			default: break;
 		}
 
-		nodes[newNode -> getId()] = &newNode;
+		nodes[newNode -> getId()] = newNode;
 
 		it++;
 	}
@@ -107,18 +118,20 @@ static Node * Node::createAST( sn ){
 	return root;
 }
 
-static Node * Node::createOPNode( simpleNode, connections ){
+Node * Node::createOPNode( const SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
 	Node * node = new OPNode( simpleNode );
 
 	std::size_t pos;
 	int last = 0;
 
 	int childId;
+	std::string childIdRaw;
 
-	while( std::string::npos != ( pos = ( this -> getData() ).find( "," ) ) ){
-		node = ( this -> getData() ).substr( last + 1, ( int( pos ) - last - 1 ) );
+	while( std::string::npos != ( pos = ( node -> getData() ).find( "," ) ) ){
+		childIdRaw = ( node -> getData() ).substr( last + 1, ( int( pos ) - last - 1 ) );
+		childId = atoi( childIdRaw.c_str() );
 
-		connections.push_back(make_pair(this -> getId(), childId));
+		connections.push_back(make_pair(node -> getId(), childId));
 
 		last = int(pos);
 	}
@@ -127,81 +140,76 @@ static Node * Node::createOPNode( simpleNode, connections ){
 }
 
 //VARNode
-Value* VARNode::codeGen( mod, builder ){
-  	return NamedValues[id];
+Value* VARNode::codeGen(){
+  	//return NamedValues[id];
 }
 
 //CONSTNode
-CONSTNode::CONSTNode(){
-	codeGenFunctions[STRING] = &codeGenSTRING;
-	codeGenFunctions[NUMBER] = &codeGenNUMBER;
+
+Value* CONSTNode::codeGen(){
+	switch( this -> varType ){
+		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
+		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
+	}
 }
 
-Value* CONSTNode::codeGen( mod, builder ){
-	return ( *codeGenFunctions[varType] )( mod, builder );
-}
+/*Value* OPNode::codeGenSTRING(){
+	return ConstantArray::get( TheModule->getContext(), valueString, true);
 
-Value* OPNode::codeGenSTRING( mod, builder ){
-	return ConstantArray::get( mod->getContext(), valueString, true);
+Value* OPNode::codeGenNUMBER(){
+	return ConstantInt::get( TheModule->getContext(), APInt( valueInt ) );
+}*/
 
-Value* OPNode::codeGenNUMBER( mod, builder ){
-	return ConstantInt::get( mod->getContext(), APInt( valueInt ) );
-}
-
-//OPNode
-OPNode::OPNode(){
-	codeGenFunctions[ADD] = &codeGenADD;
-	codeGenFunctions[OR] = &codeGenOR;
-	codeGenFunctions[XOR] = &codeGenXOR;
-	codeGenFunctions[AND] = &codeGenAND;
-	codeGenFunctions[SUB] = &codeGenSUB;
-	codeGenFunctions[MUL] = &codeGenMUL;
-	codeGenFunctions[DIV] = &codeGenDIV;
-	codeGenFunctions[MOD] = &codeGenMOD;
-	codeGenFunctions[UNR] = &codeGenUNR;
-	codeGenFunctions[NEG] = &codeGenNEG;
-}
-
-Value* OPNode::codeGen( mod, builder ){
-	lhs = children[0].codeGen( mod, builder );
-	rhs = children[1].codeGen( mod, builder );
+Value* OPNode::codeGen(){
+	lhs = children[0].codeGen();
+	rhs = children[1].codeGen();
 	
-	return ( *codeGenFunctions[OPType] )( mod, builder );
+	switch( this -> op ){
+		case ADD: return OPNode::codeGenADD( *this ); break;
+		case OR: return OPNode::codeGenADD( *this ); break;
+		case XOR: return OPNode::codeGenADD( *this ); break;
+		case AND: return OPNode::codeGenADD( *this ); break;
+		case SUB: return OPNode::codeGenADD( *this ); break;
+		case MUL: return OPNode::codeGenADD( *this ); break;
+		case DIV: return OPNode::codeGenADD( *this ); break;
+		case UNR: return OPNode::codeGenADD( *this ); break;
+		case NEG: return OPNode::codeGenADD( *this ); break;
+	}
 }
 
-Value* OPNode::codeGenADD( mod, builder ){
-	return builder.CreateAdd( lhs, rhs );
+Value* OPNode::codeGenADD( const OPNode & n ){
+	return Builder.CreateAdd( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenOR( mod, builder ){
-	return builder.CreateOr( lhs, rhs );
+Value* OPNode::codeGenOR( const OPNode & n ){
+	return Builder.CreateOr( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenXOR( mod, builder ){
-	return builder.CreateXor( lhs, rhs );
+Value* OPNode::codeGenXOR( const OPNode & n ){
+	return Builder.CreateXor( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenAND( mod, builder ){
-	return builder.CreateAnd( lhs, rhs );
+Value* OPNode::codeGenAND( const OPNode & n ){
+	return Builder.CreateAnd( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenSUB( mod, builder ){
-	return builder.CreateSub( lhs, rhs );
+Value* OPNode::codeGenSUB( const OPNode & n ){
+	return Builder.CreateSub( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenMUL( mod, builder ){
-	return builder.CreateMul( lhs, rhs );
+Value* OPNode::codeGenMUL( const OPNode & n ){
+	return Builder.CreateMul( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenDIV( mod, builder ){
-	return builder.CreateUDiv( lhs, rhs ); //unsigned 
+Value* OPNode::codeGenDIV( const OPNode & n ){
+	return Builder.CreateUDiv( n.lhs, n.rhs ); //unsigned 
 }
 
-Value* OPNode::codeGenUNR( mod, builder ){
+Value* OPNode::codeGenUNR( const OPNode & n ){
 	//need to think about it;
-	return null;
+	return 0;
 }
 
-Value* OPNode::codeGenNEG( mod, builder ){
-	return builder.CreateNeg( lhs );
+Value* OPNode::codeGenNEG( const OPNode & n ){
+	return Builder.CreateNeg( n.lhs );
 }
