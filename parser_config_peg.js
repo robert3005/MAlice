@@ -27,8 +27,8 @@ NODE_CONST	= 2
 NODE_TYPE	= 3
 
 OP_NONE		= -1
-OP_RETURN =11
-OP_ADD      = 1
+OP_RETURN       =11
+OP_ADD          = 1
 OP_OR		= 2
 OP_XOR		= 3
 OP_AND		= 4
@@ -41,16 +41,18 @@ OP_NEG		= 10
 }
 
 start
-= single:assignment sep:separator list:start {return createNode( NODE_OP, OP_NONE, single, list ) }
-/ single:assignment enter:newLine list:start  {return createNode( NODE_OP, OP_NONE, single, list ) }
-/ [\n] list:start {return createNode( NODE_OP, OP_NONE, list ) }
-/ EOF
+= root*
+
+root
+= assignment separator { return single }
+/ assignment newLine { return single }
+/ [\n] { return }
 
 assignment
 = sp:space identifier:id sp:space name:function_name sp:space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
  / sp:space identifier:id sp:space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
 / sp:space identifier:id sp:space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
-/ EOF
+
 
 expression
 = orExpr:or_expression
@@ -103,26 +105,24 @@ function_name
 / funcName:'ate' { return funcName }
 
 newLine
-= sep:([ ]'too'[\.] sp:space) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\n] [\.] sp:space) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\n] [\.] EOF) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\.] EOF) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\.] sp:space [\n]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\,] sp:space [\n]) { return createNode( NODE_OP, OP_NONE) }
+= sep:([ ]'too'[\.] sp:space) {return 1}
+/ sep:([\.] space) { return 7 } 
+/ sep:([\n] [\.] sp:space) {return 2}
+/ sep:([\.] [\n]) {return 3 }
+/ sep:([\.]) {return 4 }
+/ sep:([\.] sp:space [\n]) {return 5 }
+/ sep:([\,] sp:space [\n]) {return 6 }
 
 space
-= sp:' '*
+= ' '* { return }
 
 separator
-= sep:([\,][ ]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'then'[ ]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'or'[ ]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'and'[ ])  { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'too'[ ])  { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'but'[ ])  { return createNode( NODE_OP, OP_NONE) }
+= sep:([\,][ ]) {return 7}
+/ sep:([ ]'then'[ ]) {return 8}
+/ sep:([ ]'or'[ ]){return 9}
+/ sep:([ ]'and'[ ]) {return 10}
+/ sep:([ ]'too'[ ]){return 11}
+/ sep:([ ]'but'[ ]){return 12}
 
 un_op
 = unOP:'~' { return createNode( NODE_OP, OP_NEG)  }
-
-EOF
-  = !.
