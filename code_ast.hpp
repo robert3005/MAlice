@@ -86,7 +86,7 @@ class Node : public SimpleNode{
 
 class OPNode : public Node{
 	public:
-		OPNode();
+		OPNode(){};
 		OPNode( SimpleNode& );
 		llvm::Value *codeGen();
 

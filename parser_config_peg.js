@@ -27,8 +27,8 @@ NODE_CONST	= 2
 NODE_TYPE	= 3
 
 OP_NONE		= -1
-OP_RETURN =11
-OP_ADD      = 1
+OP_RETURN       =11
+OP_ADD          = 1
 OP_OR		= 2
 OP_XOR		= 3
 OP_AND		= 4
@@ -44,14 +44,14 @@ start
 = root*
 
 root
-= assignment separator
-/ assignment newLine
-/ [\n] { return }
+= single:assignment sep:separator {return single}
+/ single:assignment enter:newLine {return single}
 
 assignment
 = sp:space identifier:id sp:space name:function_name sp:space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
  / sp:space identifier:id sp:space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
 / sp:space identifier:id sp:space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
+
 
 expression
 = orExpr:or_expression
@@ -104,25 +104,23 @@ function_name
 / funcName:'ate' { return funcName }
 
 newLine
-= sep:([ ]'too'[\.] sp:space)
-/ sep:([\.] space) 
-/ sep:([\.]) 
-/ sep:([\.] sp:space [\n]) 
-/ sep:([\,] sp:space [\n]) 
-/ sep:([\n] [\.] sp:space) 
-/ sep:([\n] [\.]) 
-
+= sep:([ ]'too'[\.] sp:space) {return 1}
+/ sep:([\n] [\.] sp:space) {return 2}
+/ sep:([\.] [\n]) {return 3 }
+/ sep:([\.]) {return 4 }
+/ sep:([\.] sp:space [\n]) {return 5 }
+/ sep:([\,] sp:space [\n]) {return 6 }
 
 space
 = ' '* { return }
 
 separator
-= sep:([\,][ ]) 
-/ sep:([ ]'then'[ ]) 
-/ sep:([ ]'or'[ ]) 
-/ sep:([ ]'and'[ ])  
-/ sep:([ ]'too'[ ])  
-/ sep:([ ]'but'[ ])  
+= sep:([\,][ ]) {return 7}
+/ sep:([ ]'then'[ ]) {return 8}
+/ sep:([ ]'or'[ ]){return 9}
+/ sep:([ ]'and'[ ]) {return 10}
+/ sep:([ ]'too'[ ]){return 11}
+/ sep:([ ]'but'[ ]){return 12}
 
 un_op
 = unOP:'~' { return createNode( NODE_OP, OP_NEG)  }
