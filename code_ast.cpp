@@ -51,6 +51,10 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 void SimpleNode::debug(){
 	printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
 }
+void Node::debug(){
+	printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString );
+}
+
 
 NodeType SimpleNode::getType(){
 	return type;
@@ -69,6 +73,13 @@ string SimpleNode::getData(){
 }
 
 //Node
+Node::Node( SimpleNode& s ){
+	uniqueId = s.getId();
+	type = s.getType();
+	op = s.getOP();
+	data = s.getData();
+}
+
 Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 	std::list<std::pair<int, int> > connectionsQueue;
 	std::list<std::pair<int, int> >::iterator conIt;
@@ -95,7 +106,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 	//Generate children
 
-	/*while( it != sn.end() ){
+	while( it != sn.end() ){
 		processed = ( (*( ++it )).second );
 
 		switch( processed -> getType() ){
@@ -109,7 +120,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		nodes[newNode -> getId()] = newNode;
 
 		it++;
-	}*/
+	}
 
 
 	//build AST :)
@@ -146,10 +157,7 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		childIdRaw = data.substr( 0, pos );
 
-		printf( "CID %s\n", childIdRaw.c_str() );
-
 		childId = atoi( childIdRaw.c_str() );
-
 
 		connections.push_back(make_pair(node -> getId(), childId));
 
@@ -159,12 +167,70 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 	return node;
 }
 
+Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new CONSTNode( simpleNode );
+
+	std::size_t pos;
+
+	string type;
+	
+	std::string dataChunkRaw;
+	
+	string data = node -> getData(); 
+
+	int i = 0;
+
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
+		dataChunkRaw = data.substr( 0, pos );
+
+		if( i == 0 ){
+			if( dataChunkRaw.compare( "STRING" ) == 0 ){
+				node -> setVarType( STRING );
+			} else if( dataChunkRaw.compare( "NUMBER" ) == 0 ){
+				node -> setVarType( NUMBER );
+			}
+		} else if( i == 1 ){ 
+			if( node -> getVarType() == String) node -> setValueString( dataChunkRaw );
+			else node -> setValueString( atoi( dataChunkRaw.c_str() ) );
+		}
+
+		if(data.length() > pos) data = data.substr( pos + 1 );
+	
+		i++;
+	}
+
+	return node;
+
+}
+
+VarType Node::getVarType(){
+	return varType;
+}
+void Node::setVarType( VarType v ){
+	varType = v;
+}
+string Node::getValueString(){
+	return valueString;
+}
+void Node::setValueString( string v ){
+	valueString = v;
+}
+int Node::getValueNumber(){
+	return valueNumber;
+}
+void Node::getValueNumber( int v ){
+	valueNumber = v;
+}
+
 //VARNode
 Value* VARNode::codeGen(){
   	//return NamedValues[id];
 }
 
 //CONSTNode
+CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
+	
+}
 
 Value* CONSTNode::codeGen(){
 	switch( this -> varType ){
@@ -179,11 +245,9 @@ Value* CONSTNode::codeGen(){
 Value* CONSTNode::codeGenNUMBER(){
 	return ConstantInt::get( TheModule->getContext(), APInt( valueInt ) );
 }*/
-OPNode::OPNode( SimpleNode& s){
-	uniqueId = s.getId();
-	type = s.getType();
-	op = s.getOP();
-	data = s.getData();
+
+OPNode::OPNode( SimpleNode& s) : Node( s ){
+	
 }
 
 Value* OPNode::codeGen(){
