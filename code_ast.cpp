@@ -52,7 +52,7 @@ void SimpleNode::debug(){
 	printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
 }
 void Node::debug(){
-	printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString );
+	printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString.c_str() );
 }
 
 
@@ -190,8 +190,8 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 				node -> setVarType( NUMBER );
 			}
 		} else if( i == 1 ){ 
-			if( node -> getVarType() == String) node -> setValueString( dataChunkRaw );
-			else node -> setValueString( atoi( dataChunkRaw.c_str() ) );
+			if( node -> getVarType() == STRING ) node -> setValueString( dataChunkRaw );
+			else node -> setValueNumber( atoi( dataChunkRaw.c_str() ) );
 		}
 
 		if(data.length() > pos) data = data.substr( pos + 1 );
