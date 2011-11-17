@@ -143,7 +143,7 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 	std::string childIdRaw;
 	string data = node -> getData(); 
 
-	while( data.length() > 0 && std::string::npos != ( pos = ( node -> getData() ).find( "," ) ) ){
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		childIdRaw = data.substr( 0, pos );
 
 		printf( "CID %s\n", childIdRaw.c_str() );
@@ -153,7 +153,7 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 
 		connections.push_back(make_pair(node -> getId(), childId));
 
-		data = data.substr( pos + 1 );
+		if(data.length() > pos) data = data.substr( pos + 1 );
 	}
 
 	return node;
