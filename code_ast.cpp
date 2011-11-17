@@ -218,7 +218,7 @@ void Node::setValueString( string v ){
 int Node::getValueNumber(){
 	return valueNumber;
 }
-void Node::getValueNumber( int v ){
+void Node::setValueNumber( int v ){
 	valueNumber = v;
 }
 
