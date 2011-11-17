@@ -142,6 +142,11 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 
 	Node * node = new OPNode( simpleNode );
 
+	printf("%s\n", node -> getData().c_str());
+	printf("%s\n", node -> getOP().c_str());
+	printf("%s\n", node -> getType().c_str());
+	printf("%s\n", node -> getId().c_str());
+
 	std::size_t pos;
 
 	int childId;
