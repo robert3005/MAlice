@@ -1,8 +1,15 @@
+#ifndef GENERATOR_H_GUARD
+#define GENERATOR_H_GUARD
 
-#include <String>
+#include <string>
+#include <map>
+
+#include "code_ast.hpp"
 
 class CodeGenerator{
 	public:
-			SimpleNode parse( std::String );
+			std::map<int, SimpleNode* > parse( std::string );
 			
 };
+
+#endif
