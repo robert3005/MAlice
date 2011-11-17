@@ -45,8 +45,6 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> op = NEG;
 	} 
 
-	printf("D %s\n", args.c_str());
-
 	this -> data = args;
 }
 
@@ -137,9 +135,6 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 }
 
 Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
-	
-	printf( "CR DATA %s\n", simpleNode.getData().c_str() );
-
 	Node * node = new OPNode( simpleNode );
 
 	std::size_t pos;
@@ -148,9 +143,7 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 	std::string childIdRaw;
 	string data = node -> getData(); 
 
-	printf( "DATA %s\n", data.c_str() );
-
-	while( std::string::npos != ( pos = ( node -> getData() ).find( "," ) ) ){
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		childIdRaw = data.substr( 0, pos );
 
 		printf( "CID %s\n", childIdRaw.c_str() );
@@ -160,7 +153,7 @@ Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int>
 
 		connections.push_back(make_pair(node -> getId(), childId));
 
-		data = data.substr( pos + 1 );
+		if(data.length() > pos) data = data.substr( pos + 1 );
 	}
 
 	return node;
@@ -190,6 +183,7 @@ OPNode::OPNode( SimpleNode& s){
 	uniqueId = s.getId();
 	type = s.getType();
 	op = s.getOP();
+	data = s.getData();
 }
 
 Value* OPNode::codeGen(){
