@@ -13,9 +13,6 @@
 #include "llvm/Constants.h"
 #include "llvm/Instructions.h"
 #include "llvm/Analysis/Verifier.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
-#include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
@@ -40,6 +37,7 @@ class SimpleNode{
 		SimpleNode( std::string, std::string, std::string, std::string );
 
 		NodeType getType();
+		OPType getOP();
 		int getId();
 		std::string getData();
 
@@ -59,19 +57,19 @@ class SimpleNode{
 
 class Node : public SimpleNode{
 	public:
-		Node();
+		Node(){};
 		virtual llvm::Value *codeGen() = 0;
-		void addChild( Node* );
+		void addChild( Node* ){};
 
 		static Node * createAST( std::map<int, SimpleNode*> & ); //Factory
 	
 	protected:
 		Node( SimpleNode );
 
-		static Node * createOPNode( const SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createVARNode( const SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createCONSTNode( const SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createTYPENode( const SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createOPNode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createTYPENode( SimpleNode&, std::list<std::pair<int, int> >& ){};
 
 		//TODO: decide which fields to leave here, and which to move down
 		std::string id;
@@ -89,7 +87,7 @@ class Node : public SimpleNode{
 class OPNode : public Node{
 	public:
 		OPNode();
-		OPNode( const SimpleNode& s){};
+		OPNode( SimpleNode& );
 		llvm::Value *codeGen();
 
 	protected:
@@ -97,40 +95,40 @@ class OPNode : public Node{
 		llvm::Value *lhs;
 		llvm::Value *rhs;
 
-		static llvm::Value *codeGenADD( const OPNode& );
-		static llvm::Value *codeGenOR( const OPNode& );
-		static llvm::Value *codeGenXOR( const OPNode& );
-		static llvm::Value *codeGenAND( const OPNode& );
-		static llvm::Value *codeGenSUB( const OPNode& ); 
-		static llvm::Value *codeGenMUL( const OPNode& );
-		static llvm::Value *codeGenDIV( const OPNode& );
-		static llvm::Value *codeGenUNR( const OPNode& );
-		static llvm::Value *codeGenNEG( const OPNode& );
+		static llvm::Value *codeGenADD( OPNode& );
+		static llvm::Value *codeGenOR( OPNode& );
+		static llvm::Value *codeGenXOR( OPNode& );
+		static llvm::Value *codeGenAND( OPNode& );
+		static llvm::Value *codeGenSUB( OPNode& ); 
+		static llvm::Value *codeGenMUL( OPNode& );
+		static llvm::Value *codeGenDIV( OPNode& );
+		static llvm::Value *codeGenUNR( OPNode& );
+		static llvm::Value *codeGenNEG( OPNode& );
 };
 
 class VARNode : public Node{
 		public:
 		VARNode();
-		VARNode( const SimpleNode& s){};
+		VARNode( SimpleNode& s){};
 		llvm::Value *codeGen();
 };
 
 class CONSTNode : public Node{
 	public:
 		CONSTNode();
-		CONSTNode( const SimpleNode& s){};
+		CONSTNode( SimpleNode& s){};
 		llvm::Value *codeGen();	
 
 	protected:
 
-		static llvm::Value *codeGenSTRING( const OPNode& ){};
-		static llvm::Value *codeGenNUMBER( const OPNode& ){};
+		static llvm::Value *codeGenSTRING( CONSTNode& ){};
+		static llvm::Value *codeGenNUMBER( CONSTNode& ){};
 };
 
 class TYPENode : public Node{
 	public:
 		TYPENode();
-		TYPENode( const SimpleNode& s){};
+		TYPENode( SimpleNode& s){};
 		llvm::Value *codeGen();	
 };
 

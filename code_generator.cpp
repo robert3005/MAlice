@@ -2,6 +2,7 @@
 #include <map>
 #include <utility>
 #include <stack>
+#include <cstdio>
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -9,15 +10,14 @@
 #include "llvm/Constants.h"
 #include "llvm/Instructions.h"
 #include "llvm/Analysis/Verifier.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
-#include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
 
 #include "code_generator.hpp"
 #include "code_ast.hpp"
+
+#define DEBUG true
 
 using namespace llvm;
 using namespace std;
@@ -28,7 +28,6 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 	map<int, SimpleNode* > mapOfNodes;
 
 	size_t pos;
-	int last = 0;
 
 	string node;
 	string nodeIdNumber;
@@ -37,31 +36,33 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 	string args;
 
 	size_t fieldPos;
-	int lastFieldPos = 0;
 
-	while( string::npos != ( pos = rawData.find( "#" ) ) ){
-		node = rawData.substr( last + 1, ( int( pos ) - last - 1 ) );
+	int i = 0;
 
-		lastFieldPos = 0;
-		fieldPos = node.find( "|" );
+	while( string::npos != ( pos = rawData.find( "|" ) ) && i < 3 ){
+		node = rawData.substr( 0, pos );
+	
+		fieldPos = node.find( "#" );
 		nodeIdNumber = node.substr( 0, fieldPos );
+		node = node.substr( fieldPos + 1 );
+		
+		fieldPos = node.find( "#" );
+		nodeType = node.substr( 0, fieldPos );
+		node = node.substr( fieldPos + 1 );
 
-		lastFieldPos = int( fieldPos );
-		fieldPos = node.find( "|" );
-		nodeType = node.substr( lastFieldPos + 1, ( int( fieldPos ) - lastFieldPos - 1 ) );
+		fieldPos = node.find( "#" );
+		opType = node.substr( 0, fieldPos );
+		node = node.substr( fieldPos + 1 );
 
-		lastFieldPos = int( fieldPos );
-		fieldPos = node.find( "|" );
-		opType = node.substr( lastFieldPos + 1, ( int( fieldPos ) - lastFieldPos - 1 ) );
-
-		lastFieldPos = int( fieldPos );
-		fieldPos = node.find( "|" );
-		args = node.substr( lastFieldPos + 1, ( int( fieldPos ) - lastFieldPos - 1 ) );
-
+		args = node;
+		
 		mapOfNodes[atoi( nodeIdNumber.c_str() )] = new SimpleNode( nodeIdNumber, nodeType, opType, args );
-
-		last = int(pos);
+		
+		rawData = rawData.substr( pos + 1 );
+		i++;
 	}
+
+	return mapOfNodes;
 }
 /*
 Module* makeLLVMModule( Node ast ){
@@ -97,13 +98,24 @@ int main(){
 
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
-	std::string rawDataFromParser = "0#OP#ADD#1,2#1,2|1#CONST#NONE##1|2#CONST#NONE##2";
-	std::map<int, SimpleNode*> dataFromParser;
+	string rawDataFromParser = "0#OP#ADD#1,2,#1,2,|1#CONST#NONE##1|2#CONST#NONE##2|";
+	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
 
+	if( DEBUG ) printf("Generating nodes from: %s ...\n", rawDataFromParser.c_str());
+
 	dataFromParser = codeGen -> parse( rawDataFromParser );
-	//Node ast = Node::generateAST( dataFromParser );
+
+
+	if( DEBUG ){
+		map<int, SimpleNode*>::iterator it;
+		for( it = dataFromParser.begin(); it != dataFromParser.end(); it++ ){
+			(*it).second -> debug();
+		}
+	}
+
+	Node * ast = Node::createAST( dataFromParser );
 
 	delete codeGen;
 	return 0;

@@ -45,6 +45,8 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> op = NEG;
 	} 
 
+	printf("D %s\n", args.c_str());
+
 	this -> data = args;
 }
 
@@ -54,6 +56,18 @@ void SimpleNode::debug(){
 
 NodeType SimpleNode::getType(){
 	return type;
+}
+
+OPType SimpleNode::getOP(){
+	return op;
+}
+
+int SimpleNode::getId(){
+	return uniqueId;
+}
+
+string SimpleNode::getData(){
+	return data;
 }
 
 //Node
@@ -83,7 +97,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 	//Generate children
 
-	while( it != sn.end() ){
+	/*while( it != sn.end() ){
 		processed = ( (*( ++it )).second );
 
 		switch( processed -> getType() ){
@@ -97,43 +111,53 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		nodes[newNode -> getId()] = newNode;
 
 		it++;
-	}
+	}*/
 
 
 	//build AST :)
-
+	printf("Connections:\n");
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
+		
+		//DEBUG
+		printf( "%d -> %d\n", (*conIt).first, (*conIt).second );
+		/*
 		if( nodes.find( ( *conIt ).first ) != nodes.end() && nodes.find( ( *conIt ).second ) != nodes.end() ){
 			nodes[( *conIt ).first] -> addChild( nodes[( *conIt ).second] ); // always add to the right
 		} else {
 			//ERROR: missing node?!
-		}
+		}*/
 	}
 
 	//free memory
-	for( it = sn.begin(); it != sn.end(); it++ ){
+	/*for( it = sn.begin(); it != sn.end(); it++ ){
 		delete ( *it ).second;
-	}	
+	}*/	
 
 	return root;
 }
 
-Node * Node::createOPNode( const SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
+Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
 	Node * node = new OPNode( simpleNode );
 
 	std::size_t pos;
-	int last = 0;
 
 	int childId;
 	std::string childIdRaw;
+	string data = node -> getData(); 
+
+	printf( "DATA %s\n", data.c_str() );
 
 	while( std::string::npos != ( pos = ( node -> getData() ).find( "," ) ) ){
-		childIdRaw = ( node -> getData() ).substr( last + 1, ( int( pos ) - last - 1 ) );
+		childIdRaw = data.substr( 0, pos );
+
+		printf( "CID %s\n", childIdRaw.c_str() );
+
 		childId = atoi( childIdRaw.c_str() );
+
 
 		connections.push_back(make_pair(node -> getId(), childId));
 
-		last = int(pos);
+		data = data.substr( pos + 1 );
 	}
 
 	return node;
@@ -153,12 +177,17 @@ Value* CONSTNode::codeGen(){
 	}
 }
 
-/*Value* OPNode::codeGenSTRING(){
+/*Value* CONSTNode::codeGenSTRING(){
 	return ConstantArray::get( TheModule->getContext(), valueString, true);
 
-Value* OPNode::codeGenNUMBER(){
+Value* CONSTNode::codeGenNUMBER(){
 	return ConstantInt::get( TheModule->getContext(), APInt( valueInt ) );
 }*/
+OPNode::OPNode( SimpleNode& s){
+	uniqueId = s.getId();
+	type = s.getType();
+	op = s.getOP();
+}
 
 Value* OPNode::codeGen(){
 	lhs = children[0].codeGen();
@@ -177,39 +206,39 @@ Value* OPNode::codeGen(){
 	}
 }
 
-Value* OPNode::codeGenADD( const OPNode & n ){
+Value* OPNode::codeGenADD( OPNode & n ){
 	return Builder.CreateAdd( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenOR( const OPNode & n ){
+Value* OPNode::codeGenOR( OPNode & n ){
 	return Builder.CreateOr( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenXOR( const OPNode & n ){
+Value* OPNode::codeGenXOR( OPNode & n ){
 	return Builder.CreateXor( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenAND( const OPNode & n ){
+Value* OPNode::codeGenAND( OPNode & n ){
 	return Builder.CreateAnd( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenSUB( const OPNode & n ){
+Value* OPNode::codeGenSUB( OPNode & n ){
 	return Builder.CreateSub( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenMUL( const OPNode & n ){
+Value* OPNode::codeGenMUL( OPNode & n ){
 	return Builder.CreateMul( n.lhs, n.rhs );
 }
 
-Value* OPNode::codeGenDIV( const OPNode & n ){
+Value* OPNode::codeGenDIV( OPNode & n ){
 	return Builder.CreateUDiv( n.lhs, n.rhs ); //unsigned 
 }
 
-Value* OPNode::codeGenUNR( const OPNode & n ){
+Value* OPNode::codeGenUNR( OPNode & n ){
 	//need to think about it;
 	return 0;
 }
 
-Value* OPNode::codeGenNEG( const OPNode & n ){
+Value* OPNode::codeGenNEG( OPNode & n ){
 	return Builder.CreateNeg( n.lhs );
 }
