@@ -58,17 +58,28 @@ class SimpleNode{
 class Node : public SimpleNode{
 	public:
 		Node(){};
+		Node( SimpleNode& );
 		virtual llvm::Value *codeGen() = 0;
 		void addChild( Node* ){};
 
 		static Node * createAST( std::map<int, SimpleNode*> & ); //Factory
-	
+		
+		VarType getVarType();
+		void setVarType( VarType );
+		
+		std::string getValueString();
+		void setValueString( std::string );
+		
+		int getValueNumber();
+		void setValueNumber( int );
+				
+		void debug();
 	protected:
-		Node( SimpleNode );
+		
 
 		static Node * createOPNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
-		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createTYPENode( SimpleNode&, std::list<std::pair<int, int> >& ){};
 
 		//TODO: decide which fields to leave here, and which to move down
@@ -116,7 +127,7 @@ class VARNode : public Node{
 class CONSTNode : public Node{
 	public:
 		CONSTNode();
-		CONSTNode( SimpleNode& s){};
+		CONSTNode( SimpleNode& s);
 		llvm::Value *codeGen();	
 
 	protected:
