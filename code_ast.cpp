@@ -137,6 +137,9 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 }
 
 Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
+	
+	printf( "CR DATA %s\n", simpleNode.getData().c_str() );
+
 	Node * node = new OPNode( simpleNode );
 
 	std::size_t pos;
