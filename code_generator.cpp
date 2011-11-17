@@ -20,29 +20,29 @@
 #include "code_ast.hpp"
 
 using namespace llvm;
-
+using namespace std;
 /**
  * Converts string representation on a node to SimpleNode object
  */
-/*std::map<int, SimpleNode* > CodeGenerator::parse( rawData ){
-	std::map<int, SimpleNode> mapOfNodes;
+map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
+	map<int, SimpleNode* > mapOfNodes;
 
-	std::size_t pos;
+	size_t pos;
 	int last = 0;
 
-	std::string node;
-	std::string nodeIdNumber;
-	std::string nodeType;
-	std::string opType;
-	std::string args;
+	string node;
+	string nodeIdNumber;
+	string nodeType;
+	string opType;
+	string args;
 
-	std::size_t fieldPos;
+	size_t fieldPos;
 	int lastFieldPos = 0;
 
-	while( std::string::npos != ( pos = rawData.find( "#" ) ) ){
+	while( string::npos != ( pos = rawData.find( "#" ) ) ){
 		node = rawData.substr( last + 1, ( int( pos ) - last - 1 ) );
 
-		lastFieldPos = 0
+		lastFieldPos = 0;
 		fieldPos = node.find( "|" );
 		nodeIdNumber = node.substr( 0, fieldPos );
 
@@ -62,7 +62,7 @@ using namespace llvm;
 
 		last = int(pos);
 	}
-}*/
+}
 /*
 Module* makeLLVMModule( Node ast ){
 	Module* mod = new Module( "alice", getGlobalContext() );
@@ -96,11 +96,15 @@ int main(){
 }*/
 
 int main(){
+	CodeGenerator * codeGen = new CodeGenerator();
 	std::string rawDataFromParser = "0#OP#ADD#1,2#1,2|1#CONST#NONE##1|2#CONST#NONE##2";
-	std::map<int, SimpleNode> dataFromParser;
+	std::map<int, SimpleNode*> dataFromParser;
 
 	//read data input
 
-	//dataFromParser = CodeGenerator.parse( rawDataFromParser );
+	dataFromParser = codeGen -> parse( rawDataFromParser );
 	//Node ast = Node::generateAST( dataFromParser );
+
+	delete codeGen;
+	return 0;
 }
