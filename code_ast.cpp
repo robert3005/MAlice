@@ -134,11 +134,6 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		}
 	}
 
-	//free memory
-	/*for( it = sn.begin(); it != sn.end(); it++ ){
-		delete ( *it ).second;
-	}*/	
-
 	return root;
 }
 
