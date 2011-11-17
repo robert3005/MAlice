@@ -27,6 +27,7 @@ NODE_CONST	= 2
 NODE_TYPE	= 3
 
 OP_NONE		= -1
+OP_RETURN =11
 OP_ADD      = 1
 OP_OR		= 2
 OP_XOR		= 3
@@ -48,6 +49,7 @@ start
 assignment
 = identifier:id ' ' name:function_name type:typeName { return createNode( NODE_OP, name, identifier, type ) }
  / identifier:id ' ' name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
+/ identifier:id ' spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
 / EOF
 
 expression
