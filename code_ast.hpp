@@ -87,7 +87,7 @@ class Node : public SimpleNode{
 		VarType varType;
 		
 		//values
-		int valueInt;
+		int valueNumber;
 		std::string valueString;
 
 		//children
