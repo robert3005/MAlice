@@ -192,10 +192,10 @@ Value* CONSTNode::codeGenNUMBER(){
 	return ConstantInt::get( TheModule->getContext(), APInt( valueInt ) );
 }*/
 OPNode::OPNode( SimpleNode& s){
-	printf("CN%s\n", node -> getData().c_str());
-	printf("CN%d\n", node -> getOP());
-	printf("CN%d\n", node -> getType());
-	printf("CN%d\n", node -> getId());
+	printf("CN%s\n", s.getData().c_str());
+	printf("CN%d\n", s.getOP());
+	printf("CN%d\n", s.getType());
+	printf("CN%d\n", s.getId());
 	
 	uniqueId = s.getId();
 	type = s.getType();
