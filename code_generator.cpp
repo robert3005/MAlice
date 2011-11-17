@@ -120,7 +120,7 @@ int main(){
 	if( DEBUG ){
 		map<int, SimpleNode*>::iterator it;
 		for( it = dataFromParser.begin(); it != dataFromParser.end(); it++ ){
-			((Node)(*it).second) -> debug();
+			(Node)(*it).second -> debug();
 		}
 	}
 
