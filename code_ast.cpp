@@ -124,17 +124,14 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 
 	//build AST :)
-	printf("Connections:\n");
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
 		
-		//DEBUG
-		printf( "%d -> %d\n", (*conIt).first, (*conIt).second );
-		/*
+		
 		if( nodes.find( ( *conIt ).first ) != nodes.end() && nodes.find( ( *conIt ).second ) != nodes.end() ){
 			nodes[( *conIt ).first] -> addChild( nodes[( *conIt ).second] ); // always add to the right
 		} else {
 			//ERROR: missing node?!
-		}*/
+		}
 	}
 
 	//free memory
