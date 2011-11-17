@@ -47,9 +47,9 @@ start
 / EOF
 
 assignment
-= identifier:id ' ' name:function_name type:typeName { return createNode( NODE_OP, name, identifier, type ) }
- / identifier:id ' ' name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
-/ identifier:id ' spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
+= sp:space identifier:id sp:space name:function_name sp:space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
+ / sp:space identifier:id sp:space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
+/ sp:space identifier:id sp:space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
 / EOF
 
 expression
@@ -84,17 +84,17 @@ unary_expression
 
 primitive_expression
 = num:[0-9]+ { return createNode( NODE_CONST, num.join("") ) }
-/ letter:([\'][A-Za-z][\']) { return createNode( NODE_CONST, letter ) }
+/ letter:([\'][^\'][\']) { return createNode( NODE_CONST, letter[1] ) }
 / identifier:id
-/ '(' expr:expression ')'
 / ''
+/ '(' expr:expression ')'
 
 typeName
 = type:'letter' { return createNode( NODE_TYPE, type) }
 / type:'number' { return createNode( NODE_TYPE, type) }
 
 id
-= identifier:([A-Za-z_]+) { return identifier }
+= identifier:([A-Za-z_]+) { return identifier.join("") }
 
 function_name
 = funcName:'was a ' { return funcName }
@@ -103,14 +103,15 @@ function_name
 / funcName:'ate' { return funcName }
 
 newLine
-= sep:([ ]'too'[\.]) { return createNode( NODE_OP, OP_NONE) }
+= sep:([ ]'too'[\.] sp:space) { return createNode( NODE_OP, OP_NONE) }
+/ sep:([\n] [\.] sp:space) { return createNode( NODE_OP, OP_NONE) }
+/ sep:([\n] [\.] EOF) { return createNode( NODE_OP, OP_NONE) }
 / sep:([\.] EOF) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\.][\n]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\,][\n]) { return createNode( NODE_OP, OP_NONE) }
+/ sep:([\.] sp:space [\n]) { return createNode( NODE_OP, OP_NONE) }
+/ sep:([\,] sp:space [\n]) { return createNode( NODE_OP, OP_NONE) }
 
 space
-= sp:' '
-/ sp:''
+= sp:' '*
 
 separator
 = sep:([\,][ ]) { return createNode( NODE_OP, OP_NONE) }

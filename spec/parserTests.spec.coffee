@@ -8,16 +8,24 @@ extension = '.alice'
 
 parser = PEG.buildParser fs.readFileSync 'parser_config_peg.js', 'utf-8'
 
+testFilesSpec = fs.readFileSync directory + 'parserTests.spec', 'utf-8'
+
 testFiles = fs.readdirSync(directory);
 
-testFiles = testFiles.filter (file) ->
-	file.substr(-6) is extension
+testSpec = testFiles.filter((file) ->
+			file.substr(-6) is extension
+		).sort((a, b) ->
+			fileNumberA = parseInt ((a.split '.alice')[0].split 'ex')[1]
+			fileNumberB = parseInt ((b.split '.alice')[0].split 'ex')[1]
+			# Have fun reading it, I know everyone will enjoy it. Looks like Haskell doesn't it?
+			result = if isNaN fileNumberA then 1 else if isNaN fileNumberB then -1 else if fileNumberA < fileNumberB then -1 else if fileNumberA == fileNumberB then 0 else 1
+		).map((fileName, index, allFiles) ->
+			regex = new RegExp fileName + ':pass', 'ig'
+			pass = testFilesSpec.match(regex)?
+			[fileName, pass]
+		)
 
-testFiles.sort (a, b) ->
-	fileNumberA = parseInt ((a.split '.alice')[0].split 'ex')[1]
-	fileNumberB = parseInt ((b.split '.alice')[0].split 'ex')[1]
-	# Have fun reading it, I know everyone will enjoy it. Looks like Haskell doesn't it?
-	result = if isNaN fileNumberA then 1 else if isNaN fileNumberB then -1 else if fileNumberA < fileNumberB then -1 else if fileNumberA == fileNumberB then 0 else 1
+#sys.puts testSpec
 
 beforeEach () -> 
 	this.addMatchers
@@ -49,17 +57,17 @@ beforeEach () ->
 			return result;
 			}`
 
-parseFunction = (data) ->
-	() -> 
-		parser.parse data
-
-
-
 describe 'parser test', ->
 
 	# Needs a bit of tweaking but basic idea is in place
-	testFiles.forEach (fileName, index, allFiles) ->
-		it 'should not fail on ' + fileName, ->
-			file = directory + fileName
+	testSpec.forEach (spec, index, allFiles) ->
+		shouldFail = if spec[1] then 'not ' else ''
+		it 'should ' + shouldFail + 'fail on ' + spec[0], ->
+			file = directory + spec[0]
 			data = fs.readFileSync file, 'utf-8'
-			expect(parseFunction data).not.toThrowName 'SyntaxError'
+			sys.puts data
+			data = data.replace /[ \t\r]{2,}/g, ' '
+			sys.puts data
+			expectation = expect( () -> parser.parse data )
+			expectation = if spec[1] then expectation.not else expectation
+			expectation.toThrowName 'SyntaxError'
