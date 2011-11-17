@@ -40,8 +40,8 @@ OP_NEG		= 10
 }
 
 start
-= single:assignment sep:separator list:start {return createNode( NODE_OP, OP_NONE, list, single ) }
-/ single:assignment enter:newLine list:start  {return createNode( NODE_OP, OP_NONE, list, single ) }
+= single:assignment sep:separator list:start {return createNode( NODE_OP, OP_NONE, single, list ) }
+/ single:assignment enter:newLine list:start  {return createNode( NODE_OP, OP_NONE, single, list ) }
 / [\n] list:start {return createNode( NODE_OP, OP_NONE, list ) }
 / EOF
 
@@ -77,7 +77,7 @@ mul_expression
 / unExpr:unary_expression
 
 unary_expression
-= unOP:un_op primEpxr:primitive_expression { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) }
+= unOP:un_op primExpr:primitive_expression { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) }
 / primExpr:primitive_expression
 
 primitive_expression
