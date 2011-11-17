@@ -59,15 +59,12 @@ beforeEach () ->
 
 describe 'parser test', ->
 
-	# Needs a bit of tweaking but basic idea is in place
 	testSpec.forEach (spec, index, allFiles) ->
 		shouldFail = if spec[1] then 'not ' else ''
 		it 'should ' + shouldFail + 'fail on ' + spec[0], ->
 			file = directory + spec[0]
 			data = fs.readFileSync file, 'utf-8'
-			sys.puts data
 			data = data.replace /[ \t\r]{2,}/g, ' '
-			sys.puts data
 			expectation = expect( () -> parser.parse data )
 			expectation = if spec[1] then expectation.not else expectation
 			expectation.toThrowName 'SyntaxError'

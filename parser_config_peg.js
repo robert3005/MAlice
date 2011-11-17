@@ -41,16 +41,17 @@ OP_NEG		= 10
 }
 
 start
-= single:assignment sep:separator list:start {return createNode( NODE_OP, OP_NONE, single, list ) }
-/ single:assignment enter:newLine list:start  {return createNode( NODE_OP, OP_NONE, single, list ) }
-/ [\n] list:start {return createNode( NODE_OP, OP_NONE, list ) }
-/ EOF
+= root*
+
+root
+= assignment separator
+/ assignment newLine
+/ [\n] { return }
 
 assignment
 = sp:space identifier:id sp:space name:function_name sp:space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
  / sp:space identifier:id sp:space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
 / sp:space identifier:id sp:space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
-/ EOF
 
 expression
 = orExpr:or_expression
@@ -103,26 +104,25 @@ function_name
 / funcName:'ate' { return funcName }
 
 newLine
-= sep:([ ]'too'[\.] sp:space) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\n] [\.] sp:space) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\n] [\.] EOF) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\.] EOF) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\.] sp:space [\n]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([\,] sp:space [\n]) { return createNode( NODE_OP, OP_NONE) }
+= sep:([ ]'too'[\.] sp:space)
+/ sep:([\.] space) 
+/ sep:([\.]) 
+/ sep:([\.] sp:space [\n]) 
+/ sep:([\,] sp:space [\n]) 
+/ sep:([\n] [\.] sp:space) 
+/ sep:([\n] [\.]) 
+
 
 space
-= sp:' '*
+= ' '* { return }
 
 separator
-= sep:([\,][ ]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'then'[ ]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'or'[ ]) { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'and'[ ])  { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'too'[ ])  { return createNode( NODE_OP, OP_NONE) }
-/ sep:([ ]'but'[ ])  { return createNode( NODE_OP, OP_NONE) }
+= sep:([\,][ ]) 
+/ sep:([ ]'then'[ ]) 
+/ sep:([ ]'or'[ ]) 
+/ sep:([ ]'and'[ ])  
+/ sep:([ ]'too'[ ])  
+/ sep:([ ]'but'[ ])  
 
 un_op
 = unOP:'~' { return createNode( NODE_OP, OP_NEG)  }
-
-EOF
-  = !.
