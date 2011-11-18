@@ -64,7 +64,7 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 	return mapOfNodes;
 }
-/*
+
 Module* makeLLVMModule( Node ast ){
 	Module* mod = new Module( "alice", getGlobalContext() );
 
@@ -124,7 +124,7 @@ int main(){
 	//PM.add( createPrintModulePass( &outs() ) );
 	//PM.run( *theModule );
 
-	delete Mod;
+	delete theModule;
 	delete codeGen;
 	return 0;
 }

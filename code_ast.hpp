@@ -21,7 +21,7 @@ enum NodeType {OP = 0, VAR, CONST, TYPE};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG};
 enum VarType {STRING = 0, NUMBER};
 
-static llvm::Module *TheModule;
+static llvm::Module *theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
 /*
 typedef Value* Valueptr
