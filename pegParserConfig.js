@@ -105,7 +105,7 @@ function_name
 
 newLine
 = (space 'too' space [\.] space [\n]*) {return 1}
-/ (space [\n]* [\.\,] space [\n]*) {return 2 }
+/ (space [\n]* space [\.\,] space [\n]*) {return 2 }
 
 space
 = ' '* { return }
