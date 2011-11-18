@@ -119,9 +119,9 @@ int main(){
 
 	verifyModule( *theModule, PrintMessageAction );
 
-	//PassManager PM;
-	//PM.add( createPrintModulePass( &outs() ) );
-	//PM.run( *theModule );
+	PassManager PM;
+	PM.add( createPrintModulePass( &outs() ) );
+	PM.run( *theModule );
 
 	delete theModule;
 	delete codeGen;
