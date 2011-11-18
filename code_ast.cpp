@@ -107,7 +107,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 	//Generate children
 
 	while( it != sn.end() ){
-		processed = ( (*( ++it )).second );
+		processed = ( (*( it )).second );
 
 		switch( processed -> getType() ){
 			case OP: 	newNode = Node::createOPNode( *(*it).second, connectionsQueue ); break;
@@ -117,7 +117,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 			default: break;
 		}
 
-		nodes[newNode -> getId()] = newNode;
+		nodes[ newNode -> getId() ] = newNode;
 
 		it++;
 	}
@@ -191,6 +191,8 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 	
 		i++;
 	}
+
+	printf( "Create CONSTNode id: %d type: %d", node -> getId(), node -> getVarType() );
 
 	return node;
 
