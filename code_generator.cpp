@@ -12,7 +12,9 @@
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
-
+#include "llvm/PassManager.h"
+#include "llvm/CallingConv.h"
+#include "llvm/Assembly/PrintModulePass.h"
 
 #include "code_generator.hpp"
 #include "code_ast.hpp"
