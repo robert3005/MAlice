@@ -232,10 +232,11 @@ Value* CONSTNode::codeGen(){
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
-	return ConstantArray::get( theModule->getContext(), n -> getValueString(), true);
+	return ConstantArray::get( theModule -> getContext(), n.getValueString(), true);
+}
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
-	return ConstantInt::get( theModule->getContext(), APInt( n -> getValueNUmber() ) );
+	return ConstantInt::get( theModule -> getContext(), APInt( n.getValueNUmber() ) );
 }
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){
