@@ -115,7 +115,7 @@ int main(){
 
 	Node * ast = Node::createAST( dataFromParser );
 
-	makeLLVMModule();
+	makeLLVMModule( *ast );
 
 	//verifyModule( *theModule, PrintMessageAction );
 
