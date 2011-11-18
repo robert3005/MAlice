@@ -225,6 +225,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 }
 
 Value* CONSTNode::codeGen(){
+	printf("CONSTNode CG\n");
 	switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
@@ -232,10 +233,12 @@ Value* CONSTNode::codeGen(){
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
+	printf("CONSTNode::codeGenSTRING CG\n");
 	return ConstantArray::get( theModule -> getContext(), n.getValueString(), true);
 }
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
+	printf("CONSTNode::codeGenNUMBER CG\n");
 	return ConstantInt::get( theModule -> getContext(), APInt( 32, n.getValueNumber(), true ) );
 }
 
@@ -244,10 +247,11 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 }
 
 Value* OPNode::codeGen(){
+	printf("OPNode CG\n");
 	lhs = children[0].codeGen();
 	rhs = children[1].codeGen();
 	
-	switch( this -> op ){
+	/*switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;
 		case OR: return OPNode::codeGenADD( *this ); break;
 		case XOR: return OPNode::codeGenADD( *this ); break;
@@ -257,10 +261,11 @@ Value* OPNode::codeGen(){
 		case DIV: return OPNode::codeGenADD( *this ); break;
 		case UNR: return OPNode::codeGenADD( *this ); break;
 		case NEG: return OPNode::codeGenADD( *this ); break;
-	}
+	}*/
 }
 
 Value* OPNode::codeGenADD( OPNode & n ){
+	printf("OPNode::codeGenADD CG\n");
 	return Builder.CreateAdd( n.lhs, n.rhs );
 }
 
