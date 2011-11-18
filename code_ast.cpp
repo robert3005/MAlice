@@ -265,7 +265,7 @@ Value* OPNode::codeGen(){
 		case DIV: return OPNode::codeGenADD( *this ); break;
 		case UNR: return OPNode::codeGenADD( *this ); break;
 		case NEG: return OPNode::codeGenADD( *this ); break;
-	}*/
+	}
 }
 
 Value* OPNode::codeGenADD( OPNode & n ){
