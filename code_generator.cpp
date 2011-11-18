@@ -72,7 +72,7 @@ Module* makeLLVMModule( Node ast ){
 
 	return mod;
 }
-
+/*
 int main(){
 	CodeGenerator = new CodeGenerator();
 	std::string rawDataFromParser = "0#OP#ADD#1,2#1,2|1#CONST#NONE##1|2#CONST#NONE##2";
