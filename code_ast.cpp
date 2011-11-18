@@ -230,10 +230,11 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 
 Value* CONSTNode::codeGen(){
 	printf("CONSTNode CG\n");
-	switch( this -> varType ){
+	/*switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
-	}
+	}*/
+	return CONSTNode::codeGenNUMBER( *this );
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
