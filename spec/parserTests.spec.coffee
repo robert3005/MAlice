@@ -6,7 +6,7 @@ sys = require 'sys'
 directory = 'milestone2/'
 extension = '.alice'
 
-parser = PEG.buildParser fs.readFileSync 'parser_config_peg.js', 'utf-8'
+parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
 
 testFilesSpec = fs.readFileSync directory + 'parserTests.spec', 'utf-8'
 
@@ -17,7 +17,7 @@ testSpec = testFiles.filter((file) ->
 		).sort((a, b) ->
 			fileNumberA = parseInt ((a.split '.alice')[0].split 'ex')[1]
 			fileNumberB = parseInt ((b.split '.alice')[0].split 'ex')[1]
-			# Have fun reading it, I know everyone will enjoy it. Looks like Haskell doesn't it?
+			# Have fun reading it, I know everyone will enjoy it. Looks like Haskell, doesn't it?
 			result = if isNaN fileNumberA then 1 else if isNaN fileNumberB then -1 else if fileNumberA < fileNumberB then -1 else if fileNumberA == fileNumberB then 0 else 1
 		).map((fileName, index, allFiles) ->
 			regex = new RegExp fileName + ':pass', 'ig'
@@ -29,33 +29,29 @@ testSpec = testFiles.filter((file) ->
 
 beforeEach () -> 
 	this.addMatchers
-		toThrowName: `function(expected) {
-			var result = false;
-			var exception;
-			if (typeof this.actual != 'function') {
-			throw new Error('Actual is not a function');
-			}
-			try {
-			this.actual();
-			} catch (e) {
-			exception = e;
-			}
-			if (exception) {
-			  result = (expected === jasmine.undefined || this.env.equals_(exception.message || exception, expected.message || expected) || this.env.equals_(exception.name, expected));
-			}
+		toThrowName: (expected) ->
+			result = false
+			exception
+			throw new Error('Actual is not a function') if typeof this.actual isnt 'function'
+			try
+				this.actual()
+			catch e
+				exception = e
 
-			var not = this.isNot ? "not " : "";
+			result = (expected is jasmine.undefined or this.env.equals_(exception.message or exception, expected.message or expected) or this.env.equals_(exception.name, expected)) if exception
 
-			this.message = function() {
-			if (exception && (expected === jasmine.undefined || !this.env.equals_(exception.message || exception, expected.message || expected))) {
-			  return ["Expected function " + not + "to throw", expected ? expected.name || expected.message || expected : " an exception", ", but it threw", exception.name || exception.message || exception].join(' ');
-			} else {
-			  return "Expected function to throw an exception.";
-			}
-			};
+			shouldNot = if this.isNot then "not " else ""
 
-			return result;
-			}`
+			this.message = () ->
+				if exception and (expected is jasmine.undefined or not this.env.equals_(exception.message or exception, expected.message or expected))
+					return ["Expected function " + shouldNot + "to throw"
+					 (if expected then expected.name or expected.message or expected else " an exception")
+					 ", but it threw"
+					 (exception.name or exception.message or exception)].join(' ')
+				else
+					return "Expected function to throw an exception."
+
+			return result
 
 describe 'parser test', ->
 
