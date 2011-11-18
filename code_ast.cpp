@@ -236,7 +236,7 @@ Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
 }
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
-	return ConstantInt::get( theModule -> getContext(), APInt( n.getValueNUmber() ) );
+	return ConstantInt::get( theModule -> getContext(), APInt( n.getValueNumber() ) );
 }
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){
