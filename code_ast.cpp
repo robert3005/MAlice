@@ -252,8 +252,8 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 
 Value* OPNode::codeGen(){
 	printf("OPNode CG\n");
-	lhs = children[0].codeGen();
-	rhs = children[1].codeGen();
+	lhs = children[0] -> codeGen();
+	rhs = children[1] -> codeGen();
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;
