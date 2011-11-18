@@ -48,36 +48,36 @@ root
 / single:assignment newLine { return single }
 
 assignment
-= sp:space identifier:id sp:space name:function_name sp:space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
- / sp:space identifier:id sp:space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
-/ sp:space identifier:id sp:space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
+= space identifier:id space name:function_name space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
+ / space identifier:id space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
+/ space identifier:id space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
 
 
 expression
-= orExpr:or_expression
+= or_expression
 
 or_expression
-= xorExpr:xor_expression sp:space '|' sp:space orExpr:or_expression { return createNode( NODE_OP, OP_OR, orExpr, xorExpr ) }
-/ xorExpr:xor_expression
+= xorExpr:xor_expression space '|' space orExpr:or_expression { return createNode( NODE_OP, OP_OR, xorExpr, orExpr ) }
+/ xor_expression
 
 xor_expression
-= andExpr:and_expression sp:space '^' sp:space xorExpr:xor_expression { return createNode( NODE_OP, OP_XOR, xorExpr, andExpr ) }
-/ andExpr:and_expression
+= andExpr:and_expression space '^' space xorExpr:xor_expression { return createNode( NODE_OP, OP_XOR, andExpr, xorExpr ) }
+/ and_expression
 
 and_expression
-= addExpr:add_expression sp:space '&' sp:space andExpr:and_expression { return createNode( NODE_OP, OP_AND, andExpr, addExpr) }
-/ addExpr:add_expression
+= addExpr:add_expression space '&' space andExpr:and_expression { return createNode( NODE_OP, OP_AND, addExpr, andExpr) }
+/ add_expression
 
 add_expression
-= mulExpr:mul_expression sp:space '+' sp:space addExpr:add_expression { return createNode(NODE_OP, OP_ADD, addExpr, mulExpr) }
-/ mulExpr:mul_expression sp:space '-' sp:space addExpr:add_expression { return createNode(NODE_OP, OP_SUB, addExpr, mulExpr) }
-/ mulExpr:mul_expression
+= mulExpr:mul_expression space '+' space addExpr:add_expression { return createNode(NODE_OP, OP_ADD, mulExpr, addExpr) }
+/ mulExpr:mul_expression space '-' space addExpr:add_expression { return createNode(NODE_OP, OP_SUB, mulExpr, addExpr ) }
+/ mul_expression
 
 mul_expression
-= unExpr:unary_expression sp:space '*'  sp:space mulExpr:mul_expression  { return createNode(NODE_OP, OP_MUL, mulExpr, unExpr) }
-/ unExpr:unary_expression sp:space '/' sp:space mulExpr:mul_expression { return createNode(NODE_OP, OP_DIV, mulExpr, unExpr) }
-/ unExpr:unary_expression sp:space '%' sp:space mulExpr:mul_expression  { return createNode(NODE_OP, OP_MOD, mulExpr, unExpr) }
-/ unExpr:unary_expression
+= unExpr:unary_expression space '*'  space mulExpr:mul_expression  { return createNode(NODE_OP, OP_MUL, unExpr, mulExpr) }
+/ unExpr:unary_expression space '/' space mulExpr:mul_expression { return createNode(NODE_OP, OP_DIV, unExpr, mulExpr) }
+/ unExpr:unary_expression space '%' space mulExpr:mul_expression  { return createNode(NODE_OP, OP_MOD, unExpr, mulExpr) }
+/ unary_expression
 
 unary_expression
 = unOP:un_op primExpr:primitive_expression { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) }
@@ -104,24 +104,19 @@ function_name
 / funcName:'ate' { return funcName }
 
 newLine
-= sep:(space 'too' [\.] sp:space [\n]) {return 1}
-/ sep:([\.\,] space [\n]+) {return 5 }
-/ sep:([\.] space) { return 7 } 
-/ (space [\n]+ [\.] [\n]+ ) { return 10 }
-/ sep:([\n] [\.] sp:space) {return 2}
-/ sep:([\.] [\n]) {return 3 }
-/ sep:([\.]) {return 4 }
+= (space 'too' space [\.] space [\n]*) {return 1}
+/ (space [\n]* [\.\,] space [\n]*) {return 2 }
 
 space
 = ' '* { return }
 
 separator
-= sep:([\,][ ]) {return 7}
-/ sep:([ ]'then'[ ]) {return 8}
-/ sep:([ ]'or'[ ]){return 9}
-/ sep:([ ]'and'[ ]) {return 10}
-/ sep:([ ]'too'[ ]){return 11}
-/ sep:([ ]'but'[ ]){return 12}
+= ([\,][ ]) {return 7}
+/ ([ ]'then'[ ]) {return 8}
+/ ([ ]'or'[ ]){return 9}
+/ ([ ]'and'[ ]) {return 10}
+/ ([ ]'too'[ ]){return 11}
+/ ([ ]'but'[ ]){return 12}
 
 un_op
-= unOP:'~' { return createNode( NODE_OP, OP_NEG)  }
+= '~' { return createNode( NODE_OP, OP_NEG)  }
