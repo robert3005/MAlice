@@ -195,6 +195,10 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 
 }
 
+void Node::addChild( Node* n ){
+	children.push_back(n);
+}
+
 VarType Node::getVarType(){
 	return varType;
 }
@@ -249,7 +253,7 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 Value* OPNode::codeGen(){
 	printf("OPNode CG\n");
 	lhs = children[0].codeGen();
-	/*rhs = children[1].codeGen();
+	rhs = children[1].codeGen();
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;

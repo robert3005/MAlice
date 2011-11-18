@@ -61,7 +61,7 @@ class Node : public SimpleNode{
 		virtual ~Node(){};
 		Node( SimpleNode& );
 		virtual llvm::Value *codeGen() = 0;
-		void addChild( Node* ){};
+		void addChild( Node* );
 
 		static Node * createAST( std::map<int, SimpleNode*> & ); //Factory
 		
@@ -92,7 +92,7 @@ class Node : public SimpleNode{
 		std::string valueString;
 
 		//children
-		std::vector<Node> children;
+		std::vector<Node*> children;
 
 };
 
