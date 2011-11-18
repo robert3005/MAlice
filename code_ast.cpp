@@ -231,12 +231,12 @@ Value* CONSTNode::codeGen(){
 	}
 }
 
-/*Value* CONSTNode::codeGenSTRING(){
-	return ConstantArray::get( TheModule->getContext(), valueString, true);
+Value* CONSTNode::codeGenSTRING(){
+	return ConstantArray::get( theModule->getContext(), valueString, true);
 
 Value* CONSTNode::codeGenNUMBER(){
-	return ConstantInt::get( TheModule->getContext(), APInt( valueInt ) );
-}*/
+	return ConstantInt::get( theModule->getContext(), APInt( valueInt ) );
+}
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){
 	

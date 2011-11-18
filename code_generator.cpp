@@ -65,12 +65,11 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 	return mapOfNodes;
 }
 
-Module* makeLLVMModule( Node ast ){
-	Module* mod = new Module( "alice", getGlobalContext() );
+void makeLLVMModule( Node & ast ){
+	theModule = new Module( "alice", getGlobalContext() );
 
-	ast.codeGen( *mod );
+	ast.codeGen();
 
-	return mod;
 }
 /*
 int main(){
@@ -116,7 +115,7 @@ int main(){
 
 	Node * ast = Node::createAST( dataFromParser );
 
-	theModule = makeLLVMModule( ast );
+	makeLLVMModule();
 
 	//verifyModule( *theModule, PrintMessageAction );
 
