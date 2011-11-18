@@ -44,9 +44,8 @@ start
 = root*
 
 root
-= assignment separator { return single }
-/ assignment newLine { return single }
-/ [\n] { return }
+= single:assignment separator { return single }
+/ single:assignment newLine { return single }
 
 assignment
 = sp:space identifier:id sp:space name:function_name sp:space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
@@ -105,13 +104,13 @@ function_name
 / funcName:'ate' { return funcName }
 
 newLine
-= sep:([ ]'too'[\.] sp:space) {return 1}
+= sep:(space 'too' [\.] sp:space [\n]) {return 1}
+/ sep:([\.\,] space [\n]+) {return 5 }
 / sep:([\.] space) { return 7 } 
+/ (space [\n]+ [\.] [\n]+ ) { return 10 }
 / sep:([\n] [\.] sp:space) {return 2}
 / sep:([\.] [\n]) {return 3 }
 / sep:([\.]) {return 4 }
-/ sep:([\.] sp:space [\n]) {return 5 }
-/ sep:([\,] sp:space [\n]) {return 6 }
 
 space
 = ' '* { return }
