@@ -133,8 +133,8 @@ class CONSTNode : public Node{
 
 	protected:
 
-		static llvm::Value *codeGenSTRING( CONSTNode& ){};
-		static llvm::Value *codeGenNUMBER( CONSTNode& ){};
+		static llvm::Value *codeGenSTRING( CONSTNode& );
+		static llvm::Value *codeGenNUMBER( CONSTNode& );
 };
 
 class TYPENode : public Node{
