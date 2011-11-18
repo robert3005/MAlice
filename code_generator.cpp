@@ -117,7 +117,7 @@ int main(){
 
 	makeLLVMModule( *ast );
 
-	//verifyModule( *theModule, PrintMessageAction );
+	verifyModule( *theModule, PrintMessageAction );
 
 	//PassManager PM;
 	//PM.add( createPrintModulePass( &outs() ) );
