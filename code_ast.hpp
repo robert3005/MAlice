@@ -57,7 +57,8 @@ class SimpleNode{
 
 class Node : public SimpleNode{
 	public:
-		Node(){};
+		virtual Node(){};
+		virtual ~Node(){};
 		Node( SimpleNode& );
 		virtual llvm::Value *codeGen() = 0;
 		void addChild( Node* ){};
