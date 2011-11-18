@@ -197,6 +197,7 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 
 void Node::addChild( Node* n ){
 	children.push_back(n);
+	printf("Add child %d\n", n -> getId() );
 }
 
 VarType Node::getVarType(){
