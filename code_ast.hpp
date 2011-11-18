@@ -7,6 +7,7 @@
 #include <utility>
 #include <list>
 
+#include "llvm/APInt.h"
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
 #include "llvm/DerivedTypes.h"
