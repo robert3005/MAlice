@@ -107,7 +107,6 @@ int main(){
 
 	dataFromParser = codeGen -> parse( rawDataFromParser );
 
-
 	if( DEBUG ){
 		map<int, SimpleNode*>::iterator it;
 		for( it = dataFromParser.begin(); it != dataFromParser.end(); it++ ){
@@ -117,13 +116,15 @@ int main(){
 
 	Node * ast = Node::createAST( dataFromParser );
 
-	if( DEBUG ){
-		map<int, SimpleNode*>::iterator it;
-		for( it = dataFromParser.begin(); it != dataFromParser.end(); it++ ){
-			(*it).second -> debug();
-		}
-	}
+	theModule = makeLLVMModule( ast );
 
+	//verifyModule( *theModule, PrintMessageAction );
+
+	//PassManager PM;
+	//PM.add( createPrintModulePass( &outs() ) );
+	//PM.run( *theModule );
+
+	delete Mod;
 	delete codeGen;
 	return 0;
 }
