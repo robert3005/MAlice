@@ -260,7 +260,7 @@ Value* OPNode::codeGen(){
 	lhs = children[0] -> codeGen();
 	rhs = children[1] -> codeGen();
 	
-	/*switch( this -> op ){
+	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;
 		case OR: return OPNode::codeGenADD( *this ); break;
 		case XOR: return OPNode::codeGenADD( *this ); break;
@@ -270,7 +270,7 @@ Value* OPNode::codeGen(){
 		case DIV: return OPNode::codeGenADD( *this ); break;
 		case UNR: return OPNode::codeGenADD( *this ); break;
 		case NEG: return OPNode::codeGenADD( *this ); break;
-	}*/
+	}
 }
 
 Value* OPNode::codeGenADD( OPNode & n ){
