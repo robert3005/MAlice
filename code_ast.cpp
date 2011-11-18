@@ -248,7 +248,7 @@ Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
 	printf("CONSTNode::codeGenNUMBER CG\n");
-	return ConstantInt::get( Type::getInt32Ty( theModule -> getContext() ), n.getValueNumber() );
+	return ConstantInt::get( Type::getInt32Ty( theModule -> getContext() ), 2 );
 }
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){
