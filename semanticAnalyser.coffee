@@ -1,19 +1,19 @@
 module.exports = (() ->
 	rbtree = require './rbtree.coffee'
 
-	analyzer =
-		analyze: (parseTree) ->
+	analyser =
+		analyse: (parseTree) ->
 			 return parseTree
 		buildtree: () ->
 		
 
-	analyzer.SemanticError = (message, line, column) ->
+	analyser.SemanticError = (message, line, column) ->
     	@name = 'SemanticError'
     	@message = message
     	@line = line
     	@column = column
 
-	analyzer.SemanticError.prototype = Error.prototype;
+	analyser.SemanticError.prototype = Error.prototype;
 
-	return analyzer
+	return analyser
 )()

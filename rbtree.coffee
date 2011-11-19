@@ -10,6 +10,8 @@ module.exports = (() ->
 		@left = null
 		@right = null
 		@parent = null
+		@functionName = null
+		@argumentsTypes = []
 
 
 	class RBTree

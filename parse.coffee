@@ -1,16 +1,16 @@
 parser = require './parser.js'
-semantics = require './semanticAnalyzer.coffee'
+semantics = require './semanticAnalyser.coffee'
 sys = require 'sys'
 fs = require 'fs'
 
 arguments = process.argv.splice 2
 
 source = fs.readFileSync arguments[0], 'utf-8'
-source = source.replace /[ \t\r]{2,}/g, ' '
+source = source.replace /([ ]{2,}|[\t\r]+)/g, ' '
 
 try
 	parseTree = parser.parse source
-	labelTree = semantics.analyze parseTree
+	labelTree = semantics.analyse parseTree
 catch e
 	if e instanceof parser.SyntaxError
 		e
@@ -21,4 +21,4 @@ catch e
 	console.log e
 
 
-console.log parseTree
+console.log labelTree
