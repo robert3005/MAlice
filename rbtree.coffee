@@ -1,7 +1,9 @@
-BLACK = 1
-RED = 2
+module.exports = () ->
 
-class RBNode
+	BLACK = 1
+	RED = 2
+
+	class RBNode
 	constructor: ->
 		@key = null
 		@color = null
@@ -10,7 +12,7 @@ class RBNode
 		@parent = null
 
 
-class RBTree
+	class RBTree
 	constructor: ->
 		@nil = new RBNode
 		nil.color = BLACK
@@ -46,7 +48,7 @@ class RBTree
 		nodeIn.right = @nil
 		nodeIn.color = RED
 		rbInsertFixup nodeIn		
-	
+
 	leftRotate: (node1) ->
 		node2 = node1.right
 		node1.right = node2.left
@@ -110,4 +112,3 @@ class RBTree
 					node.parent.parent.color = RED
 					leftRotate node
 		@root.color = BLACK
-		
