@@ -1,4 +1,4 @@
-module.exports = () ->
+module.exports = (() ->
 
 	BLACK = 1
 	RED = 2
@@ -112,3 +112,4 @@ module.exports = () ->
 					node.parent.parent.color = RED
 					leftRotate node
 		@root.color = BLACK
+)()
