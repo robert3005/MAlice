@@ -80,7 +80,7 @@ void makeLLVMModule( Node & ast ){
   	// Create the add instruction... does not insert...
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-	Instruction * root = cast<Instruction>( *ast.codeGen() );
+	Instruction * root = &cast<Instruction>( *ast.codeGen() );
 
 	BB->getInstList().push_back( root );
 
