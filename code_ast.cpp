@@ -275,31 +275,31 @@ Value* OPNode::codeGen(){
 
 Value* OPNode::codeGenADD( OPNode & n ){
 	printf("OPNode::codeGenADD CG\n");
-	return Builder.CreateAdd( n.lhs, n.rhs );
+	return ->CreateAdd( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
-	return Builder.CreateOr( n.lhs, n.rhs );
+	return Builder->CreateOr( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenXOR( OPNode & n ){
-	return Builder.CreateXor( n.lhs, n.rhs );
+	return Builder->CreateXor( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenAND( OPNode & n ){
-	return Builder.CreateAnd( n.lhs, n.rhs );
+	return Builder->CreateAnd( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenSUB( OPNode & n ){
-	return Builder.CreateSub( n.lhs, n.rhs );
+	return Builder->CreateSub( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenMUL( OPNode & n ){
-	return Builder.CreateMul( n.lhs, n.rhs );
+	return Builder->CreateMul( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenDIV( OPNode & n ){
-	return Builder.CreateUDiv( n.lhs, n.rhs ); //unsigned 
+	return Builder->CreateUDiv( n.lhs, n.rhs ); //unsigned 
 }
 
 Value* OPNode::codeGenUNR( OPNode & n ){
@@ -308,5 +308,5 @@ Value* OPNode::codeGenUNR( OPNode & n ){
 }
 
 Value* OPNode::codeGenNEG( OPNode & n ){
-	return Builder.CreateNeg( n.lhs );
+	return Builder->CreateNeg( n.lhs );
 }
