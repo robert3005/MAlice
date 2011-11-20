@@ -69,8 +69,10 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
-	//Function *F = Function::Create(FT, Function::ExternalLinkage, "main", M);
-	//Builder(block);
+	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
+	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
+	BasicBlock *BB = BasicBlock::Create(Context, "EntryBlock", F);
+	//Builder(BB);
 
 	ast.codeGen();
 
