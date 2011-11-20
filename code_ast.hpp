@@ -107,7 +107,7 @@ class OPNode : public Node{
 		llvm::Value *lhs;
 		llvm::Value *rhs;
 
-		static llvm::Instruction *codeGenADD( OPNode& );
+		static llvm::Value *codeGenADD( OPNode& );
 		static llvm::Value *codeGenOR( OPNode& );
 		static llvm::Value *codeGenXOR( OPNode& );
 		static llvm::Value *codeGenAND( OPNode& );

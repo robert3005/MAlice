@@ -273,7 +273,7 @@ Value* OPNode::codeGen(){
 	}
 }
 
-Instruction* OPNode::codeGenADD( OPNode & n ){
+Value* OPNode::codeGenADD( OPNode & n ){
 	printf("OPNode::codeGenADD CG\n");
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
