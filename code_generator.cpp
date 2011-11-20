@@ -72,7 +72,7 @@ void makeLLVMModule( Node & ast ){
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
 	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
 	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "EntryBlock", F);
-	Builder(BB);
+	Builder = IRBuilder<>(BB);
 
 	ast.codeGen();
 
