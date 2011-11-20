@@ -80,12 +80,12 @@ void makeLLVMModule( Node & ast ){
   	// Create the add instruction... does not insert...
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-	Instruction * root = &cast<Instruction>( *ast.codeGen() );
+	Instruction * root = dynamic_cast<Instruction>( ast.codeGen() );
 
-	BB->getInstList().push_back( Three );
+	BB->getInstList().push_back( root );
 
   	// Create the return instruction and add it to the basic block
-  	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), Three));
+  	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
 }
 
 int main(){
