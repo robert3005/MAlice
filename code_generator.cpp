@@ -82,10 +82,10 @@ void makeLLVMModule( Node & ast ){
 
 	Instruction * root = &cast<Instruction>( *ast.codeGen() );
 
-	BB->getInstList().push_back( root );
+	BB->getInstList().push_back( Three );
 
   	// Create the return instruction and add it to the basic block
-  	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
+  	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), Three));
 }
 
 int main(){
