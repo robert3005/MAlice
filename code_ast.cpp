@@ -262,20 +262,22 @@ Value* OPNode::codeGen(){
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;
-		case OR: return OPNode::codeGenADD( *this ); break;
-		case XOR: return OPNode::codeGenADD( *this ); break;
-		case AND: return OPNode::codeGenADD( *this ); break;
-		case SUB: return OPNode::codeGenADD( *this ); break;
-		case MUL: return OPNode::codeGenADD( *this ); break;
-		case DIV: return OPNode::codeGenADD( *this ); break;
-		case UNR: return OPNode::codeGenADD( *this ); break;
-		case NEG: return OPNode::codeGenADD( *this ); break;
+		case OR: return OPNode::codeGenOR( *this ); break;
+		case XOR: return OPNode::codeGenXOR( *this ); break;
+		case AND: return OPNode::codeGenAND( *this ); break;
+		case SUB: return OPNode::codeGenSUB( *this ); break;
+		case MUL: return OPNode::codeGenMUL( *this ); break;
+		case DIV: return OPNode::codeGenDIV( *this ); break;
+		case UNR: return OPNode::codeGenUNR( *this ); break;
+		case NEG: return OPNode::codeGenNEG( *this ); break;
 	}
 }
 
 Value* OPNode::codeGenADD( OPNode & n ){
 	printf("OPNode::codeGenADD CG\n");
-	return Builder.CreateAdd( n.lhs, n.rhs );
+	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
+  	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
+	return Builder.CreateAdd( Two, Three );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
