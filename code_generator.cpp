@@ -78,10 +78,9 @@ void makeLLVMModule( Node & ast ){
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
 
   	// Create the add instruction... does not insert...
-  	Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three,
-                                            "addresult");
+  	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-	//Instruction * root = cast<Instruction>(ast.codeGen());
+	Instruction * root = cast<Instruction*>( ast.codeGen() );
 
 	BB->getInstList().push_back( root );
 
