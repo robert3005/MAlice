@@ -69,9 +69,9 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
-	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", M);
-	Builder(block);
-	
+	//Function *F = Function::Create(FT, Function::ExternalLinkage, "main", M);
+	//Builder(block);
+
 	ast.codeGen();
 
 }
