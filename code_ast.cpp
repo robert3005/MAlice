@@ -49,10 +49,10 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 }
 
 void SimpleNode::debug(){
-	printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
+	//printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
 }
 void Node::debug(){
-	printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString.c_str() );
+	//printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString.c_str() );
 }
 
 
@@ -125,7 +125,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 	//build AST :)
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
-		printf("%d %d\n", ( *conIt ).first, ( *conIt ).second);
+		//printf("%d %d\n", ( *conIt ).first, ( *conIt ).second);
 		
 		if( nodes.find( ( *conIt ).first ) != nodes.end() && nodes.find( ( *conIt ).second ) != nodes.end() ){
 			nodes[( *conIt ).first] -> addChild( nodes[( *conIt ).second] ); // always add to the right
@@ -192,7 +192,7 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 		i++;
 	}
 
-	printf( "Create CONSTNode id: %d type: %d", node -> getId(), node -> getVarType() );
+	//printf( "Create CONSTNode id: %d type: %d", node -> getId(), node -> getVarType() );
 
 	return node;
 
@@ -200,7 +200,7 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 
 void Node::addChild( Node* n ){
 	children.push_back(n);
-	printf("Add child %d\n", n -> getId() );
+	//printf("Add child %d\n", n -> getId() );
 }
 
 VarType Node::getVarType(){
@@ -233,7 +233,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 }
 
 Value* CONSTNode::codeGen(){
-	printf("CONSTNode CG\n");
+	//printf("CONSTNode CG\n");
 	/*switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
@@ -242,12 +242,12 @@ Value* CONSTNode::codeGen(){
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
-	printf("CONSTNode::codeGenSTRING CG\n");
+	//printf("CONSTNode::codeGenSTRING CG\n");
 	return ConstantArray::get( theModule -> getContext(), n.getValueString(), true);
 }
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
-	printf("CONSTNode::codeGenNUMBER CG %d\n", n.getValueNumber());
+	//printf("CONSTNode::codeGenNUMBER CG %d\n", n.getValueNumber());
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), n.getValueNumber() );
 }
 
@@ -256,7 +256,7 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 }
 
 Value* OPNode::codeGen(){
-	printf("OPNode CG\n");
+	//printf("OPNode CG\n");
 	lhs = children[0] -> codeGen();
 	rhs = children[1] -> codeGen();
 	
@@ -274,14 +274,12 @@ Value* OPNode::codeGen(){
 }
 
 Value* OPNode::codeGenADD( OPNode & n ){
-	printf("OPNode::codeGenADD CG\n");
-	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
-  	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
+	//printf("OPNode::codeGenADD CG\n");
 	return BinaryOperator::Create(Instruction::Add, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
-	return Builder.CreateOr( n.lhs, n.rhs );
+	return BinaryOperator::Create(Instruction::Or, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenXOR( OPNode & n ){
