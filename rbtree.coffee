@@ -4,15 +4,11 @@ module.exports = (() ->
 	RED = 2
 
 	class RBNode
-	constructor: ->
-		@key = null
+	constructor: (@key, @argumentsType) ->
 		@color = null
 		@left = null
 		@right = null
 		@parent = null
-		@functionName = null
-		@argumentsTypes = []
-
 
 	class RBTree
 	constructor: ->
