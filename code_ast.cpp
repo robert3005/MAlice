@@ -257,8 +257,8 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 
 Value* OPNode::codeGen(){
 	printf("OPNode CG\n");
-	lhs = children[0] -> codeGen();
-	rhs = children[1] -> codeGen();
+	//lhs = children[0] -> codeGen();
+	//rhs = children[1] -> codeGen();
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;
@@ -273,7 +273,7 @@ Value* OPNode::codeGen(){
 	}
 }
 
-Value* OPNode::codeGenADD( OPNode & n ){
+Instruction* OPNode::codeGenADD( OPNode & n ){
 	printf("OPNode::codeGenADD CG\n");
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
