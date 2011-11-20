@@ -277,7 +277,7 @@ Value* OPNode::codeGenADD( OPNode & n ){
 	printf("OPNode::codeGenADD CG\n");
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
-	return BinaryOperator::Create(Instruction::Add, Two, Three );
+	return Builder.CreateAdd( Two, Three );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
