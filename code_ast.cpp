@@ -275,7 +275,7 @@ Value* OPNode::codeGen(){
 
 Value* OPNode::codeGenADD( OPNode & n ){
 	printf("OPNode::codeGenADD CG\n");
-	return ->CreateAdd( n.lhs, n.rhs );
+	return Builder->CreateAdd( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
