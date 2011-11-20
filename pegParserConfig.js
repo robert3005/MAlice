@@ -48,9 +48,9 @@ root
 / single:assignment newLine { return single }
 
 assignment
-= space identifier:id space name:function_name space type:typeName { return createNode( NODE_OP, name, identifier, type ) }
- / space identifier:id space name:function_name expr:expression { return createNode( NODE_OP, name, identifier, expr ) }
-/ space identifier:id space 'spoke' { return createNode( NODE_OP, OP_RETURN, identifier) }
+= space identifier:id space name:function_name space type:typeName { return createNode( NODE_TYPE, name, identifier, type ) }
+ / space identifier:id space name:function_name expr:expression { return createNode( NODE_VAR, name, identifier, expr ) }
+/ space identifier:id space 'spoke' { return createNode( NODE_VAR, OP_RETURN, identifier) }
 
 
 expression
@@ -91,8 +91,8 @@ primitive_expression
 / '(' expr:expression ')'
 
 typeName
-= type:'letter' { return createNode( NODE_TYPE, type) }
-/ type:'number' { return createNode( NODE_TYPE, type) }
+= type:'letter'
+/ type:'number'
 
 id
 = identifier:([A-Za-z_]+) { return identifier.join("") }
