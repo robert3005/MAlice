@@ -100,22 +100,22 @@ class OPNode : public Node{
 	public:
 		OPNode(){};
 		OPNode( SimpleNode& );
-		llvm::Value *codeGen();
+		llvm::Instruction *codeGen();
 
 	protected:
 
 		llvm::Value *lhs;
 		llvm::Value *rhs;
 
-		static llvm::Value *codeGenADD( OPNode& );
-		static llvm::Value *codeGenOR( OPNode& );
-		static llvm::Value *codeGenXOR( OPNode& );
-		static llvm::Value *codeGenAND( OPNode& );
-		static llvm::Value *codeGenSUB( OPNode& ); 
-		static llvm::Value *codeGenMUL( OPNode& );
-		static llvm::Value *codeGenDIV( OPNode& );
-		static llvm::Value *codeGenUNR( OPNode& );
-		static llvm::Value *codeGenNEG( OPNode& );
+		static llvm::Instruction *codeGenADD( OPNode& );
+		static llvm::Instruction *codeGenOR( OPNode& );
+		static llvm::Instruction *codeGenXOR( OPNode& );
+		static llvm::Instruction *codeGenAND( OPNode& );
+		static llvm::Instruction *codeGenSUB( OPNode& ); 
+		static llvm::Instruction *codeGenMUL( OPNode& );
+		static llvm::Instruction *codeGenDIV( OPNode& );
+		static llvm::Instruction *codeGenUNR( OPNode& );
+		static llvm::Instruction *codeGenNEG( OPNode& );
 };
 
 class VARNode : public Node{
