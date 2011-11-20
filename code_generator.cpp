@@ -74,9 +74,9 @@ void makeLLVMModule( Node & ast ){
 	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "EntryBlock", F);
 	Builder = new IRBuilder<>(BB);
 
-	Instruction * root = ast.codeGen();
+	Value * root = ast.codeGen();
 
-	BB->getInstList().push_back( root );
+	BB->getInstList().push_back( (Instruction)root );
 
   	// Create the return instruction and add it to the basic block
   	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
