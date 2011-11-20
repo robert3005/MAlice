@@ -69,33 +69,12 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
-
+	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", M);
+	Builder(block);
+	
 	ast.codeGen();
 
 }
-/*
-int main(){
-	CodeGenerator = new CodeGenerator();
-	std::string rawDataFromParser = "0#OP#ADD#1,2#1,2|1#CONST#NONE##1|2#CONST#NONE##2";
-	std::map<int, SimpleNode> dataFromParser;
-
-	//read data input
-
-	dataFromParser = CodeGenerator.parse( rawDataFromParser );
-	Node ast = Node::generateAST( dataFromParser );
-
-	Module* Mod = makeLLVMModule( ast );
-
-	verifyModule( *Mod, PrintMessageAction );
-
-	PassManager PM;
-	PM.add( createPrintModulePass( &outs() ) );
-	PM.run( *Mod );
-
-	delete Mod;
-	return 0;
-
-}*/
 
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
