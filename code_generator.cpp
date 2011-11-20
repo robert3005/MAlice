@@ -72,15 +72,14 @@ void makeLLVMModule( Node & ast ){
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
 	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
 	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "EntryBlock", F);
-	Builder = new IRBuilder<>(BB);
+	Builder.SetInsertPoint(BB);
 
-	Instruction * root = &(Instruction)(*ast.codeGen());
+	Instruction * root = cast<Instruction>(ast.codeGen());
 
 	BB->getInstList().push_back( root );
 
   	// Create the return instruction and add it to the basic block
   	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
-
 }
 
 int main(){
