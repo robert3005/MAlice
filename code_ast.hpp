@@ -22,7 +22,7 @@ enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG};
 enum VarType {STRING = 0, NUMBER};
 
 static llvm::Module *theModule;
-static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
+static llvm::IRBuilder<> Builder;
 /*
 typedef Value* Valueptr
 typedef Value * (*OPGenFunction)( *Module, *Builder );
