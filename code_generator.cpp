@@ -97,7 +97,7 @@ int main(){
 	string rawDataFromParser;
 	//cin >> rawDataFromParser;
 	//string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
-	rawDataFromParser = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,3,|4#VAR#NONE#,y,5,|5#OP#MOD#3,2,|6#RET#NONE#y,|";
+	rawDataFromParser = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,3,|4#VAR#NONE#,y,5,|5#OP#ADD#3,1,|6#RET#NONE#y,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
