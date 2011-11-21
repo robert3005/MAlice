@@ -108,7 +108,7 @@ module.exports = (() ->
 						toString += "#{node.id}##{@nodeType node}##{@opType node}##{@tryLookup node.children[0]},|#{@changeToString node.children[0]}"
 					else toString += "#{node.id}##{@nodeType node}##{@opType node}##{@tryLookup node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[0]}#{@changeToString node.children[1]}"
 				# spoke, return statement
-				when 4 then toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},|"
+				when 4 then toString += "#{node.id}##{@nodeType node}##{@opType node}##{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
 				#else @getElementCommand node, counter
 			toString
