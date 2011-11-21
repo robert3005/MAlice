@@ -105,8 +105,8 @@ module.exports = (() ->
 
 		drankAte: (variable, func, counter) ->
 			switch func
-				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{@changeToString variable counter-1}|#{@changeToString 1 counter}"
-				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{@changeToString variable counter-1}|#{@changeToString 1 counter}"
+				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{@changeToString variable counter-1}|#{counter}#CONST#NONE#NUBMER,1,|"
+				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{@changeToString variable counter-1}|#{counter}#CONST#NONE#NUBMER,1,|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 
 		# TODO We can do the lookup in rbtree to check the type
