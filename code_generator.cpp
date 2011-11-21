@@ -78,7 +78,7 @@ void makeLLVMModule( Node & ast ){
 
   	Value * root = ast.codeGen();
   	root -> dump();
-  	Builder.CreateRet( root );
+  	//Builder.CreateRet( root );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
 }

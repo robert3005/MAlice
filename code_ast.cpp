@@ -354,7 +354,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 }
 
 Value* CONSTNode::codeGen(){
-	printf("CONSTNode::codeGen %d - %d\n", uniqueId, getValueNumber() );
+	printf("CONSTNode::codeGen %d\n", uniqueId );
 	/*switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
@@ -373,7 +373,7 @@ Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
 }
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
-	//printf("CONSTNode::codeGenNUMBER CG %d\n", n.getValueNumber());
+	printf("CONSTNode::codeGenNUMBER %d\n", n.getValueNumber());
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), n.getValueNumber() );
 }
 
@@ -395,7 +395,6 @@ Value * RETNode::codeGen(){
 	printf("RETNode::codeGen %d\n", uniqueId);
 	Value * v = mapOfIds[ getVarId() ] -> codeGen();
 	//Builder.CreateRet( v );
-	v -> dump();
 	return v;
 }
 
