@@ -20,7 +20,6 @@ module.exports = (() ->
 			console.log node
 			switch node.value
 				when 'was a '
-					console.log @checkTree.rbFind node.children[0]
 					if @checkTree.rbFind node.children[0] isnt null
 					then throw new analyser.SemanticError 'variable has been already declared'
 					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
@@ -39,7 +38,6 @@ module.exports = (() ->
 				else throw new analyser.SemanticError 'I do not recognise this function'
 
 		checkIfANumber: (strNum) ->
-			console.log strNum
 			if strNum isnt 'number'
 				throw new analyser.SemanticError 'This operation supports only numbers'
 
