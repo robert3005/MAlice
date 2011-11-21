@@ -202,7 +202,7 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 
 }
 
-Node * Node::creatTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	Node * node = new TYPENode( simpleNode );
 
 	std::size_t pos;
