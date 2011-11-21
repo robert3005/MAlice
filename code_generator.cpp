@@ -19,7 +19,7 @@
 #include "code_generator.hpp"
 #include "code_ast.hpp"
 
-#define DEBUG false
+#define DEBUG true
 
 using namespace llvm;
 using namespace std;

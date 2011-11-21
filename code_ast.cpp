@@ -120,7 +120,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 	//build AST :)
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
-		//printf("%d %d\n", ( *conIt ).first, ( *conIt ).second);
+		printf("%d %d\n", ( *conIt ).first, ( *conIt ).second);
 		
 		if( nodes.find( ( *conIt ).first ) != nodes.end() && nodes.find( ( *conIt ).second ) != nodes.end() ){
 			nodes[( *conIt ).first] -> addChild( nodes[( *conIt ).second] ); // always add to the right
@@ -225,7 +225,7 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 		i++;
 	}
 
-	//printf( "Create TYPENode id: %d type: %d", node -> getId(), node -> getVarType() );
+	printf( "Create TYPENode id: %d %d type: %d", node -> getId(), node -> getVarId(), node -> getVarType() );
 
 	return node;
 
@@ -265,7 +265,7 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 		i++;
 	}
 
-	//printf( "Create VARNode id: %d type: %d", node -> getId(), node -> getVarType() );
+	printf( "Create VARNode id: %d %d type: %d", node -> getId(), node -> getVarId(), node -> getVarType() );
 
 	return node;
 }
