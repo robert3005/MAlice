@@ -268,41 +268,6 @@ Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 	return node;
 }
 
-Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
-	Node * node = new TYPENode( simpleNode );
-
-	std::size_t pos;
-
-	string dataChunkRaw;
-	
-	string data = node -> getData(); 
-
-	int i = 0;
-
-	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
-		dataChunkRaw = data.substr( 0, pos );
-
-		if( i == 0 ){
-			if( dataChunkRaw.compare( "STRING" ) == 0 ){
-				node -> setVarType( STRING );
-			} else if( dataChunkRaw.compare( "NUMBER" ) == 0 ){
-				node -> setVarType( NUMBER );
-			}
-		} else if( i == 1 ){ 
-			node -> setVarId( dataChunkRaw );
-			mapOfTypes[ node -> getVarId() ] = node -> getVarType();
-		}
-
-		if(data.length() > pos) data = data.substr( pos + 1 );
-	
-		i++;
-	}
-
-	//printf( "Create TYPENode id: %d type: %d", node -> getId(), node -> getVarType() );
-
-	return node;
-}
-
 void Node::addChild( Node* n ){
 	children.push_back(n);
 	//printf("Add child %d\n", n -> getId() );

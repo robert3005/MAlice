@@ -133,14 +133,17 @@ class OPNode : public Node{
 };
 
 class VARNode : public Node{
-		public:
+	public:
 		VARNode();
 		VARNode( SimpleNode& s);
 		llvm::Value *codeGen();
+
+	protected:
+		llvm::Value *lhs;
 };
 
 class RETNode : public Node{
-		public:
+	public:
 		RETNode();
 		RETNode( SimpleNode& s);
 		llvm::Value *codeGen();
