@@ -1,0 +1,10 @@
+#!/bin/bash
+FILENAME=`basename $1 .alice`
+
+~/node_modules/coffee-script/bin/coffee parse.coffee $1 >alice.in     
+
+./cg <alice.in >alice.ll
+
+/usr/lib/llvm-2.8/bin/llc alice.ll
+
+gcc alice.s -o $FILENAME
