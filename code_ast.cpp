@@ -114,7 +114,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		it++;
 	}
 
-	/*
+	
 
 	//build AST :)
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
@@ -127,7 +127,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 			//ERROR: missing node?!
 		}
 	}
-	*/
+	
 	return root;
 }
 
