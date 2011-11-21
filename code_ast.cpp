@@ -280,7 +280,7 @@ Value* OPNode::codeGenADD( OPNode & n ){
 	//printf("OPNode::codeGenADD CG\n");
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
-  	Value *Four = BinaryOperator::Create(Instruction::Add, Two, Three );
+  	Value *Four = Builder.CreateAdd( Two, Three );
   	
   	//BasicBlock *tmpBB = BasicBlock::Create(getGlobalContext(), "", 0, BB);
 	//tmpBB -> getInstList().push_back( Four );
