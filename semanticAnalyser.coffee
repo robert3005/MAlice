@@ -46,7 +46,7 @@ module.exports = (() ->
 		checkExpression: (node) ->
 			while node?.children[1]?.type is 0
 				@checkVarConst node.children[1].children[0]
-				node = node.children[1]
+				node = node?.children[1]
 			@checkVarConst node?.children[1]
 	
 		checkVarConst: (node) ->
@@ -61,7 +61,7 @@ module.exports = (() ->
 			then throw new analyser.SemanticError 'Variable has not been declared'
 
 		checkTypeNum: (variable) ->
-			if (@checkTree.rbFind variable).argumentsType isnt 'number'
+			if (@checkTree.rbFind variable)?.argumentsType isnt 'number'
 			then throw new analyser.SemanticError 'This function works only with numbers'
 
 		###
@@ -140,7 +140,7 @@ module.exports = (() ->
 				when 6 then "MUL"
 				when 7 then "DIV"
 				when 8 then "MOD"
-				when 9 then "UNR"
+				when 9 then "NOT"
 				when 10 then "NEG"
 				else "NONE"
 

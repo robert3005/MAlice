@@ -35,7 +35,7 @@ OP_SUB		= 5
 OP_MUL		= 6
 OP_DIV		= 7
 OP_MOD		= 8
-OP_UNR		= 9
+OP_NOT		= 9
 OP_NEG		= 10
 }
 
@@ -118,4 +118,5 @@ separator
 / ([ ]'but'[ ]){return 12}
 
 un_op
-= '~' { return OP_NEG }
+= '~' { return OP_NOT }
+/ '-' { return OP_NEG }
