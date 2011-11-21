@@ -123,7 +123,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 		nodes[ newNode -> getId() ] = newNode;
 
-		newNode -> codeGen() -> dump();
+		//newNode -> codeGen() -> dump();
 
 		it++;
 	}
@@ -390,7 +390,7 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 }
 
 Value * TYPENode::codeGen(){
-	
+	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 }
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
