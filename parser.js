@@ -247,7 +247,7 @@ module.exports = (function(){
           pos = savedPos7;
         }
         var result25 = result24 !== null
-          ? (function(identifier, name, type) { return createNode( NODE_TYPE, name, identifier, type ) })(result24[1], result24[3], result24[5])
+          ? (function(identifier, name, type) { counter++; return createNode( NODE_TYPE, name, identifier, type ) })(result24[1], result24[3], result24[5])
           : null;
         if (result25 !== null) {
           var result23 = result25;
@@ -292,7 +292,7 @@ module.exports = (function(){
             pos = savedPos5;
           }
           var result17 = result16 !== null
-            ? (function(identifier, name, expr) { return createNode( NODE_VAR, name, identifier, expr ) })(result16[1], result16[3], result16[4])
+            ? (function(identifier, name, expr) { counter++; return createNode( NODE_VAR, name, identifier, expr ) })(result16[1], result16[3], result16[4])
             : null;
           if (result17 !== null) {
             var result15 = result17;
@@ -331,7 +331,7 @@ module.exports = (function(){
               pos = savedPos3;
             }
             var result10 = result9 !== null
-              ? (function(identifier, name) { return createNode( NODE_VAR, name, identifier ) })(result9[1], result9[3])
+              ? (function(identifier, name) { counter++; return createNode( NODE_VAR, name, identifier ) })(result9[1], result9[3])
               : null;
             if (result10 !== null) {
               var result8 = result10;
@@ -378,7 +378,7 @@ module.exports = (function(){
                 pos = savedPos1;
               }
               var result3 = result2 !== null
-                ? (function(identifier) { return createNode( NODE_RETURN, 'spoke', identifier) })(result2[1])
+                ? (function(identifier) { counter++; return createNode( NODE_RETURN, 'spoke', identifier) })(result2[1])
                 : null;
               if (result3 !== null) {
                 var result1 = result3;
@@ -455,7 +455,7 @@ module.exports = (function(){
           pos = savedPos1;
         }
         var result4 = result3 !== null
-          ? (function(xorExpr, orExpr) { return createNode( NODE_OP, OP_OR, xorExpr, orExpr ) })(result3[0], result3[4])
+          ? (function(xorExpr, orExpr) { counter++; return createNode( NODE_OP, OP_OR, xorExpr, orExpr ) })(result3[0], result3[4])
           : null;
         if (result4 !== null) {
           var result2 = result4;
@@ -534,7 +534,7 @@ module.exports = (function(){
           pos = savedPos1;
         }
         var result4 = result3 !== null
-          ? (function(andExpr, xorExpr) { return createNode( NODE_OP, OP_XOR, andExpr, xorExpr ) })(result3[0], result3[4])
+          ? (function(andExpr, xorExpr) { counter++; return createNode( NODE_OP, OP_XOR, andExpr, xorExpr ) })(result3[0], result3[4])
           : null;
         if (result4 !== null) {
           var result2 = result4;
@@ -613,7 +613,7 @@ module.exports = (function(){
           pos = savedPos1;
         }
         var result4 = result3 !== null
-          ? (function(addExpr, andExpr) { return createNode( NODE_OP, OP_AND, addExpr, andExpr) })(result3[0], result3[4])
+          ? (function(addExpr, andExpr) { counter++; return createNode( NODE_OP, OP_AND, addExpr, andExpr) })(result3[0], result3[4])
           : null;
         if (result4 !== null) {
           var result2 = result4;
@@ -692,7 +692,7 @@ module.exports = (function(){
           pos = savedPos3;
         }
         var result12 = result11 !== null
-          ? (function(mulExpr, addExpr) { return createNode(NODE_OP, OP_ADD, mulExpr, addExpr) })(result11[0], result11[4])
+          ? (function(mulExpr, addExpr) { counter++; return createNode(NODE_OP, OP_ADD, mulExpr, addExpr) })(result11[0], result11[4])
           : null;
         if (result12 !== null) {
           var result10 = result12;
@@ -745,7 +745,7 @@ module.exports = (function(){
             pos = savedPos1;
           }
           var result4 = result3 !== null
-            ? (function(mulExpr, addExpr) { return createNode(NODE_OP, OP_SUB, mulExpr, addExpr ) })(result3[0], result3[4])
+            ? (function(mulExpr, addExpr) { counter++; return createNode(NODE_OP, OP_SUB, mulExpr, addExpr ) })(result3[0], result3[4])
             : null;
           if (result4 !== null) {
             var result2 = result4;
@@ -825,7 +825,7 @@ module.exports = (function(){
           pos = savedPos5;
         }
         var result20 = result19 !== null
-          ? (function(unExpr, mulExpr) { return createNode(NODE_OP, OP_MUL, unExpr, mulExpr) })(result19[0], result19[4])
+          ? (function(unExpr, mulExpr) { counter++; return createNode(NODE_OP, OP_MUL, unExpr, mulExpr) })(result19[0], result19[4])
           : null;
         if (result20 !== null) {
           var result18 = result20;
@@ -878,7 +878,7 @@ module.exports = (function(){
             pos = savedPos3;
           }
           var result12 = result11 !== null
-            ? (function(unExpr, mulExpr) { return createNode(NODE_OP, OP_DIV, unExpr, mulExpr) })(result11[0], result11[4])
+            ? (function(unExpr, mulExpr) { counter++; return createNode(NODE_OP, OP_DIV, unExpr, mulExpr) })(result11[0], result11[4])
             : null;
           if (result12 !== null) {
             var result10 = result12;
@@ -931,7 +931,7 @@ module.exports = (function(){
               pos = savedPos1;
             }
             var result4 = result3 !== null
-              ? (function(unExpr, mulExpr) { return createNode(NODE_OP, OP_MOD, unExpr, mulExpr) })(result3[0], result3[4])
+              ? (function(unExpr, mulExpr) { counter++; return createNode(NODE_OP, OP_MOD, unExpr, mulExpr) })(result3[0], result3[4])
               : null;
             if (result4 !== null) {
               var result2 = result4;
@@ -986,7 +986,7 @@ module.exports = (function(){
           pos = savedPos1;
         }
         var result4 = result3 !== null
-          ? (function(unOP, primExpr) { return createNode(NODE_OP, unOP, primExpr ) })(result3[0], result3[1])
+          ? (function(unOP, primExpr) { counter++; return createNode(NODE_OP, unOP, primExpr ) })(result3[0], result3[1])
           : null;
         if (result4 !== null) {
           var result2 = result4;
@@ -1025,128 +1025,144 @@ module.exports = (function(){
         
         var savedPos3 = pos;
         if (input.substr(pos).match(/^[0-9]/) !== null) {
-          var result15 = input.charAt(pos);
+          var result16 = input.charAt(pos);
           pos++;
         } else {
-          var result15 = null;
+          var result16 = null;
           if (reportMatchFailures) {
             matchFailed("[0-9]");
           }
         }
-        if (result15 !== null) {
-          var result13 = [];
-          while (result15 !== null) {
-            result13.push(result15);
+        if (result16 !== null) {
+          var result14 = [];
+          while (result16 !== null) {
+            result14.push(result16);
             if (input.substr(pos).match(/^[0-9]/) !== null) {
-              var result15 = input.charAt(pos);
+              var result16 = input.charAt(pos);
               pos++;
             } else {
-              var result15 = null;
+              var result16 = null;
               if (reportMatchFailures) {
                 matchFailed("[0-9]");
               }
             }
           }
         } else {
-          var result13 = null;
+          var result14 = null;
         }
-        var result14 = result13 !== null
-          ? (function(num) { return createNode( NODE_CONST, num.join(""), 'number' ) })(result13)
+        var result15 = result14 !== null
+          ? (function(num) { counter++; return createNode( NODE_CONST, num.join(""), 'number' ) })(result14)
           : null;
-        if (result14 !== null) {
-          var result12 = result14;
+        if (result15 !== null) {
+          var result13 = result15;
         } else {
-          var result12 = null;
+          var result13 = null;
           pos = savedPos3;
         }
-        if (result12 !== null) {
-          var result0 = result12;
+        if (result13 !== null) {
+          var result0 = result13;
         } else {
           var savedPos1 = pos;
           var savedPos2 = pos;
           if (input.substr(pos).match(/^[']/) !== null) {
-            var result9 = input.charAt(pos);
+            var result10 = input.charAt(pos);
             pos++;
           } else {
-            var result9 = null;
+            var result10 = null;
             if (reportMatchFailures) {
               matchFailed("[']");
             }
           }
-          if (result9 !== null) {
+          if (result10 !== null) {
             if (input.substr(pos).match(/^[^']/) !== null) {
-              var result10 = input.charAt(pos);
+              var result11 = input.charAt(pos);
               pos++;
             } else {
-              var result10 = null;
+              var result11 = null;
               if (reportMatchFailures) {
                 matchFailed("[^']");
               }
             }
-            if (result10 !== null) {
+            if (result11 !== null) {
               if (input.substr(pos).match(/^[']/) !== null) {
-                var result11 = input.charAt(pos);
+                var result12 = input.charAt(pos);
                 pos++;
               } else {
-                var result11 = null;
+                var result12 = null;
                 if (reportMatchFailures) {
                   matchFailed("[']");
                 }
               }
-              if (result11 !== null) {
-                var result7 = [result9, result10, result11];
+              if (result12 !== null) {
+                var result8 = [result10, result11, result12];
               } else {
-                var result7 = null;
+                var result8 = null;
                 pos = savedPos2;
               }
             } else {
-              var result7 = null;
+              var result8 = null;
               pos = savedPos2;
             }
           } else {
-            var result7 = null;
+            var result8 = null;
             pos = savedPos2;
           }
-          var result8 = result7 !== null
-            ? (function(letter) { return createNode( NODE_CONST, letter[1], 'letter' ) })(result7)
+          var result9 = result8 !== null
+            ? (function(letter) {counter++; return createNode( NODE_CONST, letter[1], 'letter' ) })(result8)
             : null;
-          if (result8 !== null) {
-            var result6 = result8;
+          if (result9 !== null) {
+            var result7 = result9;
           } else {
-            var result6 = null;
+            var result7 = null;
             pos = savedPos1;
           }
-          if (result6 !== null) {
-            var result0 = result6;
+          if (result7 !== null) {
+            var result0 = result7;
           } else {
-            var result5 = parse_id();
-            if (result5 !== null) {
-              var result0 = result5;
+            var result6 = parse_id();
+            if (result6 !== null) {
+              var result0 = result6;
             } else {
-              var savedPos0 = pos;
-              if (input.substr(pos, 1) === "(") {
-                var result2 = "(";
-                pos += 1;
+              if (input.substr(pos, 0) === "") {
+                var result5 = "";
+                pos += 0;
               } else {
-                var result2 = null;
+                var result5 = null;
                 if (reportMatchFailures) {
-                  matchFailed("\"(\"");
+                  matchFailed("\"\"");
                 }
               }
-              if (result2 !== null) {
-                var result3 = parse_or_expression();
-                if (result3 !== null) {
-                  if (input.substr(pos, 1) === ")") {
-                    var result4 = ")";
-                    pos += 1;
-                  } else {
-                    var result4 = null;
-                    if (reportMatchFailures) {
-                      matchFailed("\")\"");
-                    }
+              if (result5 !== null) {
+                var result0 = result5;
+              } else {
+                var savedPos0 = pos;
+                if (input.substr(pos, 1) === "(") {
+                  var result2 = "(";
+                  pos += 1;
+                } else {
+                  var result2 = null;
+                  if (reportMatchFailures) {
+                    matchFailed("\"(\"");
                   }
-                  if (result4 !== null) {
-                    var result1 = [result2, result3, result4];
+                }
+                if (result2 !== null) {
+                  var result3 = parse_or_expression();
+                  if (result3 !== null) {
+                    if (input.substr(pos, 1) === ")") {
+                      var result4 = ")";
+                      pos += 1;
+                    } else {
+                      var result4 = null;
+                      if (reportMatchFailures) {
+                        matchFailed("\")\"");
+                      }
+                    }
+                    if (result4 !== null) {
+                      var result1 = [result2, result3, result4];
+                    } else {
+                      var result1 = null;
+                      pos = savedPos0;
+                    }
                   } else {
                     var result1 = null;
                     pos = savedPos0;
@@ -1155,14 +1171,11 @@ module.exports = (function(){
                   var result1 = null;
                   pos = savedPos0;
                 }
-              } else {
-                var result1 = null;
-                pos = savedPos0;
-              }
-              if (result1 !== null) {
-                var result0 = result1;
-              } else {
-                var result0 = null;;
+                if (result1 !== null) {
+                  var result0 = result1;
+                } else {
+                  var result0 = null;;
+                };
               };
             };
           };
@@ -2139,9 +2152,13 @@ module.exports = (function(){
       
       
       
+counter = 0
+      
 function NODE()
       
 {
+      
+var id;
       
 	var type;
       
@@ -2160,6 +2177,8 @@ function createNode( type, value, children )
 {
       
 	var n = new NODE();
+      
+n.id = counter;
       
 	n.type = type;
       
@@ -2271,4 +2290,4 @@ OP_NEG		= 10
   result.SyntaxError.prototype = Error.prototype;
   
   return result;
-})()
+})();
