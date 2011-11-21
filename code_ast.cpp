@@ -261,7 +261,7 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 			}
 		} else if( i == 1 ){ 
 			node -> setVarId( dataChunkRaw );
-			mapOfTypes[ node -> geVarId() ] = node -> getVarType();
+			mapOfTypes[ node -> getVarId() ] = node -> getVarType();
 		}
 
 		if(data.length() > pos) data = data.substr( pos + 1 );
