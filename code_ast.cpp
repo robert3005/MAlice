@@ -123,7 +123,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 
 		nodes[ newNode -> getId() ] = newNode;
 
-		newNode -> codeGen -> dump();
+		newNode -> codeGen() -> dump();
 
 		it++;
 	}
