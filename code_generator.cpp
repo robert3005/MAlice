@@ -76,24 +76,24 @@ void makeLLVMModule( Node & ast ){
 
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-  	Value * root = ast.codeGen();
-/*
+  	//Value * root = ast.codeGen();
+
 	Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
 	
-	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
-	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
+	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+	IRBuilder<> TmpB(BB, BB.begin());
+	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty( getGlobalContext() ), 0);
     Builder.CreateStore(Two, Alloca);
 
     Value * V = Alloca;
 
 	Value *CurVar = Builder.CreateLoad(V);
 		
-	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
-	Value * add = Builder.CreateAdd( root, Three );
-*/
+	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 6 );
+	Value * add = Builder.CreateAdd( CurVar, Three );
+
   	//root -> dump();
-  	Builder.CreateRet( root );
+  	Builder.CreateRet( add );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
 }
