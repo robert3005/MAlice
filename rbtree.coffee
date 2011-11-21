@@ -82,7 +82,7 @@ module.exports = (() ->
 			while node.parent.color is RED
 				if node.parent is node.parent.parent.left
 					uncle = node.parent.parent.right
-					if uncle.color is RED
+					if uncle?.color is RED
 						node.parent.color = BLACK
 						uncle.color = BLACK
 						node.parent.parent.color = RED
@@ -90,13 +90,13 @@ module.exports = (() ->
 					else
 						if node is node.parent.right
 							node = node.parent
-							leftRotate node
+							@leftRotate node
 						node.parent.color = BLACK
 						node.parent.parent.color = RED
-						rigthRotate node
+						@rightRotate node
 				else
 					uncle = node.parent.parent.left
-					if uncle.color is RED
+					if uncle?.color is RED
 						node.parent.color = BLACK
 						uncle.color = BLACK
 						node.parent.parent.color = RED
@@ -104,10 +104,10 @@ module.exports = (() ->
 					else
 						if node is node.parent.left
 							node = node.parent
-							rightRotate node
+							@rightRotate node
 						node.parent.color = BLACK
 						node.parent.parent.color = RED
-						leftRotate node
+						@leftRotate node
 			@root.color = BLACK
 	return [RBTree, RBTNode]
 )()
