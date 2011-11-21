@@ -81,7 +81,6 @@ void makeLLVMModule( Node & ast ){
 	Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
 	
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	InitVal = ConstantFP::get(getGlobalContext(), APFloat(0.0));
 
 	IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
 	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
