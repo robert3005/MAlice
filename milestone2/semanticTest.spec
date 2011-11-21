@@ -1,6 +1,6 @@
 ex1.alice:pass
-ex2.alice:pass
-ex3.alice:pass
+ex2.alice:fail
+ex3.alice:fail
 ex4.alice:pass
 ex5.alice:pass
 ex6.alice:pass
@@ -12,7 +12,7 @@ ex11.alice:pass
 ex12.alice:pass
 ex13.alice:pass
 ex14.alice:pass
-ex15.alice:pass
+ex15.alice:fail
 ex16.alice:fail
 ex17.alice:pass
 ex101.alice:pass
@@ -24,7 +24,7 @@ ex107.alice:pass
 ex108.alice:fail
 ex109.alice:fail
 ex110.alice:pass
-ex111.alice:pass
+ex111.alice:fail
 ex112.alice:pass
 ex113.alice:pass
 ex114.alice:fail

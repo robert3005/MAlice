@@ -10,9 +10,10 @@ module.exports = (() ->
 			switch node.value
 				when 'was a '
 					@checkVarName node.children[0]
-					if @checkTree.rbFind node.children[0] isnt null
-					then throw new analyser.SemanticError 'variable has been already declared'
-					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
+					if (@checkTree.rbFind node.children[0]) isnt null
+						throw new analyser.SemanticError 'variable has been already declared'
+					else 
+						@checkTree.rbInsert new RBTNode node.children[0], node.children[1]
 				when 'became '
 					@checkIfInTree node.children[0]
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
