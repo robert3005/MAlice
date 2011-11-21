@@ -81,8 +81,8 @@ class Node : public SimpleNode{
 		int getValueNumber();
 		void setValueNumber( int );
 			
-		Value * getValue();
-		void setValue( Value * );
+		llvm::Value * getValue();
+		void setValue( llvm::Value * );
 				
 		void debug();
 	protected:
