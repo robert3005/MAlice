@@ -395,6 +395,7 @@ Value * RETNode::codeGen(){
 	printf("RETNode::codeGen %d\n", uniqueId);
 	Value * v = mapOfIds[ getVarId() ] -> codeGen();
 	//Builder.CreateRet( v );
+	v -> dump();
 	return v;
 }
 
