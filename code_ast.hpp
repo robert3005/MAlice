@@ -23,7 +23,7 @@ enum VarType {STRING = 0, NUMBER, LETTER};
 
 static llvm::Module *theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
-static map<std::string, SimpleNode* > mapOfIds;
+static std::map<std::string, SimpleNode* > mapOfIds;
 /*
 typedef Value* Valueptr
 typedef Value * (*OPGenFunction)( *Module, *Builder );
