@@ -281,6 +281,7 @@ Value* OPNode::codeGenADD( OPNode & n ){
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
   	Value *Four = BinaryOperator::Create(Instruction::Add, Two, Three );
+  	BB->getInstList().push_back( dynamic_cast<Instruction*>( Four ) );
 	return BinaryOperator::Create(Instruction::Add, n.lhs, Four );
 }
 
