@@ -51,10 +51,10 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 }
 
 void SimpleNode::debug(){
-	//printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
+	printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
 }
 void Node::debug(){
-	//printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString.c_str() );
+	printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString.c_str() );
 }
 
 
@@ -204,10 +204,15 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 	
 	string data = node -> getData(); 
 
+	printf("%s\n", data.c_str() );
+
 	int i = 0;
 
 	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		dataChunkRaw = data.substr( 0, pos );
+
+
+		printf("%s\n", dataChunkRaw.c_str() );
 
 		if( i == 0 ){
 			if( dataChunkRaw.compare( "STRING" ) == 0 ){
