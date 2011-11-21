@@ -12,7 +12,10 @@ try
 	parseTree = parser.parse source
 	labelTree = semantics.analyse parseTree
 catch e
-	throw e
+	if e.name is 'SemanticError'
+		sys.puts e
+	else if e.name is 'SyntaxError'
+		sys.puts e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
 	process.exit 1
 
 sys.puts (semantics.buildtree parseTree).join ""
