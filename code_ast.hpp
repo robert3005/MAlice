@@ -24,6 +24,8 @@ enum VarType {STRING = 0, NUMBER, LETTER};
 static llvm::Module * theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
 static llvm::Function * Main;
+static llvm::BasicBlock * BB;
+
 
 /*
 typedef Value* Valueptr
@@ -44,6 +46,8 @@ class SimpleNode{
 		std::string getData();
 
 		void debug();
+
+		llvm::IRBuilder<> * builder;
 	protected:
 		int uniqueId; 
 
@@ -64,7 +68,7 @@ class Node : public SimpleNode{
 		Node(){};
 		virtual ~Node(){};
 		Node( SimpleNode& );
-		virtual llvm::Value *codeGen() = 0;
+		virtual llvm::Value *codeGen(llvm::IRBuilder<> &) = 0;
 		void addChild( Node* );
 
 		static Node * createAST( std::map<int, SimpleNode*> & ); //Factory
@@ -85,6 +89,7 @@ class Node : public SimpleNode{
 		void setValue( llvm::Value * );
 				
 		void debug();
+		
 	protected:
 		
 
@@ -115,7 +120,7 @@ class OPNode : public Node{
 	public:
 		OPNode(){};
 		OPNode( SimpleNode& );
-		llvm::Value *codeGen();
+		llvm::Value *codeGen(llvm::IRBuilder<> &);
 
 	protected:
 
@@ -137,7 +142,7 @@ class VARNode : public Node{
 	public:
 		VARNode();
 		VARNode( SimpleNode& s);
-		llvm::Value *codeGen();
+		llvm::Value *codeGen(llvm::IRBuilder<> &);
 		llvm::AllocaInst * alloca;
 
 	protected:
@@ -147,14 +152,14 @@ class RETNode : public Node{
 	public:
 		RETNode();
 		RETNode( SimpleNode& s);
-		llvm::Value *codeGen();
+		llvm::Value *codeGen(llvm::IRBuilder<> &);
 };
 
 class CONSTNode : public Node{
 	public:
 		CONSTNode();
 		CONSTNode( SimpleNode& s);
-		llvm::Value *codeGen();	
+		llvm::Value *codeGen(llvm::IRBuilder<> &);	
 
 	protected:
 
@@ -167,7 +172,7 @@ class TYPENode : public Node{
 	public:
 		TYPENode();
 		TYPENode( SimpleNode& s);
-		llvm::Value *codeGen();	
+		llvm::Value *codeGen(llvm::IRBuilder<> &);	
 
 	protected:
 };

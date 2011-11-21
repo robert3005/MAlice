@@ -5,6 +5,7 @@
 using namespace llvm;
 using namespace std;
 
+
 //SimpleNode
 SimpleNode::SimpleNode(){}
 
@@ -342,40 +343,18 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 	
 }
 
-Value * VARNode::codeGen(){
+Value * VARNode::codeGen(IRBuilder<> & Builder){
 	printf("VARNode::codeGen %d\n", uniqueId);
 
-	lhs = children[0] -> codeGen();
-	
-	lhs -> dump();
-
-	AllocaInst *Alloca = Builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
-	Builder.GetInsertBlock()-> getInstList().push_back( Alloca );
-
-	Alloca -> dump();
-
-	Value * S = Builder.CreateStore(lhs, Alloca);
-
-	S -> dump();
-
-	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	/*IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
-	
+	lhs = children[0] -> codeGen( Builder );
+	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
-	
 	Value * S = Builder.CreateStore(lhs, Alloca);
-
-	S -> dump();
-
 	Value * V = Alloca;
-
-	V -> dump();
-
 	Value *CurVar = Builder.CreateLoad(V);
 
-	CurVar -> dump();*/
-
-	return lhs;
+	return CurVar;
 }
 
 //CONSTNode
@@ -383,7 +362,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 	
 }
 
-Value* CONSTNode::codeGen(){
+Value* CONSTNode::codeGen(IRBuilder<> & Builder){
 	printf("CONSTNode::codeGen %d\n", uniqueId );
 	/*switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
@@ -412,7 +391,7 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 	
 }
 
-Value * TYPENode::codeGen(){
+Value * TYPENode::codeGen(IRBuilder<> & Builder){
 	printf("TYPENode::codeGen %d\n", uniqueId);
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 }
@@ -421,9 +400,9 @@ RETNode::RETNode( SimpleNode& s) : Node( s ){
 
 }
 
-Value * RETNode::codeGen(){
+Value * RETNode::codeGen(IRBuilder<> & Builder){
 	printf("RETNode::codeGen %d\n", uniqueId);
-	Value * v = mapOfIds[ getVarId() ] -> codeGen();
+	Value * v = mapOfIds[ getVarId() ] -> codeGen( Builder );
 	//Builder.CreateRet( v );
 	return v;
 }
@@ -433,10 +412,10 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 }
 
 
-Value* OPNode::codeGen(){
+Value* OPNode::codeGen(IRBuilder<> & Builder){
 	printf("OPNode::codeGen %d\n", uniqueId);
-	lhs = children[0] -> codeGen();
-	rhs = children[1] -> codeGen();
+	lhs = children[0] -> codeGen(Builder);
+	rhs = children[1] -> codeGen(Builder);
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( *this ); break;

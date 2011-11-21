@@ -71,14 +71,14 @@ void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
 	Main = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
-	BasicBlock *BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", Main );
+	BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", Main );
 	Builder.SetInsertPoint( BB );
 
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-  	//Value * root = ast.codeGen();
+  	Value * root = ast.codeGen( Builder );
 
-	Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
+	/*Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
 	
 	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 	IRBuilder<> TmpB(BB, BB -> begin());
@@ -90,10 +90,10 @@ void makeLLVMModule( Node & ast ){
 	Value *CurVar = Builder.CreateLoad(V);
 		
 	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 6 );
-	Value * add = Builder.CreateAdd( CurVar, Three );
-
+	Value * add = Builder.CreateAdd( CurVar, root );
+*/
   	//root -> dump();
-  	Builder.CreateRet( add );
+  	Builder.CreateRet( root );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
 }
