@@ -56,7 +56,7 @@ class SimpleNode{
 
 };
 
-static std::map<std::string, SimpleNode* > mapOfIds;
+static std::map<std::string, Node* > mapOfIds;
 static std::map<std::string, VarType> mapOfTypes;
 
 class Node : public SimpleNode{
