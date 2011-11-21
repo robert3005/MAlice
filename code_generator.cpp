@@ -85,6 +85,7 @@ void makeLLVMModule( Node & ast ){
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
 	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
+	string input2 = "1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#x,3,|3#CONST#NONE#NUMBER,42,|4#RET#NONE#x,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input

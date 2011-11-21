@@ -219,13 +219,14 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 			node -> setVarId( dataChunkRaw );
 			node -> setVarType( mapOfTypes[node -> getVarId() ] );
 		} else if( i == 1 ){ 
-			if( node -> getVarType() == STRING ){
+			/*if( node -> getVarType() == STRING ){
 			 	node -> setValueString( dataChunkRaw );
 			} else if( node -> getVarType() == NUMBER ){
 				node -> setValueNumber( atoi( dataChunkRaw.c_str() ) );
 			} else {
 				
-			}
+			}*/
+			connections.push_back(make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
 			mapOfIds[node -> getVarId()] = node;
 		}
 
@@ -316,7 +317,8 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 }
 
 Value * VARNode::codeGen(){
-  	return Builder.CreateLoad( mapOfIds[ getVarId() ] -> getValue(), getVarId().c_str() );
+	lhs = children[0] -> codeGen();
+  	return Builder.CreateLoad( lhs, getVarId().c_str() );
 }
 
 //CONSTNode
