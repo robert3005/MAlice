@@ -41,7 +41,7 @@ module.exports = (() ->
 					previous.left = nodeIn
 				else
 					previous.right = nodeIn
-			nodeIn.lef = @nil
+			nodeIn.left = @nil
 			nodeIn.right = @nil
 			nodeIn.color = RED
 			@rbInsertFixup nodeIn		
@@ -93,7 +93,7 @@ module.exports = (() ->
 							@leftRotate node
 						node.parent.color = BLACK
 						node.parent.parent.color = RED
-						@rightRotate node
+						@rightRotate node.parent.parent
 				else
 					uncle = node.parent.parent.left
 					if uncle?.color is RED
@@ -107,7 +107,7 @@ module.exports = (() ->
 							@rightRotate node
 						node.parent.color = BLACK
 						node.parent.parent.color = RED
-						@leftRotate node
+						@leftRotate node.parent.parent
 			@root.color = BLACK
 	return [RBTree, RBTNode]
 )()
