@@ -280,9 +280,9 @@ Value* OPNode::codeGenADD( OPNode & n ){
 	//printf("OPNode::codeGenADD CG\n");
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
-  	Instruction *Four = dynamic_cast<Instruction*>BinaryOperator::Create(Instruction::Add, Two, Three ));
+  	Instruction *Four = dynamic_cast<Instruction*>(BinaryOperator::Create(Instruction::Add, Two, Three ));
   	BB -> getInstList().push_back( Four );
-	return BinaryOperator::Create(Instruction::Add, n.lhs, Three );
+	return BinaryOperator::Create( Instruction::Add, n.lhs, Three );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
