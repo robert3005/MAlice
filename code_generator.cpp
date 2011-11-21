@@ -12,7 +12,9 @@
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
-
+#include "llvm/PassManager.h"
+#include "llvm/CallingConv.h"
+#include "llvm/Assembly/PrintModulePass.h"
 
 #include "code_generator.hpp"
 #include "code_ast.hpp"
@@ -39,7 +41,7 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 	int i = 0;
 
-	while( string::npos != ( pos = rawData.find( "|" ) ) && i < 3 ){
+	while( rawData.length() > 1 && string::npos != ( pos = rawData.find( "|" ) )){
 		node = rawData.substr( 0, pos );
 	
 		fieldPos = node.find( "#" );
@@ -64,49 +66,49 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 	return mapOfNodes;
 }
-/*
-Module* makeLLVMModule( Node ast ){
-	Module* mod = new Module( "alice", getGlobalContext() );
 
-	ast.codeGen( *mod );
+void makeLLVMModule( Node & ast ){
+	theModule = new Module( "alice", getGlobalContext() );
+	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
+	Main = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
+	BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", Main );
+	Builder.SetInsertPoint( BB );
 
-	return mod;
+  	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
+
+  	Value * root = ast.codeGen( Builder );
+
+	/*Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
+	
+	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+	IRBuilder<> TmpB(BB, BB -> begin());
+	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty( getGlobalContext() ), 0);
+    Builder.CreateStore(Two, Alloca);
+
+    Value * V = Alloca;
+
+	Value *CurVar = Builder.CreateLoad(V);
+		
+	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 6 );
+	Value * add = Builder.CreateAdd( CurVar, root );
+*/
+  	//root -> dump();
+  	Builder.CreateRet( root );
+  	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
+
 }
-
-int main(){
-	CodeGenerator = new CodeGenerator();
-	std::string rawDataFromParser = "0#OP#ADD#1,2#1,2|1#CONST#NONE##1|2#CONST#NONE##2";
-	std::map<int, SimpleNode> dataFromParser;
-
-	//read data input
-
-	dataFromParser = CodeGenerator.parse( rawDataFromParser );
-	Node ast = Node::generateAST( dataFromParser );
-
-	Module* Mod = makeLLVMModule( ast );
-
-	verifyModule( *Mod, PrintMessageAction );
-
-	PassManager PM;
-	PM.add( createPrintModulePass( &outs() ) );
-	PM.run( *Mod );
-
-	delete Mod;
-	return 0;
-
-}*/
 
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
 	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
+	string input2 = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,42,|4#VAR#NONE#,y,5,|5#OP#ADD#3,2,|6#RET#NONE#y,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
 
-	if( DEBUG ) printf("Generating nodes from: %s ...\n", rawDataFromParser.c_str());
+	if( DEBUG ) printf("Generating nodes from: %s ...\n", input2.c_str());
 
-	dataFromParser = codeGen -> parse( rawDataFromParser );
-
+	dataFromParser = codeGen -> parse( input2 );
 
 	if( DEBUG ){
 		map<int, SimpleNode*>::iterator it;
@@ -117,13 +119,19 @@ int main(){
 
 	Node * ast = Node::createAST( dataFromParser );
 
-	if( DEBUG ){
-		map<int, SimpleNode*>::iterator it;
-		for( it = dataFromParser.begin(); it != dataFromParser.end(); it++ ){
-			(*it).second -> debug();
-		}
-	}
+	if(DEBUG) printf("Generate code...\n");
 
+	makeLLVMModule( *ast );
+
+	verifyModule( *theModule, PrintMessageAction );
+
+	PassManager PM;
+	PM.add( createPrintModulePass( &outs() ) );
+	PM.run( *theModule );
+
+	//theModule -> dump();
+
+	delete theModule;
 	delete codeGen;
 	return 0;
 }
