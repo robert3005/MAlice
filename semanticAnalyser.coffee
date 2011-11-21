@@ -1,9 +1,9 @@
 module.exports = (() ->
 	[RBTree, RBTNode] = require './rbtree.coffee'
-	@counter = 0
 	analyser =
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
+			console.log parseTree[parseTree.length-1].id
 			@counter = parseTree[parseTree.length-1].id + 1
 			@check node for node in parseTree 
 			@checkTree
@@ -95,7 +95,8 @@ module.exports = (() ->
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
 					if node.value is "ate" or node.value is "drank"
-						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{node.children[0].id},|#{@drankAte node}"
+						console.log 'ate'
+						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@counter},|#{@drankAte node}"
 					else
 						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[1]}"
 				# const value
@@ -118,13 +119,13 @@ module.exports = (() ->
 				lookup.id
 			else
 				node.id
-				
+
 		drankAte: (node) ->
+			#@counter++
 			switch node.value
-				when "drank" then "#{node.id}#OP#SUB##{@tryLookup node.children[0]},#{@counter},|#{@changeToString node.children[0]}#{@counter}#CONST#NONE#NUBMER,1,|"
-				when "ate" then "#{node.id}#OP#ADD##{@tryLookup node.children[0]},#{@counter},|#{@changeToString node.children[0]}#{@counter}#CONST#NONE#NUBMER,1,|"
+				when "drank" then "#{@counter++}#OP#SUB##{@tryLookup node.children[0]},#{++@counter},|#{@changeToString node.children[0]}#{@counter++}#CONST#NONE#NUBMER,1,|"
+				when "ate" then "#{@counter++}#OP#ADD##{@tryLookup node.children[0]},#{++@counter},|#{@changeToString node.children[0]}#{@counter++}#CONST#NONE#NUBMER,1,|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
-			@counter++
 
 		# TODO We can do the lookup in rbtree to check the type
 		# UPDATE - done
