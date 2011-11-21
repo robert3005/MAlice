@@ -65,15 +65,15 @@ module.exports = (() ->
 			then throw new analyser.SemanticError 'this function works only with numbers'
 
 		###
-		x was a number counter#TYPE#NONE#NUMBER,x,
-		x became 42    counter#VAR#NONE#x,1,|1#CONST#NONE#NUMBER,42,
-		x became 'a'   counter#VAR#NONE#x,1,|1#CONST#NONE#LETTER,a,
-		x became y	   couunter#VAR#NONE#x,1,|1#VAR#NONE#NUMBER,y,
-		x became 1 + 2 counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,
-		x became y + z counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,
-		x became ~5	   counter#VAR#NONE#x,1,|1#OP#NEG#2,|2#CONST#NONE#NUMBER,5,
-		x drank		   counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,x,|3#CONST#NONE#NUBMER,1,
-		x spoke		   counter#RET#NONE#x,
+		x was a number counter#TYPE#NONE#NUMBER,x,|
+		x became 42    counter#VAR#NONE#,x,1,|1#CONST#NONE#NUMBER,42,|
+		x became 'a'   counter#VAR#NONE#,x,1,|1#CONST#NONE#LETTER,a,|
+		x became y	   couunter#VAR#NONE#,x,1,|1#VAR#NONE#NUMBER,y,|
+		x became 1 + 2 counter#VAR#NONE#,x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,|
+		x became y + z counter#VAR#NONE#,x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,|
+		x became ~5	   counter#VAR#NONE#,x,1,|1#OP#NEG#2,|2#CONST#NONE#NUMBER,5,|
+		x drank		   counter#VAR#NONE#,x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,x,|3#CONST#NONE#NUBMER,1,|
+		x spoke		   counter#RET#NONE#,x,|
 		this became 4 + 6 + 8 + 10 counter#VAR#NONE#this,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,4,|3#OP#ADD#4,5|4#CONST#NONE#NUMBER,6,|5#OP#ADD#6,7...
 		###	
 		# TODO Bruteforce checking of the type of the variable, when we have ex x became 5 or x became 'a', how to check consts type
@@ -99,7 +99,7 @@ module.exports = (() ->
 						"#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{@changeToString node.children[0] counter}"
 					else "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{@changeToString node.children[0] counter-1}|#{@changeToString node.children[1] counter}"
 				# spoke, return statement
-				when 4 then "#{counter}##{@nodeType node}##{@opType node}##{node.children[0]},|"
+				when 4 then "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
 				else @getElementCommand node counter
 
@@ -114,7 +114,7 @@ module.exports = (() ->
 		getElementCommand: (variable, counter) ->
 				rbnode = @checkTree.rbFind variable
 				if rbnode.key isnt null
-					"#{counter}#VAR#NONE##{rbnode.argumentsType},#{variable}"
+					"#{counter}#VAR#NONE##{rbnode.argumentsType},#{variable},|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 			
 		nodeType: (node) ->
