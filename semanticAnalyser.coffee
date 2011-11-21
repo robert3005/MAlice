@@ -13,7 +13,7 @@ module.exports = (() ->
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
 			@check node for node in parseTree 
-			return checkTree
+			@checkTree
 		# TODO - somehow check the unary operators, so far it doesnt support this operation
 		check : (node) ->
 			#node.value = @trim node.value
@@ -27,10 +27,16 @@ module.exports = (() ->
 					@checkIfInTree node.children[0]
 					console.log node.children[1]
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
-					then throw new analyser.SemanticError 'variable has been declared as another type' 
+					then throw new analyser.SemanticError 'variable has been declared as another type'  
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'letter' and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
 					then throw new analyser.SemanticError 'variable has been declared as another type'
-					@checkExpression node
+					if (@checkTree.rbFind node.children[0]).argumentsType is 'number' and (@checkTree.rbFind node.children[1])?.argumentsType is 'letter'
+					then throw new analyser.SemanticError 'Cannot assign letter to a number'
+					if (@checkTree.rbFind node.children[0]).argumentsType is 'letter' and (@checkTree.rbFind node.children[1])?.argumentsType is 'number'
+					then throw new analyser.SemanticError 'Cannot assign number to a letter' 
+					if node?.children[1]?.type is 0
+						@checkExpression node
+					else @checkIfInTree node.children[1]
 				when 'drank', 'ate'
 					@checkIfInTree node.children[0]
 					@checkTypeNum node.children[0]
@@ -57,11 +63,11 @@ module.exports = (() ->
 
 		checkIfInTree: (variable) ->
 			if @checkTree.rbFind variable is null
-			then throw new analyser.SemanticError 'variable has not been declared'
+			then throw new analyser.SemanticError 'Variable has not been declared'
 
 		checkTypeNum: (variable) ->
 			if (@checkTree.rbFind variable).argumentsType isnt 'number'
-			then throw new analyser.SemanticError 'this function works only with numbers'
+			then throw new analyser.SemanticError 'This function works only with numbers'
 
 		###
 		x was a number counter#TYPE#NONE#NUMBER,x,|
@@ -84,7 +90,7 @@ module.exports = (() ->
 		changeToString: (node, counter) ->
 			switch node?.type
 				# was a only way to declare a type so node.type = 3, we are done
-				when 3 then "#{counter}##{@nodeType node}##{@opType node}##{@varType node},#{node.children[0]},|"
+				when 3 then "#{counter}##{@nodeType node}##{@opType node}##{@varType node.children[1]},#{node.children[0]},|"
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
 					if node.value is "ate" or "drank"
@@ -140,7 +146,7 @@ module.exports = (() ->
 				else "NONE"
 
 		varType: (node) ->
-			switch node.children[1]
+			switch node
 				when "number" then "NUMBER"
 				when "letter" then "LETTER"
 
