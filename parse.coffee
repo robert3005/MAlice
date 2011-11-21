@@ -15,6 +15,6 @@ catch e
 	throw e
 	process.exit 1
 
-sys.puts semantics.buildtree parseTree
+sys.puts (semantics.buildtree parseTree).join ""
 
 process.exit 0
