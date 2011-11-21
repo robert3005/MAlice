@@ -283,7 +283,7 @@ Value* OPNode::codeGenADD( OPNode & n ){
   	Instruction *Four = dynamic_cast<Instruction*>(BinaryOperator::Create(Instruction::Add, Two, Three ));
   	BasicBlock *tmpBB = BasicBlock::Create(getGlobalContext(), "op");
 	tmpBB -> getInstList().push_back( Four );
-
+	BB -> getInstList().push_back( Four );
 	return BinaryOperator::Create( Instruction::Add, n.lhs, Four );
 }
 
