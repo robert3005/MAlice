@@ -6,19 +6,15 @@ fs = require 'fs'
 arguments = process.argv.splice 2
 
 source = fs.readFileSync arguments[0], 'utf-8'
-source = source.replace /([ ]{2,}|[\t\r]+)/g, ' '
+source = source.replace /[ \t\r]{2,}/g, ' '
+
+sys.puts source
 
 try
 	parseTree = parser.parse source
 	labelTree = semantics.analyse parseTree
 catch e
-	#if e instanceof parser.SyntaxError
-		#We've encountered Syntax error
-	#if e instanceof semantics.SemanticError
-		#We've encountered semantic error
 	throw e
+	process.exit 1
 
-sys.puts (semantics.buildtree parseTree).join ""
-
-
-#console.log labelTree
+process.exit 0
