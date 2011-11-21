@@ -114,8 +114,6 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		it++;
 	}
 
-	
-
 	//build AST :)
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
 		printf("%d %d\n", ( *conIt ).first, ( *conIt ).second);
@@ -128,6 +126,8 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		}
 	}
 	
+	printf("root #%d\n", root -> getId());
+
 	return root;
 }
 
