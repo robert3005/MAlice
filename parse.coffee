@@ -19,5 +19,9 @@ catch e
 		#We've encountered semantic error
 	throw e
 
+console.log parseTree[1]
 
-console.log labelTree
+sys.puts semantics.changeToString parseTree[1], 0
+
+
+#console.log labelTree

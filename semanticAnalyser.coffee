@@ -7,16 +7,12 @@ node.value trailing whitespace
 module.exports = (() ->
 	[RBTree, RBTNode] = require './rbtree.coffee'
 	analyser =
-		trim: (str) ->
-			str.replace( /^\s\s*/, '').replace /\s\s*$/, ''
-			console.log str + "#@#"
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
 			@check node for node in parseTree 
 			@checkTree
 		# TODO - somehow check the unary operators, so far it doesnt support this operation
 		check : (node) ->
-			#node.value = @trim node.value
 			console.log node
 			switch node.value
 				when 'was a '
@@ -88,25 +84,31 @@ module.exports = (() ->
 			stringTree = @changeToString node counter for node in @parseTree
 			stringTree.join
 		changeToString: (node, counter) ->
+			toString = ''
+			console.log node
 			switch node?.type
 				# was a only way to declare a type so node.type = 3, we are done
-				when 3 then "#{counter}##{@nodeType node}##{@opType node}##{@varType node.children[1]},#{node.children[0]},|"
+				when 3 then toString += "#{counter}##{@nodeType node}##{@opType node}##{@varType node.children[1]},#{node.children[0]},|"
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
-					if node.value is "ate" or "drank"
-						 "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node.children[0] node.value counter}"
-					else "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@changeToString node.children[1] counter}"
+					if node.value is "ate" or node.value is "drank"
+						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node.children[0] node.value counter}"
+					else
+						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@changeToString node.children[1], counter}"
 				# const value
-				when 2 then "#{counter}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
+				when 2 
+					console.log 2
+					toString += "#{counter}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
 				# operations /node.value 10 is for the neg operation
 				when 0 
 					if node.value is 10
-						"#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{@changeToString node.children[0] counter}"
-					else "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{@changeToString node.children[0] counter-1}|#{@changeToString node.children[1] counter}"
+						toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{@changeToString node.children[0] counter}"
+					else toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{@changeToString node.children[0] counter-1}|#{@changeToString node.children[1] counter}"
 				# spoke, return statement
-				when 4 then "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},|"
+				when 4 then toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
 				else @getElementCommand node counter
+			toString
 
 		drankAte: (variable, func, counter) ->
 			switch func
