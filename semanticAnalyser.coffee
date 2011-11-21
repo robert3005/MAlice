@@ -3,7 +3,6 @@ module.exports = (() ->
 	analyser =
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
-			console.log parseTree[parseTree.length-1].id
 			@counter = parseTree[parseTree.length-1].id + 1
 			@check node for node in parseTree 
 			@checkTree
