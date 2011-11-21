@@ -345,7 +345,6 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 Value * VARNode::codeGen(){
 	printf("VARNode::codeGen %d\n", uniqueId);
 
-
 	lhs = children[0] -> codeGen();
 	
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();

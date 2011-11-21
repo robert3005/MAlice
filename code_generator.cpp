@@ -88,10 +88,10 @@ void makeLLVMModule( Node & ast ){
     Value * V = Alloca;
 
 	Value *CurVar = Builder.CreateLoad(V);
-	
-	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 3 );
-	Value * add = Builder.CreateAdd( CurVar, Three );
-*/
+	*/	
+	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
+	Value * add = Builder.CreateAdd( root, Three );
+
   	//root -> dump();
   	Builder.CreateRet( root );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
