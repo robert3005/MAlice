@@ -72,8 +72,12 @@ and_expression
 / add_expression
 
 add_expression
-= mulExpr:mul_expression space '+' space addExpr:add_expression { counter++; return createNode(NODE_OP, OP_ADD, mulExpr, addExpr) }
-/ mulExpr:mul_expression space '-' space addExpr:add_expression { counter++; return createNode(NODE_OP, OP_SUB, mulExpr, addExpr ) }
+= notExpr:not_expression space '+' space addExpr:add_expression { counter++; return createNode(NODE_OP, OP_ADD, notExpr, addExpr) }
+/ notExpr:not_expression space '-' space addExpr:add_expression { counter++; return createNode(NODE_OP, OP_SUB, notExpr, addExpr ) }
+/ not_expression
+
+not_expression
+= notExpr:not_op space mulExpr:mul_expression {counter++; return createNode(NODE_OP, notExpr, mulExpr)}
 / mul_expression
 
 mul_expression
@@ -83,14 +87,13 @@ mul_expression
 / unary_expression
 
 unary_expression
-= unOP:un_op primExpr:primitive_expression { counter++; return createNode(NODE_OP, unOP, primExpr ) }
+= unOP:neg_op primExpr:primitive_expression { counter++; return createNode(NODE_OP, unOP, primExpr ) }
 / primExpr:primitive_expression
 
 primitive_expression
 = num:[0-9]+ { counter++; return createNode( NODE_CONST, num.join(""), 'number' ) }
 / letter:([\'][^\'][\']) {counter++; return createNode( NODE_CONST, letter[1], 'letter' ) }
 / identifier:id
-/ ''
 / '(' expr:expression ')'
 
 typeName
@@ -121,6 +124,8 @@ separator
 / ([ ]'too'[ ]){return 11}
 / ([ ]'but'[ ]){return 12}
 
-un_op
+not_op
 = '~' { return OP_NOT }
-/ '-' { return OP_NEG }
+
+neg_op
+= '-' { return OP_NEG }
