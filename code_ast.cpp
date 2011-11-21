@@ -391,7 +391,7 @@ RETNode::RETNode( SimpleNode& s) : Node( s ){
 
 Value * RETNode::codeGen(){
 	Value * v = mapOfIds[ getVarId() ] -> codeGen();
-	Builder.CreateRet( v );
+	//Builder.CreateRet( v );
 	return v;
 }
 
