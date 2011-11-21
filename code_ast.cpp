@@ -344,9 +344,22 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 
 Value * VARNode::codeGen(){
 	printf("VARNode::codeGen %d\n", uniqueId);
+
+
 	lhs = children[0] -> codeGen();
-	Value * v = Builder.CreateLoad( lhs, getVarId().c_str() );
-  	return v;
+	
+	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+	IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
+	
+	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
+
+	Builder.CreateStore(lhs, Alloca);
+
+	Value * V = Alloca;
+
+	Value *CurVar = Builder.CreateLoad(V);
+
+	return CurVar;
 }
 
 //CONSTNode
