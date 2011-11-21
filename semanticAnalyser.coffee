@@ -25,6 +25,7 @@ module.exports = (() ->
 					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
 				when 'became '
 					@checkIfInTree node.children[0]
+					console.log node.children[1]
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
 					then throw new analyser.SemanticError 'variable has been declared as another type' 
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'letter' and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
