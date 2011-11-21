@@ -80,7 +80,7 @@ mul_expression
 / unary_expression
 
 unary_expression
-= unOP:un_op primExpr:primitive_expression { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) }
+= unOP:un_op primExpr:primitive_expression { return createNode(NODE_OP, unOP, primExpr ) }
 / primExpr:primitive_expression
 
 primitive_expression
@@ -119,4 +119,4 @@ separator
 / ([ ]'but'[ ]){return 12}
 
 un_op
-= '~' { return createNode( NODE_OP, OP_NEG)  }
+= '~' { return OP_NEG }
