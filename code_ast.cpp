@@ -187,7 +187,7 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 		i++;
 	}
 
-	//printf( "Create CONSTNode id: %d type: %d", node -> getId(), node -> getVarType() );
+	printf( "Create CONSTNode id: %d type: %d\n", node -> getId(), node -> getVarType() );
 
 	return node;
 
@@ -230,7 +230,7 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 		i++;
 	}
 
-	printf( "Create TYPENode id: %d %s type: %d", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
+	printf( "Create TYPENode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 
@@ -270,7 +270,7 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 		i++;
 	}
 
-	printf( "Create VARNode id: %d %s type: %d", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
+	printf( "Create VARNode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 }
@@ -298,7 +298,7 @@ Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 		i++;
 	}
 
-	//printf( "Create RETNode id: %d type: %d", node -> getId(), node -> getVarType() );
+	printf( "Create RETNode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 }
