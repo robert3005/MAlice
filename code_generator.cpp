@@ -77,6 +77,7 @@ void makeLLVMModule( Node & ast ){
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
   	Value * root = ast.codeGen();
+  	root -> dump();
   	Builder.CreateRet( root );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
@@ -109,9 +110,9 @@ int main(){
 
 	verifyModule( *theModule, PrintMessageAction );
 
-	PassManager PM;
-	PM.add( createPrintModulePass( &outs() ) );
-	PM.run( *theModule );
+	//PassManager PM;
+	//PM.add( createPrintModulePass( &outs() ) );
+	//PM.run( *theModule );
 
 	//theModule -> dump();
 
