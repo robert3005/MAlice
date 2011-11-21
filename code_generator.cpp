@@ -76,9 +76,15 @@ void makeLLVMModule( Node & ast ){
 
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-  	Value * root = ast.codeGen();
-  	root -> dump();
-  	//Builder.CreateRet( root );
+  	//Value * root = ast.codeGen();
+
+	Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), w );
+	Value *CurVar = Builder.CreateLoad(Two, "dwa");
+	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 3 );
+	Value * add = Builder.CreateAdd( CurVar, Three );
+
+  	//root -> dump();
+  	Builder.CreateRet( add );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
 }
@@ -86,7 +92,7 @@ void makeLLVMModule( Node & ast ){
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
 	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
-	string input2 = "0#OP#ADD#2,3,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#x,3,|3#CONST#NONE#NUMBER,42,|4#RET#NONE#x,|";
+	string input2 = "1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#x,3,|3#CONST#NONE#NUMBER,42,|4#RET#NONE#x,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
@@ -108,7 +114,7 @@ int main(){
 
 	makeLLVMModule( *ast );
 
-	verifyModule( *theModule, PrintMessageAction );
+	//verifyModule( *theModule, PrintMessageAction );
 
 	//PassManager PM;
 	//PM.add( createPrintModulePass( &outs() ) );
