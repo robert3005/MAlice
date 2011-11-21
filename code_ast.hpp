@@ -23,7 +23,7 @@ enum VarType {STRING = 0, NUMBER, LETTER};
 
 static llvm::Module *theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
-static map<string, SimpleNode* > mapOfIds;
+static map<std::string, SimpleNode* > mapOfIds;
 /*
 typedef Value* Valueptr
 typedef Value * (*OPGenFunction)( *Module, *Builder );
@@ -83,6 +83,7 @@ class Node : public SimpleNode{
 		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
 		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createTYPENode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
 
 		//TODO: decide which fields to leave here, and which to move down
 		std::string id;
