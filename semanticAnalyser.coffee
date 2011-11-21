@@ -35,7 +35,7 @@ module.exports = (() ->
 					@checkIfInTree node.children[0]
 					@checkTypeNum node.children[0]
 				when 'spoke'
-					checkIfInTree node.children[0]
+					@checkIfInTree node.children[0]
 				else throw new analyser.SemanticError 'I do not recognise this function'
 
 		checkIfANumber: (strNum) ->
