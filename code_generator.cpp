@@ -82,7 +82,7 @@ void makeLLVMModule( Node & ast ){
 	
 	Function *TheFunction = Builder.GetInsertBlock()->getParent();
 	//InitVal = ConstantFP::get(getGlobalContext(), APFloat(0.0));
-	AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, "dwa");
+	AllocaInst *Alloca = Builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, "dwa");
     Builder.CreateStore(Two, Alloca);
 
 	Value *CurVar = Builder.CreateLoad(Two, "dwa");
