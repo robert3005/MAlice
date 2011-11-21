@@ -99,7 +99,7 @@ class Node : public SimpleNode{
 		VarType varType;
 		
 		//values
-		Value * value;
+		llvm::Value * value;
 		int valueNumber;
 		std::string valueString;
 

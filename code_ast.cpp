@@ -316,7 +316,7 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 }
 
 Value * VARNode::codeGen(){
-  	return Builder.createLoad( mapfOfIds[ node -> getVarId() ], node -> getVarId().c_str() );
+  	return Builder.createLoad( mapOfIds[ getVarId() ], getVarId().c_str() );
 }
 
 //CONSTNode
