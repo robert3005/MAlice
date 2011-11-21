@@ -44,10 +44,9 @@ module.exports = (() ->
 				throw new analyser.SemanticError 'This operation supports only numbers'
 
 		checkExpression: (node) ->
-			while node.children[1]?.type is 0
+			while node?.children[1]?.type is 0
 				@checkVarConst node.children[1].children[0]
 				node = node.children[1]
-			@checkVarConst node?.children[0]
 			@checkVarConst node?.children[1]
 	
 		checkVarConst: (node) ->
@@ -66,10 +65,10 @@ module.exports = (() ->
 			then throw new analyser.SemanticError 'this function works only with numbers'
 
 		###
-		x was a number counter#TYPE#NONE#NUMBER,x
+		x was a number counter#TYPE#NONE#NUMBER,x,
 		x became 42    counter#VAR#NONE#x,1,|1#CONST#NONE#NUMBER,42,
 		x became 'a'   counter#VAR#NONE#x,1,|1#CONST#NONE#LETTER,a,
-		x became y	   couunter#VAR#NONE#x,1,|1#VAR#NONE#y
+		x became y	   couunter#VAR#NONE#x,1,|1#VAR#NONE#NUMBER,y,
 		x became 1 + 2 counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,
 		x became y + z counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,
 		x became ~5	   counter#VAR#NONE#x,1,|1#OP#NEG#2,|2#CONST#NONE#NUMBER,5,
@@ -78,7 +77,7 @@ module.exports = (() ->
 		this became 4 + 6 + 8 + 10 counter#VAR#NONE#this,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,4,|3#OP#ADD#4,5|4#CONST#NONE#NUMBER,6,|5#OP#ADD#6,7...
 		###	
 		# TODO Bruteforce checking of the type of the variable, when we have ex x became 5 or x became 'a', how to check consts type
-		# Update - now every const has a type in parsetree
+		# Update - now every const has a type in parsetree, the concern above has been resolved
 		buildtree: () ->
 			counter = 0
 			stringTree = @changeToString node counter for node in @parseTree
@@ -86,28 +85,28 @@ module.exports = (() ->
 		changeToString: (node, counter) ->
 			switch node?.type
 				# was a only way to declare a type so node.type = 3, we are done
-				when 3 then "#{counter}##{nodeType node}##{opType node}##{varType node},#{node.children[0]},|"
+				when 3 then "#{counter}##{@nodeType node}##{@opType node}##{@varType node},#{node.children[0]},|"
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
 					if node.value is "ate" or "drank"
-						 "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{drankAte node.children[0] node.value}"
-					else "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{changeToString node.children[1] counter}"
+						 "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node.children[0] node.value}"
+					else "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@changeToString node.children[1] counter}"
 				# const value
-				when 2 then "#{counter}#CONST#NONE##{varType node.children[0]},#{node.value}|"
+				when 2 then "#{counter}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
 				# operations /node.value 10 is for the neg operation
 				when 0 
 					if node.value is 10
-						"#{counter}##{nodeType node}##{opType node}##{++counter},|#{changeToString node.children[0] counter}"
-					else "#{counter}##{nodeType node}##{opType node}##{++counter},#{++counter},|#{changeToString node.children[0] counter-1}|#{changeToString node.children[1] counter}"
+						"#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{@changeToString node.children[0] counter}"
+					else "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{@changeToString node.children[0] counter-1}|#{@changeToString node.children[1] counter}"
 				# spoke, return statement
-				when 4 then "#{counter}##{nodeType node}##{opType node}##{node.children[0]},|"
+				when 4 then "#{counter}##{@nodeType node}##{@opType node}##{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
-				else getElementCommand node counter
+				else @getElementCommand node counter
 
 		drankAte: (variable, func) ->
 			switch func
-				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{changeToString variable}|#{changeToString 1}"
-				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{changeToString variable}|#{changeToString 1}"
+				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{@changeToString variable counter-1}|#{@changeToString 1 counter}"
+				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{@changeToString variable counter-1}|#{@changeToString 1 counter}"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 
 		# TODO We can do the lookup in rbtree to check the type
