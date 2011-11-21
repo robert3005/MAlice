@@ -10,8 +10,7 @@ source = source.replace /([ ]{2,}|[\t\r]+)/g, ' '
 
 try
 	parseTree = parser.parse source
-	console.log parseTree
-	labelTree = semantics.analyse parseTree
+	#labelTree = semantics.analyse parseTree
 catch e
 	#if e instanceof parser.SyntaxError
 		#We've encountered Syntax error
