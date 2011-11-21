@@ -17,12 +17,13 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
-enum NodeType {OP = 0, VAR, CONST, TYPE};
+enum NodeType {OP = 0, VAR, CONST, TYPE, RET};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG};
-enum VarType {STRING = 0, NUMBER};
+enum VarType {STRING = 0, NUMBER, LETTER};
 
 static llvm::Module *theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
+static map<string, SimpleNode* > mapOfIds;
 /*
 typedef Value* Valueptr
 typedef Value * (*OPGenFunction)( *Module, *Builder );
@@ -125,6 +126,13 @@ class VARNode : public Node{
 		llvm::Value *codeGen();
 };
 
+class RETNode : public Node{
+		public:
+		RETNode();
+		RETNode( SimpleNode& s){};
+		llvm::Value *codeGen();
+};
+
 class CONSTNode : public Node{
 	public:
 		CONSTNode();
@@ -135,6 +143,7 @@ class CONSTNode : public Node{
 
 		static llvm::Value *codeGenSTRING( CONSTNode& );
 		static llvm::Value *codeGenNUMBER( CONSTNode& );
+		static llvm::Value *codeGenLETTER( CONSTNode& );
 };
 
 class TYPENode : public Node{
@@ -142,6 +151,12 @@ class TYPENode : public Node{
 		TYPENode();
 		TYPENode( SimpleNode& s){};
 		llvm::Value *codeGen();	
+
+	protected:
+
+		static llvm::Value *codeGenSTRING( CONSTNode& );
+		static llvm::Value *codeGenNUMBER( CONSTNode& );
+		static llvm::Value *codeGenLETTER( CONSTNode& );
 };
 
 #endif

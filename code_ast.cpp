@@ -19,6 +19,8 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> type = CONST;
 	} else if( type.compare( "TYPE" ) == 0 ){
 		this -> type = TYPE;
+	} else if( type.compare( "RET" ) == 0 ){
+		this -> type = RET;
 	}
 
 	if( op.compare( "NONE" ) == 0 ){
@@ -95,6 +97,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		case VAR: 	root = Node::createVARNode( *(*it).second, connectionsQueue ); break;
 		case CONST: root = Node::createCONSTNode( *(*it).second, connectionsQueue ); break;
 		case TYPE:	root = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
+		case RET:	root = Node::createRETNode( *(*it).second, connectionsQueue );  break;
 		default: break;
 	}
 
@@ -275,7 +278,10 @@ Value* OPNode::codeGen(){
 
 Value* OPNode::codeGenADD( OPNode & n ){
 	//printf("OPNode::codeGenADD CG\n");
-	return BinaryOperator::Create(Instruction::Add, n.lhs, n.rhs );
+	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
+  	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
+  	Value *Four = BinaryOperator::Create(Instruction::Add, Two, Three );
+	return BinaryOperator::Create(Instruction::Add, n.lhs, Four );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
@@ -283,23 +289,23 @@ Value* OPNode::codeGenOR( OPNode & n ){
 }
 
 Value* OPNode::codeGenXOR( OPNode & n ){
-	return Builder.CreateXor( n.lhs, n.rhs );
+	return BinaryOperator::Create(Instruction::Xor, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenAND( OPNode & n ){
-	return Builder.CreateAnd( n.lhs, n.rhs );
+	return BinaryOperator::Create(Instruction::And, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenSUB( OPNode & n ){
-	return Builder.CreateSub( n.lhs, n.rhs );
+	return BinaryOperator::Create(Instruction::Sub, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenMUL( OPNode & n ){
-	return Builder.CreateMul( n.lhs, n.rhs );
+	return BinaryOperator::Create(Instruction::Mul, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenDIV( OPNode & n ){
-	return Builder.CreateUDiv( n.lhs, n.rhs ); //unsigned 
+	return BinaryOperator::Create(Instruction::UDiv, n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenUNR( OPNode & n ){
@@ -308,5 +314,5 @@ Value* OPNode::codeGenUNR( OPNode & n ){
 }
 
 Value* OPNode::codeGenNEG( OPNode & n ){
-	return Builder.CreateNeg( n.lhs );
+	return BinaryOperator::CreateNeg( n.lhs );
 }
