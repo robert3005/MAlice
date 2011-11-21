@@ -3,7 +3,7 @@ module.exports = (() ->
 	analyser =
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
-			@counter = parseTree[parseTree.length-1].id + 1
+			@counter = parseTree[parseTree.length-1]?.id + 1
 			@check node for node in parseTree 
 			@checkTree
 		# TODO - somehow check the unary operators, so far it doesnt support this operation
