@@ -91,7 +91,7 @@ class Node : public SimpleNode{
 		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createTYPENode( SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& );
 
 		//TODO: decide which fields to leave here, and which to move down
 		std::string id;
@@ -142,7 +142,7 @@ class VARNode : public Node{
 class RETNode : public Node{
 		public:
 		RETNode();
-		RETNode( SimpleNode& s){};
+		RETNode( SimpleNode& s);
 		llvm::Value *codeGen();
 };
 

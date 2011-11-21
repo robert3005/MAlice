@@ -240,7 +240,35 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 	return node;
 }
 
-Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new RETNode( simpleNode );
+
+	std::size_t pos;
+
+	string dataChunkRaw;
+	
+	string data = node -> getData(); 
+
+	int i = 0;
+
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
+		dataChunkRaw = data.substr( 0, pos );
+
+		if( i == 0 ){
+			node -> setVarId( dataChunkRaw );
+		}
+
+		if(data.length() > pos) data = data.substr( pos + 1 );
+	
+		i++;
+	}
+
+	//printf( "Create RETNode id: %d type: %d", node -> getId(), node -> getVarType() );
+
+	return node;
+}
+
+Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	Node * node = new TYPENode( simpleNode );
 
 	std::size_t pos;
@@ -357,6 +385,16 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 
 Value * TYPENode::codeGen(){
 	
+}
+
+RETNode::RETNode( SimpleNode& s) : Node( s ){
+
+}
+
+Value * RETNode::codeGen(){
+	Value * v = mapOfIds[ getVarId() ] -> codeGen();
+	Builder.CreateRet( v );
+	return v;
 }
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){

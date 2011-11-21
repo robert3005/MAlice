@@ -77,7 +77,7 @@ void makeLLVMModule( Node & ast ){
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
   	Value * root = ast.codeGen();
-  	Builder.CreateRet( root );
+  	//Builder.CreateRet( root );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
 }
@@ -90,9 +90,9 @@ int main(){
 
 	//read data input
 
-	if( DEBUG ) printf("Generating nodes from: %s ...\n", rawDataFromParser.c_str());
+	if( DEBUG ) printf("Generating nodes from: %s ...\n", input2.c_str());
 
-	dataFromParser = codeGen -> parse( rawDataFromParser );
+	dataFromParser = codeGen -> parse( input2 );
 
 	if( DEBUG ){
 		map<int, SimpleNode*>::iterator it;
