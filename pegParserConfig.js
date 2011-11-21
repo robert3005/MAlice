@@ -20,7 +20,6 @@ function createNode( type, value, children )
 	return n;
 }
 
-
 NODE_OP		= 0
 NODE_VAR	= 1
 NODE_CONST	= 2

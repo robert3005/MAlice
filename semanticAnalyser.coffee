@@ -1,55 +1,68 @@
-module.exports = (() ->
-	rbtree = require './rbtree.coffee'
+###
+Fix regural expressions matching instead of comparison
+node.value trailing whitespace
 
+###
+
+module.exports = (() ->
+	[RBTree, RBTNode] = require './rbtree.coffee'
 	analyser =
+		trim: (str) ->
+			str.replace( /^\s\s*/, '').replace /\s\s*$/, ''
+			console.log str + "#@#"
 		analyse: (parseTree) ->
-			@checkTree = new rbtree.RBTree
-			check node for node in parseTree 
+			@checkTree = new RBTree
+			@check node for node in parseTree 
+			return checkTree
 		# TODO - somehow check the unary operators, so far it doesnt support this operation
 		check : (node) ->
+			#node.value = @trim node.value
+			console.log node
 			switch node.value
-				when 'was a'
-					if (checkTree.rbFind node.children[0]).key isnt null
+				when 'was a '
+					console.log @checkTree.rbFind node.children[0]
+					if (@checkTree.rbFind node.children[0])?.key isnt undefined
 					then throw new analyser.SemanticError 'variable has been already declared'
-					else checkTree.rbInsert new rbtree.RBTNode node.children[0] node.children[1]
-				when 'became'
-					checkIfInTree node.children[0]
-					if node.children[1]?.value is 2 and node.children[1]?.value is ///[0-9]+/// and (checkTree.rbFind node.children[0]).argumentsType is 'letter'
+					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
+				when 'became '
+					@checkIfInTree node.children[0]
+					if node.children[1]?.value is 2 and node.children[1]?.value is ///[0-9]+/// and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
 					then throw new analyser.SemanticError 'variable has been declared as another type' 
-					if node.children[1]?.value is 2 and node.children[1]?.value is ///([\'][^\'][\'])/// and (checkTree.rbFind node.children[0]).argumentsType is 'number'
+					if node.children[1]?.value is 2 and node.children[1]?.value is ///([\'][^\'][\'])/// and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
 					then throw new analyser.SemanticError 'variable has been declared as another type'
-					checkExpression node
+					@checkExpression node
 				when 'drank', 'ate'
-					checkIfInTree node.children[0]
-					checkTypeNum node.children[0]
+					@checkIfInTree node.children[0]
+					@checkTypeNum node.children[0]
 				when 'spoke'
 					checkIfInTree node.children[0]
 				else throw new analyser.SemanticError 'I do not recognise this function'
 
 		checkIfANumber: (strNum) ->
+			console.log strNum
 			if strNum isnt ///[0-9]+///
 				throw new analyser.SemanticError 'This operation supports only numbers'
 
 		checkExpression: (node) ->
 			while node.children[1]?.type is 0
-				checkVarConst node.children[1].children[0]
+				@checkVarConst node.children[1].children[0]
 				node = node.children[1]
-			checkVarConst node?.children[0]
-			checkVarConst node?.children[1]
+			@checkVarConst node?.children[0]
+			@checkVarConst node?.children[1]
 	
 		checkVarConst: (node) ->
 			if node?.type is 2
-				checkIfANumber node.value
+				@checkIfANumber node.value
 			else
-				checkIfInTree node
-				checkTypeNum node
+				@checkIfInTree node
+				@checkTypeNum node
 
 		checkIfInTree: (variable) ->
-			if (checkTree.rbFind variable).key is null
+			if (@checkTree.rbFind variable).key is null
 			then throw new analyser.SemanticError 'variable has not been declared'
 
 		checkTypeNum: (variable) ->
-			if (checkTree.rbFind variable).argumentsType isnt 'number'
+			if (@checkTree.rbFind variable).argumentsType isnt 'number'
 			then throw new analyser.SemanticError 'this function works only with numbers'
 
 		###
@@ -66,7 +79,7 @@ module.exports = (() ->
 		# TODO Bruteforce checking of the type of the variable, when we have ex x became y, how to check y's type
 		buildtree: () ->
 			counter = 0
-			stringTree = changeToString node counter for node in parseTree
+			stringTree = @changeToString node counter for node in @parseTree
 			stringTree.join
 		changeToString: (node, counter) ->
 			switch node?.type
@@ -86,7 +99,7 @@ module.exports = (() ->
 					else "#{counter}##{nodeType node}##{opType node}##{++counter},#{++counter},|#{changeToString node.children[0] counter-1}|#{changeToString node.children[1] counter}"
 				# spoke, return statement
 				when 4 then "#{counter}##{nodeType node}##{opType node}##{node.children[0]},|"
-				# ok, so else case is when we have no object just a variable reference i assume node.type returns undeifned and it actually works
+				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
 				else getElementCommand node counter
 
 		drankAte: (variable, func) ->
@@ -96,7 +109,7 @@ module.exports = (() ->
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 
 		getElementCommand: (variable, counter) ->
-				rbnode = checkTree.rbFind variable
+				rbnode = @checkTree.rbFind variable
 				if rbnode.key isnt null
 					"#{counter}#VAR#NONE#NUMBER,#{variable}"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
