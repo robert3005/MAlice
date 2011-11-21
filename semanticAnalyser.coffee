@@ -21,7 +21,7 @@ module.exports = (() ->
 			switch node.value
 				when 'was a '
 					console.log @checkTree.rbFind node.children[0]
-					if (@checkTree.rbFind node.children[0])?.key isnt undefined
+					if @checkTree.rbFind node.children[0] isnt null
 					then throw new analyser.SemanticError 'variable has been already declared'
 					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
 				when 'became '
@@ -57,7 +57,7 @@ module.exports = (() ->
 				@checkTypeNum node
 
 		checkIfInTree: (variable) ->
-			if (@checkTree.rbFind variable).key is null
+			if @checkTree.rbFind variable is null
 			then throw new analyser.SemanticError 'variable has not been declared'
 
 		checkTypeNum: (variable) ->
@@ -89,7 +89,7 @@ module.exports = (() ->
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
 					if node.value is "ate" or "drank"
-						 "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node.children[0] node.value}"
+						 "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node.children[0] node.value counter}"
 					else "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@changeToString node.children[1] counter}"
 				# const value
 				when 2 then "#{counter}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
@@ -103,7 +103,7 @@ module.exports = (() ->
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
 				else @getElementCommand node counter
 
-		drankAte: (variable, func) ->
+		drankAte: (variable, func, counter) ->
 			switch func
 				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{@changeToString variable counter-1}|#{@changeToString 1 counter}"
 				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{@changeToString variable counter-1}|#{@changeToString 1 counter}"
@@ -113,7 +113,7 @@ module.exports = (() ->
 		# UPDATE - done
 		getElementCommand: (variable, counter) ->
 				rbnode = @checkTree.rbFind variable
-				if rbnode.key isnt null
+				if rbnode isnt null
 					"#{counter}#VAR#NONE##{rbnode.argumentsType},#{variable},|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 			
