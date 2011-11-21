@@ -156,14 +156,10 @@ class CONSTNode : public Node{
 class TYPENode : public Node{
 	public:
 		TYPENode();
-		TYPENode( SimpleNode& s){};
+		TYPENode( SimpleNode& s);
 		llvm::Value *codeGen();	
 
 	protected:
-
-		static llvm::Value *codeGenSTRING( CONSTNode& );
-		static llvm::Value *codeGenNUMBER( CONSTNode& );
-		static llvm::Value *codeGenLETTER( CONSTNode& );
 };
 
 #endif

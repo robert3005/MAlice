@@ -338,9 +338,15 @@ Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), n.getValueNumber() );
 }
 
+
+TYPENode::TYPENode( SimpleNode& s) : Node( s ){
+	
+}
+
 OPNode::OPNode( SimpleNode& s) : Node( s ){
 	
 }
+
 
 Value* OPNode::codeGen(){
 	//printf("OPNode CG\n");
