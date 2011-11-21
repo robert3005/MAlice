@@ -18,9 +18,7 @@ catch e
 		#We've encountered semantic error
 	throw e
 
-console.log parseTree
-
-sys.puts semantics.buildtree parseTree
+sys.puts (semantics.buildtree parseTree).join ""
 
 
 #console.log labelTree

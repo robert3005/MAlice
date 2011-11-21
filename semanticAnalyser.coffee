@@ -1,9 +1,3 @@
-###
-Fix regural expressions matching instead of comparison
-node.value trailing whitespace
-
-###
-
 module.exports = (() ->
 	[RBTree, RBTNode] = require './rbtree.coffee'
 	analyser =
@@ -13,9 +7,9 @@ module.exports = (() ->
 			@checkTree
 		# TODO - somehow check the unary operators, so far it doesnt support this operation
 		check : (node) ->
-			console.log node
 			switch node.value
 				when 'was a '
+					@checkVarName node.children[0]
 					if @checkTree.rbFind node.children[0] isnt null
 					then throw new analyser.SemanticError 'variable has been already declared'
 					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
@@ -42,6 +36,10 @@ module.exports = (() ->
 		checkIfANumber: (strNum) ->
 			if strNum isnt 'number'
 				throw new analyser.SemanticError 'This operation supports only numbers'
+		
+		checkVarName: (name) ->
+			if name is 'a'
+			then throw new analyser.SemanticError ' a is a reserved name'
 
 		checkExpression: (node) ->
 			while node?.children[1]?.type is 0
@@ -61,7 +59,7 @@ module.exports = (() ->
 			then throw new analyser.SemanticError 'Variable has not been declared'
 
 		checkTypeNum: (variable) ->
-			if (@checkTree.rbFind variable)?.argumentsType isnt 'number'
+			if (@checkTree.rbFind variable)?.argumentsType is 'letter'
 			then throw new analyser.SemanticError 'This function works only with numbers'
 
 		###
@@ -80,8 +78,12 @@ module.exports = (() ->
 		# Update - now every const has a type in parsetree, the concern above has been resolved
 		buildtree: (parseTree) ->
 			counter = 0
-			stringTree = @changeToString node, counter for node in @parseTree
-			stringTree.join ""
+			#[stringTree, counter] = @changeToString node, counter for node in parseTree
+			toString = []
+			for node in parseTree
+				[str, counter] = @changeToString node, counter
+				toString.push str
+			toString
 		changeToString: (node, counter) ->
 			toString = ''
 			switch node?.type
@@ -92,25 +94,25 @@ module.exports = (() ->
 					if node.value is "ate" or node.value is "drank"
 						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node, counter}"
 					else
-						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@changeToString node.children[1], counter}"
+						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{(@changeToString node.children[1], counter)[0]}"
 				# const value
 				when 2 
 					toString += "#{counter}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
 				# operations /node.value 10 is for the neg operation
 				when 0 
-					if node.value is 10
-						toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{@changeToString node.children[0], counter}"
-					else toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{@changeToString node.children[0], counter-1}|#{@changeToString node.children[1], counter}"
+					if node.value is 10 or node.value is 9
+						toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{(@changeToString node.children[0], counter)[0]}"
+					else toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{(@changeToString node.children[0], counter-1)[0]}#{(@changeToString node.children[1], counter)[0]}"
 				# spoke, return statement
 				when 4 then toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
-				else @getElementCommand node counter
-			toString
+				else @getElementCommand node, counter
+			[toString, counter+1]
 
 		drankAte: (node, counter) ->
 			switch node.value
-				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{@changeToString node.children[0], counter-1}|#{counter}#CONST#NONE#NUBMER,1,|"
-				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{@changeToString node.children[0], counter-1}|#{counter}#CONST#NONE#NUBMER,1,|"
+				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{(@changeToString node.children[0], counter-1)[0]}#{counter}#CONST#NONE#NUBMER,1,|"
+				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{(@changeToString node.children[0], counter-1)[0]}#{counter}#CONST#NONE#NUBMER,1,|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 
 		# TODO We can do the lookup in rbtree to check the type
