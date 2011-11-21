@@ -82,6 +82,9 @@ class Node : public SimpleNode{
 		std::string getValueString();
 		void setValueString( std::string );
 		
+		char getValueLetter();
+		void setValueLetter( char );
+
 		int getValueNumber();
 		void setValueNumber( int );
 			
@@ -91,6 +94,9 @@ class Node : public SimpleNode{
 		void debug();
 		
 		llvm::AllocaInst * alloca;
+
+		//children
+		std::vector<Node*> children;
 
 	protected:
 		
@@ -107,11 +113,10 @@ class Node : public SimpleNode{
 		
 		//values
 		llvm::Value * value;
+		
 		int valueNumber;
 		std::string valueString;
-
-		//children
-		std::vector<Node*> children;
+		char valueLetter;
 
 		
 
@@ -141,6 +146,7 @@ class OPNode : public Node{
 		static llvm::Value *codeGenSUB( llvm::IRBuilder<> &, OPNode& ); 
 		static llvm::Value *codeGenMUL( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenDIV( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenMOD( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenUNR( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenNEG( llvm::IRBuilder<> &, OPNode& );
 };
