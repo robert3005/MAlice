@@ -24,7 +24,7 @@ ex107.alice:pass
 ex108.alice:pass
 ex109.alice:fail
 ex110.alice:pass
-ex111.alice:pass
+ex111.alice:fail
 ex112.alice:pass
 ex113.alice:pass
 ex114.alice:pass

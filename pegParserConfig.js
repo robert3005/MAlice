@@ -49,6 +49,7 @@ root
 assignment
 = space identifier:id space name:function_name space type:typeName { return createNode( NODE_TYPE, name, identifier, type ) }
  / space identifier:id space name:function_name expr:expression { return createNode( NODE_VAR, name, identifier, expr ) }
+ / space identifier:id space name:function_name { return createNode( NODE_VAR, name, identifier ) }
 / space identifier:id space 'spoke' { return createNode( NODE_RETURN, 'spoke', identifier) }
 
 
@@ -86,7 +87,6 @@ primitive_expression
 = num:[0-9]+ { return createNode( NODE_CONST, num.join(""), 'number' ) }
 / letter:([\'][^\'][\']) { return createNode( NODE_CONST, letter[1], 'letter' ) }
 / identifier:id
-/ ''
 / '(' expr:expression ')'
 
 typeName
