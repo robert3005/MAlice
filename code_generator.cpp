@@ -71,7 +71,6 @@ void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
 	Main = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
-	Main -> dump();
 	BasicBlock *BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", Main );
 	Builder.SetInsertPoint( BB );
 
