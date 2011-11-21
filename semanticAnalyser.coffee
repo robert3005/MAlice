@@ -5,7 +5,7 @@ module.exports = (() ->
 		analyse: (parseTree) ->
 			@checkTree = new rbtree.RBTree
 			check node for node in parseTree 
-	
+		# TODO - somehow check the unary operators, so far it doesnt support this operation
 		check : (node) ->
 			switch node.value
 				when 'was a'
@@ -58,11 +58,12 @@ module.exports = (() ->
 		x became 'a'   counter#VAR#NONE#x,1,|1#CONST#NONE#LETTER,a,
 		x became 1 + 2 counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,
 		x became y + z counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,
+		x became ~5	   counter#VAR#NONE#x,1,|1#OP#NEG#2,|2#CONST#NONE#NUMBER,5,
 		x drank		   counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,x,|3#CONST#NONE#NUBMER,1,
 		x spoke		   counter#RET#NONE#x,
 		this became 4 + 6 + 8 + 10 counter#VAR#NONE#this,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,4,|3#OP#ADD#4,5|4#CONST#NONE#NUMBER,6,|5#OP#ADD#6,7...
 		###	
-
+		# TODO Bruteforce checking of the type of the variable, when we have ex x became y, how to check y's type
 		buildtree: () ->
 			counter = 0
 			stringTree = changeToString node counter for node in parseTree
@@ -78,8 +79,11 @@ module.exports = (() ->
 					else "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{changeToString node.children[1] counter}"
 				# const value
 				when 2 then "#{counter}#CONST#NONE#NUMBER/LETTER,#{node.value}|"
-				# operations
-				when 0 then "#{counter}##{nodeType node}##{opType node}##{++counter},#{++counter},|#{changeToString node.children[0] counter-1}|#{changeToString node.children[1] counter}"
+				# operations /node.value 10 is for the neg operation
+				when 0 
+					if node.value is 10
+						"#{counter}##{nodeType node}##{opType node}##{++counter},|#{changeToString node.children[0] counter}"
+					else "#{counter}##{nodeType node}##{opType node}##{++counter},#{++counter},|#{changeToString node.children[0] counter-1}|#{changeToString node.children[1] counter}"
 				# spoke, return statement
 				when 4 then "#{counter}##{nodeType node}##{opType node}##{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undeifned and it actually works
