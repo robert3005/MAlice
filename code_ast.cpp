@@ -348,7 +348,8 @@ Value * VARNode::codeGen(){
 	lhs = children[0] -> codeGen();
 	
 	lhs -> dump();
-
+	Builder.GetInsertBlock() -> dump();
+	Builder.GetInsertBlock() -> getParent() -> dump();
 	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 	Main -> dump();
 	/*IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
