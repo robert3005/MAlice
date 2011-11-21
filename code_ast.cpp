@@ -350,8 +350,15 @@ Value * VARNode::codeGen(){
 	lhs -> dump();
 
 	AllocaInst *Alloca = Builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
-
 	Alloca -> dump();
+
+	Value * S = Builder.CreateStore(lhs, Alloca);
+
+	S -> dump();
+
+	Value * V = Alloca;
+
+	V -> dump();
 
 	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 	/*IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
