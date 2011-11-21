@@ -247,7 +247,7 @@ module.exports = (function(){
           pos = savedPos5;
         }
         var result18 = result17 !== null
-          ? (function(identifier, name, type) { return createNode( NODE_OP, name, identifier, type ) })(result17[1], result17[3], result17[5])
+          ? (function(identifier, name, type) { return createNode( NODE_TYPE, name, identifier, type ) })(result17[1], result17[3], result17[5])
           : null;
         if (result18 !== null) {
           var result16 = result18;
@@ -292,7 +292,7 @@ module.exports = (function(){
             pos = savedPos3;
           }
           var result10 = result9 !== null
-            ? (function(identifier, name, expr) { return createNode( NODE_OP, name, identifier, expr ) })(result9[1], result9[3], result9[4])
+            ? (function(identifier, name, expr) { return createNode( NODE_VAR, name, identifier, expr ) })(result9[1], result9[3], result9[4])
             : null;
           if (result10 !== null) {
             var result8 = result10;
@@ -339,7 +339,7 @@ module.exports = (function(){
               pos = savedPos1;
             }
             var result3 = result2 !== null
-              ? (function(identifier) { return createNode( NODE_OP, OP_RETURN, identifier) })(result2[1])
+              ? (function(identifier) { return createNode( NODE_RETURN, 'spoke', identifier) })(result2[1])
               : null;
             if (result3 !== null) {
               var result1 = result3;
@@ -1159,46 +1159,26 @@ module.exports = (function(){
         }
         
         
-        var savedPos1 = pos;
         if (input.substr(pos, 6) === "letter") {
-          var result5 = "letter";
+          var result2 = "letter";
           pos += 6;
         } else {
-          var result5 = null;
+          var result2 = null;
           if (reportMatchFailures) {
             matchFailed("\"letter\"");
           }
         }
-        var result6 = result5 !== null
-          ? (function(type) { return createNode( NODE_TYPE, type) })(result5)
-          : null;
-        if (result6 !== null) {
-          var result4 = result6;
+        if (result2 !== null) {
+          var result0 = result2;
         } else {
-          var result4 = null;
-          pos = savedPos1;
-        }
-        if (result4 !== null) {
-          var result0 = result4;
-        } else {
-          var savedPos0 = pos;
           if (input.substr(pos, 6) === "number") {
-            var result2 = "number";
+            var result1 = "number";
             pos += 6;
           } else {
-            var result2 = null;
+            var result1 = null;
             if (reportMatchFailures) {
               matchFailed("\"number\"");
             }
-          }
-          var result3 = result2 !== null
-            ? (function(type) { return createNode( NODE_TYPE, type) })(result2)
-            : null;
-          if (result3 !== null) {
-            var result1 = result3;
-          } else {
-            var result1 = null;
-            pos = savedPos0;
           }
           if (result1 !== null) {
             var result0 = result1;
@@ -2156,13 +2136,13 @@ NODE_CONST	= 2
       
 NODE_TYPE	= 3
       
+NODE_RETURN = 4
+      
 
       
 OP_NONE		= -1
       
-OP_RETURN       =11
-      
-OP_ADD          = 1
+OP_ADD      = 1
       
 OP_OR		= 2
       
