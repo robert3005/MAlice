@@ -225,7 +225,7 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 		i++;
 	}
 
-	printf( "Create TYPENode id: %d %d type: %d", node -> getId(), node -> getVarId(), node -> getVarType() );
+	printf( "Create TYPENode id: %d %s type: %d", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 
@@ -265,7 +265,7 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 		i++;
 	}
 
-	printf( "Create VARNode id: %d %d type: %d", node -> getId(), node -> getVarId(), node -> getVarType() );
+	printf( "Create VARNode id: %d %s type: %d", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 }
