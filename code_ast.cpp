@@ -285,6 +285,12 @@ VarType Node::getVarType(){
 void Node::setVarType( VarType v ){
 	varType = v;
 }
+string Node::getVarId(){
+	return id;
+}
+void Node::setVarId( string s ){
+	id = s;
+}
 string Node::getValueString(){
 	return valueString;
 }
