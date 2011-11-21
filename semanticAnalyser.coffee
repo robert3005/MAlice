@@ -80,8 +80,8 @@ module.exports = (() ->
 		# Update - now every const has a type in parsetree, the concern above has been resolved
 		buildtree: () ->
 			counter = 0
-			stringTree = @changeToString node counter for node in @parseTree
-			stringTree.join
+			stringTree = @changeToString node, counter for node in @parseTree
+			stringTree.join ""
 		changeToString: (node, counter) ->
 			toString = ''
 			switch node?.type
