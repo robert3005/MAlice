@@ -88,7 +88,7 @@ void makeLLVMModule( Node & ast ){
 	Value *CurVar = Builder.CreateLoad(Two, "dwa");
 	
 	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 3 );
-	Value * add = Builder.CreateAdd( Two, Three );
+	Value * add = Builder.CreateAdd( CurVar, Three );
 
   	//root -> dump();
   	Builder.CreateRet( add );
