@@ -41,7 +41,7 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 	int i = 0;
 
-	while( string::npos != ( pos = rawData.find( "|" ) ) && i < 3 ){
+	while( rawData.length() > 1 && string::npos != ( pos = rawData.find( "|" ) )){
 		node = rawData.substr( 0, pos );
 	
 		fieldPos = node.find( "#" );
