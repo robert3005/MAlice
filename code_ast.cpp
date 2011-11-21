@@ -349,8 +349,8 @@ Value * VARNode::codeGen(){
 	
 	lhs -> dump();
 
-	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	TheFunction -> dump();
+	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+	Main -> dump();
 	/*IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	
 	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);

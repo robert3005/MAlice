@@ -70,8 +70,8 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
-	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
-	BasicBlock *BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", F );
+	Main = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
+	BasicBlock *BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", Main );
 	Builder.SetInsertPoint( BB );
 
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");

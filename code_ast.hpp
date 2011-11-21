@@ -23,6 +23,7 @@ enum VarType {STRING = 0, NUMBER, LETTER};
 
 static llvm::Module *theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
+static llvm::Function * Main;
 
 /*
 typedef Value* Valueptr
