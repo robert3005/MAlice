@@ -69,20 +69,23 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
-	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
-	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
-	BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", F );
-	Builder.SetInsertPoint( BB );
+	//FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
+	//Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
+	//BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", F );
+	//Builder.SetInsertPoint( BB );
 
   	// Create the add instruction... does not insert...
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-	Instruction * root = dynamic_cast<Instruction*>( ast.codeGen() );
+  	Value * root = ast.codeGen();
 
-	BB->getInstList().push_back( root );
+	//Instruction * root = dynamic_cast<Instruction*>( ast.codeGen() );
+
+	//BB->getInstList().push_back( root );
 
   	// Create the return instruction and add it to the basic block
-  	BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
+  	//BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
+  	Builder.CreateRet( root );
 }
 
 int main(){
