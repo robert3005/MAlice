@@ -26,9 +26,9 @@ module.exports = (() ->
 					else @checkTree.rbInsert new RBTNode node.children[0], node.children[1]
 				when 'became '
 					@checkIfInTree node.children[0]
-					if node.children[1]?.value is 2 and node.children[1]?.value is ///[0-9]+/// and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
+					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
 					then throw new analyser.SemanticError 'variable has been declared as another type' 
-					if node.children[1]?.value is 2 and node.children[1]?.value is ///([\'][^\'][\'])/// and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
+					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'letter' and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
 					then throw new analyser.SemanticError 'variable has been declared as another type'
 					@checkExpression node
 				when 'drank', 'ate'
@@ -40,7 +40,7 @@ module.exports = (() ->
 
 		checkIfANumber: (strNum) ->
 			console.log strNum
-			if strNum isnt ///[0-9]+///
+			if strNum isnt 'number'
 				throw new analyser.SemanticError 'This operation supports only numbers'
 
 		checkExpression: (node) ->
@@ -52,7 +52,7 @@ module.exports = (() ->
 	
 		checkVarConst: (node) ->
 			if node?.type is 2
-				@checkIfANumber node.value
+				@checkIfANumber node.children[0]
 			else
 				@checkIfInTree node
 				@checkTypeNum node
@@ -69,6 +69,7 @@ module.exports = (() ->
 		x was a number counter#TYPE#NONE#NUMBER,x
 		x became 42    counter#VAR#NONE#x,1,|1#CONST#NONE#NUMBER,42,
 		x became 'a'   counter#VAR#NONE#x,1,|1#CONST#NONE#LETTER,a,
+		x became y	   couunter#VAR#NONE#x,1,|1#VAR#NONE#y
 		x became 1 + 2 counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,
 		x became y + z counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,
 		x became ~5	   counter#VAR#NONE#x,1,|1#OP#NEG#2,|2#CONST#NONE#NUMBER,5,
@@ -76,7 +77,8 @@ module.exports = (() ->
 		x spoke		   counter#RET#NONE#x,
 		this became 4 + 6 + 8 + 10 counter#VAR#NONE#this,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,4,|3#OP#ADD#4,5|4#CONST#NONE#NUMBER,6,|5#OP#ADD#6,7...
 		###	
-		# TODO Bruteforce checking of the type of the variable, when we have ex x became y, how to check y's type
+		# TODO Bruteforce checking of the type of the variable, when we have ex x became 5 or x became 'a', how to check consts type
+		# Update - now every const has a type in parsetree
 		buildtree: () ->
 			counter = 0
 			stringTree = @changeToString node counter for node in @parseTree
@@ -91,7 +93,7 @@ module.exports = (() ->
 						 "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{drankAte node.children[0] node.value}"
 					else "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{changeToString node.children[1] counter}"
 				# const value
-				when 2 then "#{counter}#CONST#NONE#NUMBER/LETTER,#{node.value}|"
+				when 2 then "#{counter}#CONST#NONE##{varType node.children[0]},#{node.value}|"
 				# operations /node.value 10 is for the neg operation
 				when 0 
 					if node.value is 10
@@ -108,10 +110,12 @@ module.exports = (() ->
 				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{changeToString variable}|#{changeToString 1}"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 
+		# TODO We can do the lookup in rbtree to check the type
+		# UPDATE - done
 		getElementCommand: (variable, counter) ->
 				rbnode = @checkTree.rbFind variable
 				if rbnode.key isnt null
-					"#{counter}#VAR#NONE#NUMBER,#{variable}"
+					"#{counter}#VAR#NONE##{rbnode.argumentsType},#{variable}"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 			
 		nodeType: (node) ->

@@ -83,8 +83,8 @@ unary_expression
 / primExpr:primitive_expression
 
 primitive_expression
-= num:[0-9]+ { return createNode( NODE_CONST, num.join("") ) }
-/ letter:([\'][^\'][\']) { return createNode( NODE_CONST, letter[1] ) }
+= num:[0-9]+ { return createNode( NODE_CONST, num.join(""), 'number' ) }
+/ letter:([\'][^\'][\']) { return createNode( NODE_CONST, letter[1], 'letter' ) }
 / identifier:id
 / ''
 / '(' expr:expression ')'
