@@ -94,7 +94,6 @@ module.exports = (() ->
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
 					if node.value is "ate" or node.value is "drank"
-						console.log 'ate'
 						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@counter},|#{@drankAte node}"
 					else
 						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[1]}"
