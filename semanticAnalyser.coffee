@@ -11,7 +11,7 @@ module.exports = (() ->
 				when 'was a'
 					if (checkTree.rbFind node.children[0]).key isnt null
 					then throw new analyser.SemanticError 'variable has been already declared'
-					else checkTree.rbInsert new rbtree.RBTNode node.children[0] node.children[1].value
+					else checkTree.rbInsert new rbtree.RBTNode node.children[0] node.children[1]
 				when 'became'
 					checkIfInTree node.children[0]
 					if node.children[1].value is ///[0-9]+/// and (checkTree.rbFind node.children[0]).argumentsType is 'letter'
@@ -26,7 +26,7 @@ module.exports = (() ->
 				when 'drank', 'ate'
 					checkIfInTree node.children[0]
 					checkTypeNum node.children[0]
-				when 11
+				when 'spoke'
 					checkIfInTree node.children[0]
 				else throw new analyser.SemanticError 'I do not recognise this function'
 	
@@ -36,39 +36,59 @@ module.exports = (() ->
 		checkTypeNum: (variable) ->
 			if (checkTree.rbFind variable).argumentsType isnt 'number'
 			then throw new analyser.SemanticError 'this function works only with numbers'
-		buildtree: () ->
-			counter = 0
-			stringTree = changeToString node for node in parseTree
-			stringTree.join
-		changeToString: (node) ->
-			# was a
-			str = "#{counter}##{nodeType node}##{opType node}##{varType node},#{node.children[0]},"
-			(checkTree.rbFind node.children[0]).counter = counter
-			# became
-			str = "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{changeToString node.children[1]}"
-			# became expr
-			str = "#{counter}##{nodeType node}##{opType node}##{++counter},#{++counter},"
-				rbnode = checkTree.rbFind node.children[0]
-				if rbnode.key is null
-					"#{counter-1}#CONST#NONE#NUMBER,#{node.children[0]}"
-				else
-					"#{counter-1}#CONST#NONE#NUMBER,#{node.children[0]}"
-			
+
 		###
 		x was a number counter#TYPE#NONE#NUMBER,x
 		x became 42    counter#VAR#NONE#x,1,|1#CONST#NONE#NUMBER,42,
 		x became 'a'   counter#VAR#NONE#x,1,|1#CONST#NONE#LETTER,a,
 		x became 1 + 2 counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,
 		x became y + z counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,
-		x drank		   counter#OP#ADD#x,1,2,|1#VAR#NONE#x,|2#CONST#NONE#NUMBER,1
-		x spoke		   counter#OP#RETURN#x,
-		###
+		x drank		   counter#VAR#NONE#x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,x,|3#CONST#NONE#NUBMER,1,
+		x spoke		   counter#RET#NONE#x,
+		this became 4 + 6 + 8 + 10 counter#VAR#NONE#this,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,4,|3#OP#ADD#4,5|4#CONST#NONE#NUMBER,6,|5#OP#ADD#6,7...
+		###	
+
+		buildtree: () ->
+			counter = 0
+			stringTree = changeToString node counter for node in parseTree
+			stringTree.join
+		changeToString: (node, counter) ->
+			switch node.type
+				# was a only way to declare a type so node.type = 3, we are done
+				when 3 then "#{counter}##{nodeType node}##{opType node}##{varType node},#{node.children[0]},|"
+				# ok, so we have a VAR it might be either became or drank, ate
+				when 1 
+					if node.value is "ate" or "drank"
+						 "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{drankAte node.children[0] node.value}"
+					else "#{counter}##{nodeType node}##{opType node}##{node.children[0]},#{++counter},|#{changeToString node.children[1] counter}"
+				# const value
+				when 2 then "#{counter}#CONST#NONE#NUMBER/LETTER,#{node.value}|"
+				# operations
+				when 0 then "#{counter}##{nodeType node}##{opType node}##{++counter},#{++counter},|#{changeToString node.children[0] counter-1}|#{changeToString node.children[1] counter}"
+				# spoke, return statement
+				when 4 then "#{counter}##{nodeType node}##{opType node}##{node.children[0]},|"
+				# ok, so else case is when we have no object just a variable reference i assume node.type returns undeifned and it actually works
+				else getElementCommand node counter
+
+		drankAte: (variable, func) ->
+			switch func
+				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{changeToString variable}|#{changeToString 1}"
+				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{changeToString variable}|#{changeToString 1}"
+				else "MOTHER OF GOD WE HAVE AN ERROR"
+
+		getElementCommand: (variable, counter) ->
+				rbnode = checkTree.rbFind variable
+				if rbnode.key isnt null
+					"#{counter}#VAR#NONE#NUMBER,#{variable}"
+				else "MOTHER OF GOD WE HAVE AN ERROR"
+			
 		nodeType: (node) ->
 			switch node.type
 				when 0 then "OP"
 				when 1 then "VAR"
 				when 2 then "CONST"
 				when 3 then "TYPE"
+				when 4 then "RET"
 
 		opType: (node) ->
 			switch node.value
@@ -83,8 +103,8 @@ module.exports = (() ->
 				when 8 then "MOD"
 				when 9 then "UNR"
 				when 10 then "NEG"
-				when 11 then "RETURN"
 				else "NONE"
+				
 		varType: (node) ->
 			switch node.children[1]
 				when "number" then "NUMBER"

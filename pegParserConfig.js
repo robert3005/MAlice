@@ -25,10 +25,10 @@ NODE_OP		= 0
 NODE_VAR	= 1
 NODE_CONST	= 2
 NODE_TYPE	= 3
+NODE_RETURN = 4
 
 OP_NONE		= -1
-OP_RETURN       =11
-OP_ADD          = 1
+OP_ADD      = 1
 OP_OR		= 2
 OP_XOR		= 3
 OP_AND		= 4
@@ -50,7 +50,7 @@ root
 assignment
 = space identifier:id space name:function_name space type:typeName { return createNode( NODE_TYPE, name, identifier, type ) }
  / space identifier:id space name:function_name expr:expression { return createNode( NODE_VAR, name, identifier, expr ) }
-/ space identifier:id space 'spoke' { return createNode( NODE_VAR, OP_RETURN, identifier) }
+/ space identifier:id space 'spoke' { return createNode( NODE_RETURN, 'spoke', identifier) }
 
 
 expression

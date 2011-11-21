@@ -9,7 +9,6 @@ module.exports = (() ->
 		@left = null
 		@right = null
 		@parent = null
-		@counter = null
 
 	class RBTree
 	constructor: ->
