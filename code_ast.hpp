@@ -137,11 +137,11 @@ class VARNode : public Node{
 		VARNode();
 		VARNode( SimpleNode& s);
 		llvm::Value *codeGen();
+		llvm::AllocaInst * alloca;
 
 	protected:
 		llvm::Value *lhs;
-};
-
+};		
 class RETNode : public Node{
 	public:
 		RETNode();

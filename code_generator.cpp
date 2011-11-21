@@ -81,15 +81,15 @@ void makeLLVMModule( Node & ast ){
 	Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
 	
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	//InitVal = ConstantFP::get(getGlobalContext(), APFloat(0.0));
+	InitVal = ConstantFP::get(getGlobalContext(), APFloat(0.0));
 
 	IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
-	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, "dwa");
+	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
     Builder.CreateStore(Two, Alloca);
 
     Value * V = Alloca;
 
-	Value *CurVar = Builder.CreateLoad(V, "dwa");
+	Value *CurVar = Builder.CreateLoad(V);
 	
 	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 3 );
 	Value * add = Builder.CreateAdd( CurVar, Three );
