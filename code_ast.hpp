@@ -56,8 +56,7 @@ class SimpleNode{
 
 };
 
-static std::map<std::string, Node* > mapOfIds;
-static std::map<std::string, VarType> mapOfTypes;
+
 
 class Node : public SimpleNode{
 	public:
@@ -107,6 +106,9 @@ class Node : public SimpleNode{
 		std::vector<Node*> children;
 
 };
+
+static std::map<std::string, Node* > mapOfIds;
+static std::map<std::string, VarType> mapOfTypes;
 
 class OPNode : public Node{
 	public:
