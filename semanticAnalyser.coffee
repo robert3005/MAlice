@@ -11,19 +11,19 @@ module.exports = (() ->
 				when 'was a '
 					@checkVarName node.children[0]
 					if (@checkTree.rbFind node.children[0]) isnt null
-						throw new analyser.SemanticError "Variable #{node.children[0]} has been already declared"
+						throw new analyser.SemanticError "Variable '#{node.children[0]}' has been already declared"
 					else 
 						@checkTree.rbInsert new RBTNode node.children[0], node.children[1], node.id
 				when 'became '
 					@checkIfInTree node.children[0]
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
-					then throw new analyser.SemanticError "Variable #{node.children[0]} was declared as a letter, not a number" 
+					then throw new analyser.SemanticError "Variable '#{node.children[0]}' was declared as a letter, not a number" 
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'letter' and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
-					then throw new analyser.SemanticError "Variable #{node.children[0]} was declared as a number, not a letter" 
+					then throw new analyser.SemanticError "Variable '#{node.children[0]}' was declared as a number, not a letter" 
 					if (@checkTree.rbFind node.children[0]).argumentsType is 'number' and (@checkTree.rbFind node.children[1])?.argumentsType is 'letter'
-					then throw new analyser.SemanticError "Cannot assign #{node.children[1]} of type letter to #{node.children[0]} of type number"
+					then throw new analyser.SemanticError "Cannot assign '#{node.children[1]}' of type letter to '#{node.children[0]}' of type number"
 					if (@checkTree.rbFind node.children[0]).argumentsType is 'letter' and (@checkTree.rbFind node.children[1])?.argumentsType is 'number'
-					then throw new analyser.SemanticError "Cannot assign #{node.children[1]} of type number to #{node.children[0]} of type letter"
+					then throw new analyser.SemanticError "Cannot assign '#{node.children[1]}' of type number to '#{node.children[0]}' of type letter"
 					if node?.children[1]?.type is 0
 						@checkExpression node
 					else @checkIfInTree node.children[1]
@@ -57,11 +57,11 @@ module.exports = (() ->
 
 		checkIfInTree: (variable) ->
 			if @checkTree.rbFind variable is null
-			then throw new analyser.SemanticError 'Variable #{variable} has not been declared'
+			then throw new analyser.SemanticError "Variable '#{variable}' has not been declared"
 
 		checkTypeNum: (variable) ->
 			if (@checkTree.rbFind variable)?.argumentsType is 'letter'
-			then throw new analyser.SemanticError "The operation works only with numbers, but #{variable} is a letter"
+			then throw new analyser.SemanticError "The operation works only with numbers, but '#{variable}' is a letter"
 
 		### Tree Encoding - tree is sent in this form to code generation part
 		x was a number counter#TYPE#NONE#NUMBER,x,|
