@@ -79,13 +79,15 @@ void makeLLVMModule( Node & ast ){
 
   	Value * root = ast.codeGen();
 
+  	root -> dump();
+
 	//Instruction * root = dynamic_cast<Instruction*>( ast.codeGen() );
 
 	//BB->getInstList().push_back( root );
 
   	// Create the return instruction and add it to the basic block
   	//BB->getInstList().push_back(ReturnInst::Create(getGlobalContext(), root));
-  	Builder.CreateRet( root );
+  	//Builder.CreateRet( root );
 }
 
 int main(){
