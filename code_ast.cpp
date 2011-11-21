@@ -291,6 +291,12 @@ string Node::getVarId(){
 void Node::setVarId( string s ){
 	id = s;
 }
+Value * Node::getValue(){
+	return value;
+}
+void Node::setValue( Value * v ){
+	value = v;
+}
 string Node::getValueString(){
 	return valueString;
 }
@@ -305,8 +311,12 @@ void Node::setValueNumber( int v ){
 }
 
 //VARNode
-Value* VARNode::codeGen(){
-  	//return NamedValues[id];
+VARNode::VARNode( SimpleNode& s) : Node( s ){
+	
+}
+
+Value * VARNode::codeGen(){
+  	return Builder.createLoad( mapfOfIds[ node -> getVarId() ], node -> getVarId().c_str() );
 }
 
 //CONSTNode

@@ -80,6 +80,9 @@ class Node : public SimpleNode{
 		
 		int getValueNumber();
 		void setValueNumber( int );
+			
+		Value * getValue();
+		void setValue( Value * );
 				
 		void debug();
 	protected:
@@ -96,6 +99,7 @@ class Node : public SimpleNode{
 		VarType varType;
 		
 		//values
+		Value * value;
 		int valueNumber;
 		std::string valueString;
 
@@ -129,7 +133,7 @@ class OPNode : public Node{
 class VARNode : public Node{
 		public:
 		VARNode();
-		VARNode( SimpleNode& s){};
+		VARNode( SimpleNode& s);
 		llvm::Value *codeGen();
 };
 
