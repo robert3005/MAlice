@@ -155,7 +155,7 @@ class CONSTNode : public Node{
 
 class TYPENode : public Node{
 	public:
-		TYPENode();
+		TYPENode(){};
 		TYPENode( SimpleNode& s);
 		llvm::Value *codeGen();	
 
