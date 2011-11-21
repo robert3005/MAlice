@@ -349,7 +349,7 @@ Value * VARNode::codeGen(){
 	
 	lhs -> dump();
 
-	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+	/*Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	
 	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
@@ -364,9 +364,9 @@ Value * VARNode::codeGen(){
 
 	Value *CurVar = Builder.CreateLoad(V);
 
-	CurVar -> dump();
+	CurVar -> dump();*/
 
-	return CurVar;
+	return lhs;
 }
 
 //CONSTNode
