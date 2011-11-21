@@ -98,6 +98,9 @@ class Node : public SimpleNode{
 		//children
 		std::vector<Node*> children;
 
+		Node * varNodeWithValue;
+		bool allocated;
+
 	protected:
 		
 

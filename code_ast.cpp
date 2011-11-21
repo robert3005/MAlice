@@ -6,7 +6,7 @@
 using namespace llvm;
 using namespace std;
 
-#define DEBUG true
+#define DEBUG false
 //SimpleNode
 SimpleNode::SimpleNode(){}
 
@@ -106,7 +106,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 			case OP: 	newNode = Node::createOPNode( *(*it).second, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
 			case VAR: 	newNode = Node::createVARNode( *(*it).second, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
 			case CONST: newNode = Node::createCONSTNode( *(*it).second, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
-			case TYPE:	newNode = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
+			case TYPE:	newNode = Node::createTYPENode( *(*it).second, connectionsQueue );  nodes[ newNode -> getId() ] = newNode; break;
 			case RET:	root = Node::createRETNode( *(*it).second, connectionsQueue ); 	nodes[ root -> getId() ] = root; break;
 			default: break;
 		}
@@ -240,6 +240,8 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 		i++;
 	}
 
+	node -> allocated = false;
+
 	mapOfIds[ node -> getVarId() ] = node;
 
 	if(DEBUG) printf( "Create TYPE - VAR Node id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
@@ -290,6 +292,7 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 		if(DEBUG) if( mapOfIds.find( varId ) != mapOfIds.end() ) printf("Istnieje!\n");
 		tn = mapOfIds[varId];
 		node -> tn = tn;
+		tn -> varNodeWithValue = node;
 		mapOfIds[varId] = node;
 
 		connections.push_back( make_pair( node -> getId(), atoi( varValue.c_str() ) ) );
@@ -384,7 +387,7 @@ Value * VARNode::codeGen(IRBuilder<> & Builder){
 	Value * V;
  		
 	if( set == 1 ){	
-		tn -> codeGen( Builder );
+		if( ! tn -> allocated ) tn -> codeGen( Builder );
 		alloca = tn -> alloca;
 		lhs = children[0] -> codeGen( Builder );
 		V = Builder.CreateStore( lhs, alloca );
@@ -437,17 +440,19 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 
 Value * TYPENode::codeGen(IRBuilder<> & Builder){
 	if(DEBUG) printf("TYPENode::codeGen %d\n", uniqueId);
-	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	
-	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
-	
-	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
+	if( !allocated ){
+		Function *TheFunction = Builder.GetInsertBlock() -> getParent();
+		
+		IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
+		
+		AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
 
-	alloca = Alloca;	
+		alloca = Alloca;	
 
-	if(DEBUG) printf("Memory allocated\n");
-
-	return Alloca;
+		if(DEBUG) printf("Memory allocated\n");
+		allocated = true;
+	}
+	return varNodeWithValue -> codeGen( Builder );
 }
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
