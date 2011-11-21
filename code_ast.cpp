@@ -104,12 +104,12 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 			case OP: 	newNode = Node::createOPNode( *(*it).second, connectionsQueue ); break;
 			case VAR: 	newNode = Node::createVARNode( *(*it).second, connectionsQueue ); break;
 			case CONST: newNode = Node::createCONSTNode( *(*it).second, connectionsQueue ); break;
-			case TYPE:	newNode = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
+			case TYPE:	newNode = 0; Node::createTYPENode( *(*it).second, connectionsQueue );  break;
 			case RET:	root = Node::createRETNode( *(*it).second, connectionsQueue );  break;
 			default: break;
 		}
 
-		nodes[ newNode -> getId() ] = newNode;
+		if(newNode != 0) nodes[ newNode -> getId() ] = newNode;
 
 		//newNode -> codeGen() -> dump();
 
