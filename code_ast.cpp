@@ -45,7 +45,7 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> op = MOD;
 	} else if( op.compare( "UNR" ) == 0 ){
 		this -> op = UNR;
-	} else if( op.compare( "NEG" ) == 0 ){
+	} else if( op.compare( "NOT" ) == 0 ){
 		this -> op = NEG;
 	} 
 
@@ -564,5 +564,5 @@ Value* OPNode::codeGenUNR( llvm::IRBuilder<> & Builder, OPNode & n ){
 }
 
 Value* OPNode::codeGenNEG( llvm::IRBuilder<> & Builder, OPNode & n ){
-	return Builder.CreateSub( Builder.CreateNeg( n.lhs ), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 ) );
+	return /*Builder.CreateSub( */Builder.CreateNeg( n.lhs )/*, ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 1 ) )*/;
 }
