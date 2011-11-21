@@ -564,5 +564,5 @@ Value* OPNode::codeGenUNR( llvm::IRBuilder<> & Builder, OPNode & n ){
 }
 
 Value* OPNode::codeGenNEG( llvm::IRBuilder<> & Builder, OPNode & n ){
-	return /*Builder.CreateSub( */Builder.CreateNeg( n.lhs )/*, ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 1 ) )*/;
+	return Builder.CreateSub( Builder.CreateNeg( n.lhs ), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 1 ) );
 }

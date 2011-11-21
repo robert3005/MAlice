@@ -87,7 +87,7 @@ void makeLLVMModule( Node & ast ){
   	FunctionType *ft = FunctionType::get(Type::getInt32Ty(getGlobalContext()), args, false); 
 	Function *g = Function::Create(ft, Function::ExternalLinkage, Twine("exit"), theModule);
 	
-  	CallInst * ce = Builder.CreateCall( g, ConstantInt::getSigned( Type::getInt32Ty( getGlobalContext() ), (-6)) );
+  	CallInst * ce = Builder.CreateCall( g, root );
 
   	Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 ) );
 }
