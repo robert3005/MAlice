@@ -347,6 +347,8 @@ Value * VARNode::codeGen(){
 
 	lhs = children[0] -> codeGen();
 	
+	lhs -> dump();
+
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 	IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
 	
@@ -357,6 +359,8 @@ Value * VARNode::codeGen(){
 	Value * V = Alloca;
 
 	Value *CurVar = Builder.CreateLoad(V);
+
+	CurVar -> dump();
 
 	return CurVar;
 }
