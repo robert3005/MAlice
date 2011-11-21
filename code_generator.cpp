@@ -81,7 +81,7 @@ void makeLLVMModule( Node & ast ){
 	Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
 	Value *CurVar = Builder.CreateLoad(Two, "dwa");
 	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 3 );
-	Value * add = Builder.CreateAdd( CurVar, Three );
+	Value * add = Builder.CreateAdd( Two, Three );
 
   	//root -> dump();
   	Builder.CreateRet( add );
@@ -114,11 +114,11 @@ int main(){
 
 	makeLLVMModule( *ast );
 
-	//verifyModule( *theModule, PrintMessageAction );
+	verifyModule( *theModule, PrintMessageAction );
 
-	//PassManager PM;
-	//PM.add( createPrintModulePass( &outs() ) );
-	//PM.run( *theModule );
+	PassManager PM;
+	PM.add( createPrintModulePass( &outs() ) );
+	PM.run( *theModule );
 
 	//theModule -> dump();
 
