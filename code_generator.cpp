@@ -72,7 +72,7 @@ void makeLLVMModule( Node & ast ){
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
 	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
 	BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", F );
-	Builder.SetInsertPoint(BB);
+	Builder.SetInsertPoint( BB );
 
   	// Create the add instruction... does not insert...
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
