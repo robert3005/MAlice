@@ -14,25 +14,40 @@ module.exports = (() ->
 					else checkTree.rbInsert new rbtree.RBTNode node.children[0] node.children[1]
 				when 'became'
 					checkIfInTree node.children[0]
-					if node.children[1].value is ///[0-9]+/// and (checkTree.rbFind node.children[0]).argumentsType is 'letter'
+					if node.children[1]?.value is 2 and node.children[1]?.value is ///[0-9]+/// and (checkTree.rbFind node.children[0]).argumentsType is 'letter'
 					then throw new analyser.SemanticError 'variable has been declared as another type' 
-					if node.children[1].value is ///([\'][^\'][\'])/// and (checkTree.rbFind node.children[0]).argumentsType is 'number'
-					then throw new analyser.SemanticError 'variable has been declared as another type' 
-					if node.children[1].value <= 10 and node.children[1].value >= 1
-						checkIfInTree node.children[1].children[0]
-						checkTypeNum node.children[1].children[0]
-						checkIfInTree node.children[1].children[1]
-						checkTypeNum node.children[1].children[1]
+					if node.children[1]?.value is 2 and node.children[1]?.value is ///([\'][^\'][\'])/// and (checkTree.rbFind node.children[0]).argumentsType is 'number'
+					then throw new analyser.SemanticError 'variable has been declared as another type'
+					checkExpression node
 				when 'drank', 'ate'
 					checkIfInTree node.children[0]
 					checkTypeNum node.children[0]
 				when 'spoke'
 					checkIfInTree node.children[0]
 				else throw new analyser.SemanticError 'I do not recognise this function'
+
+		checkIfANumber: (strNum) ->
+			if strNum isnt ///[0-9]+///
+				throw new analyser.SemanticError 'This operation supports only numbers'
+
+		checkExpression: (node) ->
+			while node.children[1]?.type is 0
+				checkVarConst node.children[1].children[0]
+				node = node.children[1]
+			checkVarConst node?.children[0]
+			checkVarConst node?.children[1]
 	
+		checkVarConst: (node) ->
+			if node?.type is 2
+				checkIfANumber node.value
+			else
+				checkIfInTree node
+				checkTypeNum node
+
 		checkIfInTree: (variable) ->
 			if (checkTree.rbFind variable).key is null
 			then throw new analyser.SemanticError 'variable has not been declared'
+
 		checkTypeNum: (variable) ->
 			if (checkTree.rbFind variable).argumentsType isnt 'number'
 			then throw new analyser.SemanticError 'this function works only with numbers'
@@ -53,7 +68,7 @@ module.exports = (() ->
 			stringTree = changeToString node counter for node in parseTree
 			stringTree.join
 		changeToString: (node, counter) ->
-			switch node.type
+			switch node?.type
 				# was a only way to declare a type so node.type = 3, we are done
 				when 3 then "#{counter}##{nodeType node}##{opType node}##{varType node},#{node.children[0]},|"
 				# ok, so we have a VAR it might be either became or drank, ate
@@ -104,7 +119,7 @@ module.exports = (() ->
 				when 9 then "UNR"
 				when 10 then "NEG"
 				else "NONE"
-				
+
 		varType: (node) ->
 			switch node.children[1]
 				when "number" then "NUMBER"
