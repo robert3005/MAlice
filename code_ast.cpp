@@ -92,18 +92,6 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 	//Generate root of AST
 	Node * root;
 
-	switch( (*it).second -> getType() ){
-		case OP: 	root = Node::createOPNode( *(*it).second, connectionsQueue ); break;
-		case VAR: 	root = Node::createVARNode( *(*it).second, connectionsQueue ); break;
-		case CONST: root = Node::createCONSTNode( *(*it).second, connectionsQueue ); break;
-		case TYPE:	root = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
-		case RET:	root = Node::createRETNode( *(*it).second, connectionsQueue );  break;
-		default: break;
-	}
-
-	nodes[root -> getId()] = root;
-	it++;
-
 	SimpleNode* processed;
 	Node* newNode;
 
@@ -117,7 +105,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 			case VAR: 	newNode = Node::createVARNode( *(*it).second, connectionsQueue ); break;
 			case CONST: newNode = Node::createCONSTNode( *(*it).second, connectionsQueue ); break;
 			case TYPE:	newNode = Node::createTYPENode( *(*it).second, connectionsQueue );  break;
-			case RET:	newNode = Node::createRETNode( *(*it).second, connectionsQueue );  break;
+			case RET:	root = Node::createRETNode( *(*it).second, connectionsQueue );  break;
 			default: break;
 		}
 
@@ -128,6 +116,7 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		it++;
 	}
 
+	nodes[root -> getId()] = root;
 
 	//build AST :)
 	for( conIt = connectionsQueue.begin(); conIt != connectionsQueue.end(); conIt++ ){
