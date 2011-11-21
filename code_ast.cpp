@@ -280,14 +280,14 @@ Value* OPNode::codeGenADD( OPNode & n ){
 	//printf("OPNode::codeGenADD CG\n");
 	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
   	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
-  	//Instruction *Four = dynamic_cast<Instruction*>(BinaryOperator::Create(Instruction::Add, Two, Three ));
+  	Value *Four = BinaryOperator::Create(Instruction::Add, Two, Three ));
   	
   	//BasicBlock *tmpBB = BasicBlock::Create(getGlobalContext(), "", 0, BB);
 	//tmpBB -> getInstList().push_back( Four );
 
 	//Builder.SetInsertPoint(tmpBB);
 	
-	return Builder.CreateAdd( Two, Three );
+	return Builder.CreateAdd( n.lhs, Four );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
