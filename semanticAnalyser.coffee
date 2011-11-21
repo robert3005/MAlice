@@ -3,6 +3,8 @@ module.exports = (() ->
 	analyser =
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
+			console.log parseTree[parseTree.length-1].id
+			@counter = parseTree[parseTree.length-1].id + 1
 			@check node for node in parseTree 
 			@checkTree
 		# TODO - somehow check the unary operators, so far it doesnt support this operation
@@ -11,19 +13,19 @@ module.exports = (() ->
 				when 'was a '
 					@checkVarName node.children[0]
 					if (@checkTree.rbFind node.children[0]) isnt null
-						throw new analyser.SemanticError 'variable has been already declared'
+						throw new analyser.SemanticError "Variable #{node.children[0]} has been already declared"
 					else 
-						@checkTree.rbInsert new RBTNode node.children[0], node.children[1]
+						@checkTree.rbInsert new RBTNode node.children[0], node.children[1], node.id
 				when 'became '
 					@checkIfInTree node.children[0]
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
-					then throw new analyser.SemanticError 'variable has been declared as another type'  
+					then throw new analyser.SemanticError "Variable #{node.children[0]} was declared as a letter, not a number" 
 					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'letter' and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
-					then throw new analyser.SemanticError 'variable has been declared as another type'
+					then throw new analyser.SemanticError "Variable #{node.children[0]} was declared as a number, not a letter" 
 					if (@checkTree.rbFind node.children[0]).argumentsType is 'number' and (@checkTree.rbFind node.children[1])?.argumentsType is 'letter'
-					then throw new analyser.SemanticError 'Cannot assign letter to a number'
+					then throw new analyser.SemanticError "Cannot assign #{node.children[1]} of type letter to #{node.children[0]} of type number"
 					if (@checkTree.rbFind node.children[0]).argumentsType is 'letter' and (@checkTree.rbFind node.children[1])?.argumentsType is 'number'
-					then throw new analyser.SemanticError 'Cannot assign number to a letter' 
+					then throw new analyser.SemanticError "Cannot assign #{node.children[1]} of type number to #{node.children[0]} of type letter"
 					if node?.children[1]?.type is 0
 						@checkExpression node
 					else @checkIfInTree node.children[1]
@@ -32,15 +34,15 @@ module.exports = (() ->
 					@checkTypeNum node.children[0]
 				when 'spoke'
 					@checkIfInTree node.children[0]
-				else throw new analyser.SemanticError 'I do not recognise this function'
+				else throw new analyser.SemanticError "I do not recognise this function"
 
 		checkIfANumber: (strNum) ->
 			if strNum isnt 'number'
-				throw new analyser.SemanticError 'This operation supports only numbers'
+				throw new analyser.SemanticError "This operation supports only numbers"
 		
 		checkVarName: (name) ->
 			if name is 'a'
-			then throw new analyser.SemanticError ' a is a reserved name'
+			then throw new analyser.SemanticError "a is a reserved name"
 
 		checkExpression: (node) ->
 			while node?.children[1]?.type is 0
@@ -57,11 +59,11 @@ module.exports = (() ->
 
 		checkIfInTree: (variable) ->
 			if @checkTree.rbFind variable is null
-			then throw new analyser.SemanticError 'Variable has not been declared'
+			then throw new analyser.SemanticError 'Variable #{variable} has not been declared'
 
 		checkTypeNum: (variable) ->
 			if (@checkTree.rbFind variable)?.argumentsType is 'letter'
-			then throw new analyser.SemanticError 'This function works only with numbers'
+			then throw new analyser.SemanticError 'This operation works only with numbers'
 
 		###
 		x was a number counter#TYPE#NONE#NUMBER,x,|
@@ -78,52 +80,61 @@ module.exports = (() ->
 		# TODO Bruteforce checking of the type of the variable, when we have ex x became 5 or x became 'a', how to check consts type
 		# Update - now every const has a type in parsetree, the concern above has been resolved
 		buildtree: (parseTree) ->
-			counter = 0
+			#counter = 0
 			#[stringTree, counter] = @changeToString node, counter for node in parseTree
 			toString = []
 			for node in parseTree
-				[str, counter] = @changeToString node, counter
+				str = @changeToString node
 				toString.push str
 			toString
-		changeToString: (node, counter) ->
+		changeToString: (node) ->
 			toString = ''
 			switch node?.type
 				# was a only way to declare a type so node.type = 3, we are done
-				when 3 then toString += "#{counter}##{@nodeType node}##{@opType node}##{@varType node.children[1]},#{node.children[0]},|"
+				when 3 then toString += "#{node.id}##{@nodeType node}##{@opType node}##{@varType node.children[1]},#{node.children[0]},|"
 				# ok, so we have a VAR it might be either became or drank, ate
 				when 1 
 					if node.value is "ate" or node.value is "drank"
-						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{@drankAte node, counter}"
+						console.log 'ate'
+						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@counter},|#{@drankAte node}"
 					else
-						toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{++counter},|#{(@changeToString node.children[1], counter)[0]}"
+						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[1]}"
 				# const value
 				when 2 
-					toString += "#{counter}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
+					toString += "#{node.id}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
 				# operations /node.value 10 is for the neg operation
 				when 0 
 					if node.value is 10 or node.value is 9
-						toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},|#{(@changeToString node.children[0], counter)[0]}"
-					else toString += "#{counter}##{@nodeType node}##{@opType node}##{++counter},#{++counter},|#{(@changeToString node.children[0], counter-1)[0]}#{(@changeToString node.children[1], counter)[0]}"
+						toString += "#{node.id}##{@nodeType node}##{@opType node}##{@tryLookup node.children[0]},|#{@changeToString node.children[0]}"
+					else toString += "#{node.id}##{@nodeType node}##{@opType node}##{@tryLookup node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[0]}#{@changeToString node.children[1]}"
 				# spoke, return statement
-				when 4 then toString += "#{counter}##{@nodeType node}##{@opType node}#,#{node.children[0]},|"
+				when 4 then toString += "#{node.id}##{@nodeType node}##{@opType node}##{node.children[0]},|"
 				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
-				else @getElementCommand node, counter
-			[toString, counter+1]
+				#else @getElementCommand node, counter
+			toString
 
-		drankAte: (node, counter) ->
+		tryLookup: (node) ->
+			lookup = @checkTree.rbFind node
+			if lookup isnt null
+				lookup.id
+			else
+				node.id
+
+		drankAte: (node) ->
+			#@counter++
 			switch node.value
-				when "drank" then "#{counter}#OP#SUB##{++counter},#{++counter},|#{(@changeToString node.children[0], counter-1)[0]}#{counter}#CONST#NONE#NUBMER,1,|"
-				when "ate" then "#{counter}#OP#ADD#{++counter},#{++counter},|#{(@changeToString node.children[0], counter-1)[0]}#{counter}#CONST#NONE#NUBMER,1,|"
+				when "drank" then "#{@counter++}#OP#SUB##{@tryLookup node.children[0]},#{++@counter},|#{@changeToString node.children[0]}#{@counter++}#CONST#NONE#NUBMER,1,|"
+				when "ate" then "#{@counter++}#OP#ADD##{@tryLookup node.children[0]},#{++@counter},|#{@changeToString node.children[0]}#{@counter++}#CONST#NONE#NUBMER,1,|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
 
 		# TODO We can do the lookup in rbtree to check the type
 		# UPDATE - done
-		getElementCommand: (variable, counter) ->
+		###getElementCommand: (variable, counter) ->
 				rbnode = @checkTree.rbFind variable
 				if rbnode isnt null
 					"#{counter}#VAR#NONE##{rbnode.argumentsType},#{variable},|"
 				else "MOTHER OF GOD WE HAVE AN ERROR"
-			
+			###
 		nodeType: (node) ->
 			switch node.type
 				when 0 then "OP"

@@ -3,6 +3,8 @@
 #include <utility>
 #include <stack>
 #include <cstdio>
+#include <iostream>
+
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -15,11 +17,13 @@
 #include "llvm/PassManager.h"
 #include "llvm/CallingConv.h"
 #include "llvm/Assembly/PrintModulePass.h"
+#include "llvm/System/DynamicLibrary.h"
+
 
 #include "code_generator.hpp"
 #include "code_ast.hpp"
 
-#define DEBUG true
+#define DEBUG false
 
 using namespace llvm;
 using namespace std;
@@ -69,46 +73,38 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 
 void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
-	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
+
+	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), false);
 	Main = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
 	BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", Main );
 	Builder.SetInsertPoint( BB );
 
-  	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
-
   	Value * root = ast.codeGen( Builder );
 
-	/*Value *Two = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 2 );
+  	
+	vector<const Type *> args;
+	args.push_back(Type::getInt32Ty( getGlobalContext() ));
+  	FunctionType *ft = FunctionType::get(Type::getInt32Ty(getGlobalContext()), args, false); 
+	Function *g = Function::Create(ft, Function::ExternalLinkage, Twine("exit"), theModule);
 	
-	//Function *TheFunction = Builder.GetInsertBlock() -> getParent();
-	IRBuilder<> TmpB(BB, BB -> begin());
-	AllocaInst *Alloca = TmpB.CreateAlloca(Type::getInt32Ty( getGlobalContext() ), 0);
-    Builder.CreateStore(Two, Alloca);
+  	CallInst * ce = Builder.CreateCall( g, root );
 
-    Value * V = Alloca;
-
-	Value *CurVar = Builder.CreateLoad(V);
-		
-	Value *Three = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 6 );
-	Value * add = Builder.CreateAdd( CurVar, root );
-*/
-  	//root -> dump();
-  	Builder.CreateRet( root );
-  	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
-
+  	Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 ) );
 }
 
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
-	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
-	string input2 = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,42,|4#VAR#NONE#,y,5,|5#OP#ADD#3,2,|6#RET#NONE#y,|";
+	string rawDataFromParser;
+	//cin >> rawDataFromParser;
+	//string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
+	rawDataFromParser = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,3,|4#VAR#NONE#,y,5,|5#OP#ADD#3,1,|6#RET#NONE#y,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
 
-	if( DEBUG ) printf("Generating nodes from: %s ...\n", input2.c_str());
+	if( DEBUG ) printf("Generating nodes from: %s ...\n", rawDataFromParser.c_str());
 
-	dataFromParser = codeGen -> parse( input2 );
+	dataFromParser = codeGen -> parse( rawDataFromParser );
 
 	if( DEBUG ){
 		map<int, SimpleNode*>::iterator it;
@@ -129,9 +125,8 @@ int main(){
 	PM.add( createPrintModulePass( &outs() ) );
 	PM.run( *theModule );
 
-	//theModule -> dump();
-
 	delete theModule;
 	delete codeGen;
+	delete ast;
 	return 0;
 }
