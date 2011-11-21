@@ -343,6 +343,7 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 }
 
 Value * VARNode::codeGen(){
+	printf("VARNode::codeGen %d\n", uniqueId);
 	lhs = children[0] -> codeGen();
   	return Builder.CreateLoad( lhs, getVarId().c_str() );
 }
@@ -353,7 +354,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 }
 
 Value* CONSTNode::codeGen(){
-	//printf("CONSTNode CG\n");
+	printf("CONSTNode::codeGen %d\n", uniqueId);
 	/*switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
@@ -382,6 +383,7 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 }
 
 Value * TYPENode::codeGen(){
+	printf("TYPENode::codeGen %d\n", uniqueId);
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 }
 
@@ -390,6 +392,7 @@ RETNode::RETNode( SimpleNode& s) : Node( s ){
 }
 
 Value * RETNode::codeGen(){
+	printf("RETNode::codeGen %d\n", uniqueId);
 	Value * v = mapOfIds[ getVarId() ] -> codeGen();
 	//Builder.CreateRet( v );
 	return v;
@@ -401,7 +404,7 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 
 
 Value* OPNode::codeGen(){
-	//printf("OPNode CG\n");
+	printf("OPNode::codeGen %d\n", uniqueId);
 	lhs = children[0] -> codeGen();
 	rhs = children[1] -> codeGen();
 	
