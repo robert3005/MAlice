@@ -10,7 +10,7 @@ source = source.replace /([ ]{2,}|[\t\r]+)/g, ' '
 
 try
 	parseTree = parser.parse source
-	#labelTree = semantics.analyse parseTree
+	labelTree = semantics.analyse parseTree
 catch e
 	#if e instanceof parser.SyntaxError
 		#We've encountered Syntax error
@@ -18,9 +18,9 @@ catch e
 		#We've encountered semantic error
 	throw e
 
-console.log parseTree[1]
+console.log parseTree
 
-sys.puts semantics.changeToString parseTree[1], 0
+sys.puts semantics.buildtree parseTree
 
 
 #console.log labelTree

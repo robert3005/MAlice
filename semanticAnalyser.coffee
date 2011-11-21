@@ -78,7 +78,7 @@ module.exports = (() ->
 		###	
 		# TODO Bruteforce checking of the type of the variable, when we have ex x became 5 or x became 'a', how to check consts type
 		# Update - now every const has a type in parsetree, the concern above has been resolved
-		buildtree: () ->
+		buildtree: (parseTree) ->
 			counter = 0
 			stringTree = @changeToString node, counter for node in @parseTree
 			stringTree.join ""
