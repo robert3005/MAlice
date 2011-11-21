@@ -217,7 +217,7 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 
 		if( i == 0 ){
 			node -> setVarId( dataChunkRaw );
-			node -> setVarTypr( mapOfTypes[node -> getVarId() ] );
+			node -> setVarType( mapOfTypes[node -> getVarId() ] );
 		} else if( i == 1 ){ 
 			if( node -> getVarType() == STRING ){
 			 	node -> setValueString( dataChunkRaw );
@@ -261,7 +261,7 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 			}
 		} else if( i == 1 ){ 
 			node -> setVarId( dataChunkRaw );
-			mapOfTypes[ node -> geVartId() ] = ndoe -> getVarType();
+			mapOfTypes[ node -> geVarId() ] = node -> getVarType();
 		}
 
 		if(data.length() > pos) data = data.substr( pos + 1 );
@@ -379,7 +379,7 @@ Value* OPNode::codeGenMUL( OPNode & n ){
 }
 
 Value* OPNode::codeGenDIV( OPNode & n ){
-	return Builder.CreateDiv( n.lhs, n.rhs );
+	return Builder.CreateUDiv( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenUNR( OPNode & n ){

@@ -80,8 +80,6 @@ class Node : public SimpleNode{
 		
 		int getValueNumber();
 		void setValueNumber( int );
-		
-		std::string getVarId();
 				
 		void debug();
 	protected:
@@ -94,7 +92,7 @@ class Node : public SimpleNode{
 		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
 
 		//TODO: decide which fields to leave here, and which to move down
-		std::string id = "";
+		std::string id;
 		VarType varType;
 		
 		//values
