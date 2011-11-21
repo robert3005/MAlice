@@ -354,7 +354,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 }
 
 Value* CONSTNode::codeGen(){
-	printf("CONSTNode::codeGen %d - %d\n", uniqueId, n.getValueNumber() );
+	printf("CONSTNode::codeGen %d - %d\n", uniqueId, getValueNumber() );
 	/*switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
