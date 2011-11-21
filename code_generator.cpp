@@ -101,7 +101,7 @@ void makeLLVMModule( Node & ast ){
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
 	string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
-	string input2 = "1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#x,3,|3#CONST#NONE#NUMBER,42,|4#RET#NONE#x,|";
+	string input2 = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,42,|4#VAR#NONE#,y,5,|5#OP#ADD#3,2,|6#RET#NONE#y,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
@@ -119,7 +119,7 @@ int main(){
 
 	Node * ast = Node::createAST( dataFromParser );
 
-	printf("Generate code...\n");
+	if(DEBUG) printf("Generate code...\n");
 
 	makeLLVMModule( *ast );
 

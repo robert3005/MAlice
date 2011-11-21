@@ -90,6 +90,8 @@ class Node : public SimpleNode{
 				
 		void debug();
 		
+		llvm::AllocaInst * alloca;
+
 	protected:
 		
 
@@ -111,6 +113,11 @@ class Node : public SimpleNode{
 		//children
 		std::vector<Node*> children;
 
+		
+
+		int set;
+
+		Node * tn;
 };
 
 static std::map<std::string, Node* > mapOfIds;
@@ -127,15 +134,15 @@ class OPNode : public Node{
 		llvm::Value *lhs;
 		llvm::Value *rhs;
 
-		static llvm::Value *codeGenADD( OPNode& );
-		static llvm::Value *codeGenOR( OPNode& );
-		static llvm::Value *codeGenXOR( OPNode& );
-		static llvm::Value *codeGenAND( OPNode& );
-		static llvm::Value *codeGenSUB( OPNode& ); 
-		static llvm::Value *codeGenMUL( OPNode& );
-		static llvm::Value *codeGenDIV( OPNode& );
-		static llvm::Value *codeGenUNR( OPNode& );
-		static llvm::Value *codeGenNEG( OPNode& );
+		static llvm::Value *codeGenADD( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenOR( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenXOR( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenAND( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenSUB( llvm::IRBuilder<> &, OPNode& ); 
+		static llvm::Value *codeGenMUL( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenDIV( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenUNR( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenNEG( llvm::IRBuilder<> &, OPNode& );
 };
 
 class VARNode : public Node{
@@ -143,7 +150,6 @@ class VARNode : public Node{
 		VARNode();
 		VARNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &);
-		llvm::AllocaInst * alloca;
 
 	protected:
 		llvm::Value *lhs;
@@ -173,6 +179,8 @@ class TYPENode : public Node{
 		TYPENode();
 		TYPENode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &);	
+
+
 
 	protected:
 };
