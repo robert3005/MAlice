@@ -946,7 +946,7 @@ module.exports = (function(){
           pos = savedPos1;
         }
         var result4 = result3 !== null
-          ? (function(unOP, primExpr) { return createNode(NODE_OP, OP_UNR, unOP, primExpr ) })(result3[0], result3[1])
+          ? (function(unOP, primExpr) { return createNode(NODE_OP, unOP, primExpr ) })(result3[0], result3[1])
           : null;
         if (result4 !== null) {
           var result2 = result4;
@@ -1999,7 +1999,7 @@ module.exports = (function(){
           }
         }
         var result2 = result1 !== null
-          ? (function() { return createNode( NODE_OP, OP_NEG)  })()
+          ? (function() { return OP_NEG })()
           : null;
         if (result2 !== null) {
           var result0 = result2;
