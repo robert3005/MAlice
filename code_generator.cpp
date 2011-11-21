@@ -76,8 +76,8 @@ void makeLLVMModule( Node & ast ){
 
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
-  	Value * root = ast.codeGen();
-  	Builder.CreateRet( root );
+  	//Value * root = ast.codeGen();
+  	//Builder.CreateRet( root );
   	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
 }
@@ -102,6 +102,8 @@ int main(){
 	}
 
 	Node * ast = Node::createAST( dataFromParser );
+
+	printf("Generate code...\n");
 
 	makeLLVMModule( *ast );
 
