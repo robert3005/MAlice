@@ -201,6 +201,79 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 
 }
 
+Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new VARNode( simpleNode );
+
+	std::size_t pos;
+
+	string dataChunkRaw;
+	
+	string data = node -> getData(); 
+
+	int i = 0;
+
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
+		dataChunkRaw = data.substr( 0, pos );
+
+		if( i == 0 ){
+			node -> setVarId( dataChunkRaw );
+			node -> setVarTypr( mapOfTypes[node -> getVarId() ] );
+		} else if( i == 1 ){ 
+			if( node -> getVarType() == STRING ){
+			 	node -> setValueString( dataChunkRaw );
+			} else if( node -> getVarType() == NUMBER ){
+				node -> setValueNumber( atoi( dataChunkRaw.c_str() ) );
+			} else {
+				
+			}
+			mapOfIds[node -> getVarId()] = node;
+		}
+
+		if(data.length() > pos) data = data.substr( pos + 1 );
+	
+		i++;
+	}
+
+	//printf( "Create VARNode id: %d type: %d", node -> getId(), node -> getVarType() );
+
+	return node;
+}
+
+Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new TYPENode( simpleNode );
+
+	std::size_t pos;
+
+	string dataChunkRaw;
+	
+	string data = node -> getData(); 
+
+	int i = 0;
+
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
+		dataChunkRaw = data.substr( 0, pos );
+
+		if( i == 0 ){
+			if( dataChunkRaw.compare( "STRING" ) == 0 ){
+				node -> setVarType( STRING );
+			} else if( dataChunkRaw.compare( "NUMBER" ) == 0 ){
+				node -> setVarType( NUMBER );
+			}
+		} else if( i == 1 ){ 
+			node -> setVarId( dataChunkRaw );
+			mapOfTypes[ node -> geVartId() ] = ndoe -> getVarType();
+		}
+
+		if(data.length() > pos) data = data.substr( pos + 1 );
+	
+		i++;
+	}
+
+	//printf( "Create TYPENode id: %d type: %d", node -> getId(), node -> getVarType() );
+
+	return node;
+}
+
 void Node::addChild( Node* n ){
 	children.push_back(n);
 	//printf("Add child %d\n", n -> getId() );
@@ -244,6 +317,11 @@ Value* CONSTNode::codeGen(){
 	return CONSTNode::codeGenNUMBER( *this );
 }
 
+Value* CONSTNode::codeGenLETTER( CONSTNode& n ){
+	//printf("CONSTNode::codeGenLETTER CG\n");
+	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), n.getValueNumber() );
+}
+
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
 	//printf("CONSTNode::codeGenSTRING CG\n");
 	return ConstantArray::get( theModule -> getContext(), n.getValueString(), true);
@@ -277,41 +355,31 @@ Value* OPNode::codeGen(){
 }
 
 Value* OPNode::codeGenADD( OPNode & n ){
-	//printf("OPNode::codeGenADD CG\n");
-	Value *Two = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 2);
-  	Value *Three = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 3);
-  	Value *Four = Builder.CreateAdd( Two, Three );
-  	
-  	//BasicBlock *tmpBB = BasicBlock::Create(getGlobalContext(), "", 0, BB);
-	//tmpBB -> getInstList().push_back( Four );
-
-	//Builder.SetInsertPoint(tmpBB);
-	
-	return Builder.CreateAdd( n.lhs, Four );
+	return Builder.CreateAdd( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenOR( OPNode & n ){
-	return BinaryOperator::Create(Instruction::Or, n.lhs, n.rhs );
+	return Builder.CreateOr( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenXOR( OPNode & n ){
-	return BinaryOperator::Create(Instruction::Xor, n.lhs, n.rhs );
+	return Builder.CreateXor( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenAND( OPNode & n ){
-	return BinaryOperator::Create(Instruction::And, n.lhs, n.rhs );
+	return Builder.CreateAnd( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenSUB( OPNode & n ){
-	return BinaryOperator::Create(Instruction::Sub, n.lhs, n.rhs );
+	return Builder.CreateSub( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenMUL( OPNode & n ){
-	return BinaryOperator::Create(Instruction::Mul, n.lhs, n.rhs );
+	return Builder.CreateMul( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenDIV( OPNode & n ){
-	return BinaryOperator::Create(Instruction::UDiv, n.lhs, n.rhs );
+	return Builder.CreateDiv( n.lhs, n.rhs );
 }
 
 Value* OPNode::codeGenUNR( OPNode & n ){
@@ -320,5 +388,5 @@ Value* OPNode::codeGenUNR( OPNode & n ){
 }
 
 Value* OPNode::codeGenNEG( OPNode & n ){
-	return BinaryOperator::CreateNeg( n.lhs );
+	return Builder.CreateNeg( n.lhs );
 }

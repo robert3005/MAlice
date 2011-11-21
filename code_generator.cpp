@@ -71,23 +71,15 @@ void makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), /*not vararg*/false);
 	Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule);
-	BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", F );
+	BasicBlock *BB = BasicBlock::Create( getGlobalContext(), "EntryBlock", F );
 	Builder.SetInsertPoint( BB );
 
-  	// Create the add instruction... does not insert...
   	//Instruction *root = BinaryOperator::Create(Instruction::Add, Two, Three, "addresult");
 
   	Value * root = ast.codeGen();
+  	Builder.CreateRet( root );
+  	//BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
 
-  	//root -> dump();
-
-	//Instruction * root = dynamic_cast<Instruction*>( ast.codeGen() );
-
-	//BB->getInstList().push_back( root );
-
-  	// Create the return instruction and add it to the basic block
-  	BB -> getInstList().push_back( ReturnInst::Create( getGlobalContext(), root ) );
-  	//Builder.CreateRet( root );
 }
 
 int main(){

@@ -23,7 +23,7 @@ enum VarType {STRING = 0, NUMBER, LETTER};
 
 static llvm::Module *theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
-static llvm::BasicBlock *BB;
+
 /*
 typedef Value* Valueptr
 typedef Value * (*OPGenFunction)( *Module, *Builder );
@@ -57,6 +57,7 @@ class SimpleNode{
 };
 
 static std::map<std::string, SimpleNode* > mapOfIds;
+static std::map<std::string, VarType> mapOfTypes;
 
 class Node : public SimpleNode{
 	public:
@@ -71,24 +72,29 @@ class Node : public SimpleNode{
 		VarType getVarType();
 		void setVarType( VarType );
 		
+		std::string getVarId();
+		void setVarId( std::string );
+
 		std::string getValueString();
 		void setValueString( std::string );
 		
 		int getValueNumber();
 		void setValueNumber( int );
+		
+		std::string getVarId();
 				
 		void debug();
 	protected:
 		
 
 		static Node * createOPNode( SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createTYPENode( SimpleNode&, std::list<std::pair<int, int> >& ){};
+		static Node * createTYPENode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& ){};
 
 		//TODO: decide which fields to leave here, and which to move down
-		std::string id;
+		std::string id = "";
 		VarType varType;
 		
 		//values
