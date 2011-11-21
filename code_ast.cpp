@@ -6,7 +6,7 @@
 using namespace llvm;
 using namespace std;
 
-#define DEBUG false
+#define DEBUG true
 //SimpleNode
 SimpleNode::SimpleNode(){}
 
