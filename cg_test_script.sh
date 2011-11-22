@@ -1,1 +1,0 @@
-./cg_build_script.sh
