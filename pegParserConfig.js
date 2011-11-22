@@ -1,45 +1,46 @@
 {
-counter = 0
-function NODE()
-{
-var id;
-	var type;
-	var value;
-	var children;
-}
 
-//Management functions
-function createNode( type, value, children )
-{
-	var n = new NODE();
-n.id = counter;
-	n.type = type;
-	n.value = value;	
-	n.children = new Array();
-	
-	for( var i = 2; i < arguments.length; i++ )
-		n.children.push( arguments[i] );
+	counter = 0
+
+	function NODE() {
+		var id;
+		var type;
+		var value;
+		var children;
+	};
+
+	//Management functions
+	function createNode( type, value, children ) {
+		var n = new NODE();
+		n.id = counter;
+		n.type = type;
+		n.value = value;	
+		n.children = new Array();
 		
-	return n;
-}
+		for( var i = 2; i < arguments.length; i++ )
+			n.children.push( arguments[i] );
+			
+		return n;
+	};
 
-NODE_OP		= 0
-NODE_VAR	= 1
-NODE_CONST	= 2
-NODE_TYPE	= 3
-NODE_RETURN = 4
+	NODE_OP		= 0
+	NODE_VAR	= 1
+	NODE_CONST	= 2
+	NODE_TYPE	= 3
+	NODE_RETURN = 4
 
-OP_NONE		= -1
-OP_ADD      = 1
-OP_OR		= 2
-OP_XOR		= 3
-OP_AND		= 4
-OP_SUB		= 5
-OP_MUL		= 6
-OP_DIV		= 7
-OP_MOD		= 8
-OP_NOT		= 9
-OP_NEG		= 10
+	OP_NONE		= -1
+	OP_ADD      = 1
+	OP_OR		= 2
+	OP_XOR		= 3
+	OP_AND		= 4
+	OP_SUB		= 5
+	OP_MUL		= 6
+	OP_DIV		= 7
+	OP_MOD		= 8
+	OP_NOT		= 9
+	OP_NEG		= 10
+
 }
 
 start
