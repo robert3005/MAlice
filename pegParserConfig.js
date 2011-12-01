@@ -47,6 +47,28 @@ start
 = root*
 
 root
+= while_block
+/ assignment_line
+/ io_line
+/ if_block
+
+if_block
+= space
+
+while_block
+= space 'eventually' condition 'because' newLine
+/ 'enough times.' newLine
+
+io_line
+= single:io separator { return single }
+/ single:io newLine { return single }
+
+io
+= space string:str space name:function_output space identifier:id {counter++; return createNode( NODE_CONST, name, string, identifier)}
+/ space name:function_input space identifier:id {counter++; return createNode(NODE_CONST, name, identifier)} 
+/ space identifier:id space 'spoke' { counter++; return createNode( NODE_RETURN, 'spoke', identifier) }
+
+assignment_line 
 = single:assignment separator { return single }
 / single:assignment newLine { return single }
 
@@ -54,11 +76,17 @@ assignment
 = space identifier:id space name:function_name space type:typeName { counter++; return createNode( NODE_TYPE, name, identifier, type ) }
  / space identifier:id space name:function_name expr:expression { counter++; return createNode( NODE_VAR, name, identifier, expr ) }
  / space identifier:id space name:function_name { counter++; return createNode( NODE_VAR, name, identifier ) }
-/ space identifier:id space 'spoke' { counter++; return createNode( NODE_RETURN, 'spoke', identifier) }
-
 
 expression
-= or_expression
+= logical_or_exp
+
+logical_or_exp
+=  logical_and_exp '||' logical_or_exp
+/ logical_and_exp
+
+logical_and_exp	
+= or_expression '&&' logical_and_exp
+/ or_expression
 
 or_expression
 = xorExpr:xor_expression space '|' space orExpr:or_expression { counter++; return createNode( NODE_OP, OP_OR, xorExpr, orExpr ) }
@@ -69,7 +97,19 @@ xor_expression
 / and_expression
 
 and_expression
-= addExpr:add_expression space '&' space andExpr:and_expression { counter++; return createNode( NODE_OP, OP_AND, addExpr, andExpr) }
+= eqExpr:equality_exp space '&' space andExpr:and_expression { counter++; return createNode( NODE_OP, OP_AND, eqExpr, andExpr) }
+/ equality_exp
+
+equality_exp
+= relational_exp '==' equality_exp
+/ relational_exp '!=' equality_exp
+/ relational_exp
+
+relational_exp
+= add_expression '<' relational_exp
+/ add_expression '>' relational_exp
+/ add_expression '<=' relational_exp
+/ add_expression '>='relational_exp 
 / add_expression
 
 add_expression
@@ -104,15 +144,28 @@ typeName
 id
 = identifier:([A-Za-z_]+) { return identifier.join("") }
 
+str
+= ([\"][^\"]*[\"])
+
+condition
+= '(' expr:expression ')'
+
 function_name
 = funcName:'was a ' { return funcName }
 / funcName:'became ' { return funcName }
 / funcName:'drank' { return funcName }
 / funcName:'ate' { return funcName }
 
+function_input
+= funcName:'what was' { return funcName }
+
+function_output
+= funcName:'said' { return funcName }
+/ funcName:'thought' { return funcName }
+
 newLine
 = (space 'too' space [\.] space [\n]*) {return 1}
-/ (space [\n]* space [\.\,] space [\n]*) {return 2 }
+/ (space [\n]* space [\.\,\?] space [\n]*) {return 2 }
 
 space
 = ' '* { return }
@@ -124,6 +177,8 @@ separator
 / ([ ]'and'[ ]) {return 10}
 / ([ ]'too'[ ]){return 11}
 / ([ ]'but'[ ]){return 12}
+/ ([ ]'eventually'[ ])
+/ ([ ])
 
 not_op
 = '~' { return OP_NOT }
