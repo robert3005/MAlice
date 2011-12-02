@@ -76,35 +76,32 @@ func_call
 = space fun:function newLine {counter++; return createNode(NODE_FUN_CALL, "function" ,fun)}
 
 if_block
-= space name:ifFun space cond:condition space 'so' space [\n]* ife:ifelse space unsure newLine {counter++; return createNode(NODE_IF, name, cond, ife)}
+= space name:ifFun space cond:condition space 'so' space [\n]* ifB:ifbody {counter++; return createNode(NODE_IF, name, cond, ifB)}
 
 ifelse
 = space 'or' space [\n]* ifBody:start ife:ifelse {counter++; return createNode(NODE_ELSE, "else", ifBody, ife)}
 / space 'or maybe' space cond:condition space 'so' space [\n]* ifBody:start ife:ifelse {counter++; return createNode(NODE_ELSE, "maybe", cond, ifBody, ife)}
-/ space ifBody:start {counter++; return createNode(NODE_IF_BODY, "body", ifBody)}
+/ space unsure newLine {return "endif"}
+
+ifbody
+= space ifBody:start ifE:ifelse {counter++; return createNode(NODE_IF_BODY, "body", ifBody, ifE)}
 
 function
-= identifier:id space '(' arglist:argument_list ')' {counter++; return createNode(NODE_FUN, identifier, arglist)}
+= identifier:id space '(' arglist:argument_fun* ')' {counter++; return createNode(NODE_FUN, identifier, arglist)}
 / arg:id space 'went through' space identifier:id {counter++; return createNode(NODE_FUN, arg, identifier)}
 
-argument_list
-= argument_fun*
-
 argument_fun
-= space arg:legalArgs separator* space { return arg }
+= space arg:legalArgs separator? space { return arg }
 
 func_block
-= space 'The room' space def:function_def 'contained a' space type:typeName [\n]* funcB:start {counter++; return createNode( NODE_FUN_DEF, def, type, funcB)}
+= space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:start {counter++; return createNode( NODE_FUN_DEF, type, def, funcB)}
 / space 'The Looking-Glass' space identifier:id space 'changed a' space type:typeName [\n]* funcB:start {counter++; return createNode( NODE_LOOK_DEF, identifier, type, funcB)}
 
-function_def
-= identifier:id space '(' space arglist:argument_list_types space')' space {counter++; return createNode(NODE_FUN, identifier, arglist)}
-
-argument_list_types
-= argument_type*
+function_type
+= identifier:id space '(' space arglist:argument_type* space')' space {counter++; return createNode(NODE_FUN, identifier, arglist)}
 
 argument_type
-= space type:typeName space identifier:id [\,]* { return [identifier, type]}
+= space stype:spiderType? space type:typeName space identifier:id separator? { counter++; return createNode( NODE_TYPE, "funArgument", identifier, type, stype ) }
 
 loop_block
 = space 'eventually' space cond:condition space 'because' space [\n]* loop:start space [\n]* space 'enough times' newLine {counter++; return createNode( NODE_LOOP, cond, loop )}
@@ -202,6 +199,9 @@ typeName
 / type:'number'
 / type: 'sentence'
 
+spiderType
+= type:'spider' { return type }
+
 id
 = identifier:[A-Za-z_]+ idd:[0-9A-Za-z_]* { return identifier.join("")+idd.join("") }
 
@@ -239,14 +239,16 @@ unsure
 
 newLine
 = (space 'too' space [\.] space [\n]*) {return 1}
-/ (space [\n]* space [\.\,\?] space [\n]*) {return 2 }
+/ (space [\n\t]* space [\.\,\?] space [\n\t]*) {return 2 }
+/ (space 'and' space [\n]*)
+/ (space 'but' space [\n]*)
 
 space
 = [ \t]* { return }
 
 separator
 = ([\,] space [\n])
-/ ([\,][ ]) {return 7}
+/ ([\,]) {return 7}
 / ([?][ ])
 / ([ ]'then'[ ]) {return 8}
 / ([ ]'or'[ ]){return 9}
