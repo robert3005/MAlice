@@ -4,7 +4,7 @@
 #include <stack>
 #include <cstdio>
 #include <iostream>
-
+#include <vector>
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -26,9 +26,9 @@
 int main(){
 	CodeGenerator * codeGen = new CodeGenerator();
 	string rawDataFromParser;
-	cin >> rawDataFromParser;
+	//cin >> rawDataFromParser;
 	//string rawDataFromParser = "0#OP#ADD#1,2,|1#CONST#NONE#NUMBER,1,|2#CONST#NONE#NUBMER,2,|";
-	//rawDataFromParser = "0#TYPE#NONE#NUMBER,y,|1#TYPE#NONE#NUMBER,x,|2#VAR#NONE#,x,3,|3#CONST#NONE#NUMBER,3,|4#VAR#NONE#,y,5,|5#OP#ADD#3,1,|6#RET#NONE#y,|";
+	rawDataFromParser = "0#TYPE#NONE#NUMBER,x,|1#VAR#NONE#,x,2,|2#CONST#NONE#NUMBER,5,|3#WHILE#NONE#4,6,|4#OP#S#1,5,|5#CONST#NONE#NUMBER,8,|6#VAR#NONE#,x,7,|7#OP#SUB#x,8,|8#CONST#NONE#NUMBER,1,|9#RET#NONE#x,|";
 	map<int, SimpleNode*> dataFromParser;
 
 	//read data input
@@ -44,11 +44,12 @@ int main(){
 		}
 	}
 
-	Node * ast = Node::createAST( dataFromParser );
+	map< int, Node * > ast = Node::createAST( dataFromParser );
+
 
 	if(DEBUG) printf("Generate code...\n");
 
-	makeLLVMModule( *ast );
+	makeLLVMModule( ast );
 
 	verifyModule( *theModule, PrintMessageAction );
 
@@ -58,6 +59,6 @@ int main(){
 
 	delete theModule;
 	delete codeGen;
-	delete ast;
+	//delete ast;
 	return 0;
 }
