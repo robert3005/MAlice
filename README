@@ -2,3 +2,16 @@ MAlice compiler by:
 Robert Kruszewski
 Łukasz Koprowski
 Piotr Bar
+
+Dependencies:
+	LLVM
+	Node.js
+	coffeeScript
+	PEG.js
+	node-ffi
+	jasmine-node (for tests)
+
+In order to build ffi receiver program that currently only prints tree that has been passed
+execute following:
+
+g++ -fPIC -g -c -Wl,export-dynamic -Wall structSize.c && g++ -shared -Wl,-soname,libstruct.so -o libstruct.so structSize.o -lc
