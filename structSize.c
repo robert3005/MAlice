@@ -1,16 +1,28 @@
 #include <iostream>
+#include <iomanip>
+#include "structSize.h"
 
 using namespace std;
 
-struct node {
-	int id;
-	int type;
-	int value;
-	node * children[];
-};
+#ifdef  __cplusplus
+extern "C" {
+#endif
 
-typedef struct node * nodePtr;
-
-int main(int argc, char* argv[]) {
-	cout << sizeof(node) << endl;
+void print_struct(NodePtr node, int indent) {
+	cout << setw(indent) << " " << "id: " << node->id << endl;
+	cout << setw(indent) << " " << "type: " << node->type << endl;
+	cout << setw(indent) << " " << "value: " << node->value << endl;
+	cout << setw(indent) << " " << "childrenNumber: " << node->numberOfChildren << endl;
+	if(node->numberOfChildren != 0 ) {
+		cout << setw(indent) << " " << "children: " << endl << endl;
+		for(int i = 0; i < node->numberOfChildren; ++i) {
+			print_struct(node->children[i], (indent+1)*2);
+		}
+	} else {
+		cout << endl;
+	} 
 }
+
+#ifdef  __cplusplus
+}
+#endif

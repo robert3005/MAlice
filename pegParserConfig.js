@@ -131,11 +131,11 @@ instructions
 / assignment_line
 
 if_block
-= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:start ifE:ifelse { return createNode(NODE_IF, cond, ifB, ifE)}
+= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:start ifE:ifelse { return createNode(NODE_IF, "if", cond, ifB, ifE)}
 
 ifelse
 = space 'or' space [\n]* ifBody:function_body ife:ifelse { return createNode(NODE_ELSE, "else", ifBody, ife)}
-/ space 'or maybe' space cond:condition space 'so' space [\n]* ifBody:function_body ife:ifelse { return createNode(NODE_ELSE_IF, cond, ifBody, ife)}
+/ space 'or maybe' space cond:condition space 'so' space [\n]* ifBody:function_body ife:ifelse { return createNode(NODE_ELSE_IF, "else if", cond, ifBody, ife)}
 / space unsure newLine { return createNode( NODE_END_IF, "endif" ) }
 
 func_call
@@ -160,7 +160,7 @@ argument_type
 = space stype:spiderType? space type:typeName space identifier:id separator? space {  return createNode( NODE_TYPE, "argument", identifier, type, stype ) }
 
 loop_block
-= space 'eventually' space cond:condition space 'because' space [\n]* loop:function_body space [\n]* space 'enough' space 'times' newLine { return createNode( NODE_LOOP, cond, loop )}
+= space 'eventually' space cond:condition space 'because' space [\n]* loop:function_body space [\n]* space 'enough' space 'times' newLine { return createNode( NODE_LOOP, "while", cond, loop )}
 
 io_line
 = single:io separator { return single }
