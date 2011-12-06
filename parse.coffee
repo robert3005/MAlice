@@ -1,14 +1,16 @@
-parser = require './parser.js'
+require.paths.push '/usr/lib/node_modules'
+PEG = require 'pegjs'
 semantics = require './semanticAnalyser.coffee'
 sys = require 'sys'
 fs = require 'fs'
 util = require 'util' # only for development and debugging
+parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
 
 arguments = process.argv.splice 2
 
 source = fs.readFileSync arguments[0], 'utf-8'
 source = source.replace /[ \t\r]{2,}/g, ' '
-
+sys.puts source
 try
 	parseTree = parser.parse source
 	#labelTree = semantics.analyse parseTree
