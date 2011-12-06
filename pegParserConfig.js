@@ -1,5 +1,7 @@
 {
 
+	Array.prototype.isArray = true;
+
 	counter = 0
 
 	function NODE() {
@@ -17,11 +19,55 @@
 		n.value = value;	
 		n.children = new Array();
 		
-		for( var i = 2; i < arguments.length; i++ )
-			n.children.push( arguments[i] );
-			
+		for( var i = 2; i < arguments.length; i++ ) {
+			if(arguments[i].isArray) {
+				n.children = n.children.concat(arguments[i]);	
+			} else {	
+				n.children.push( arguments[i] );
+			}
+		}
+
 		return n;
 	};
+
+	NODE_OP			= "OPERATOR"
+	NODE_VAR		= "VARIABLE"
+	NODE_CONST		= "CONSTANT"
+	NODE_TYPE		= "TYPE"
+	NODE_RETURN 	= "RETURN"
+	NODE_IO			= "IO"
+	NODE_LOOP 		= "WHILE"
+	NODE_LOOP_END 	= "WHILE_END"
+    NODE_FUN 		= "FUNCTION"
+    NODE_FUN_DEF 	= "FUNCTION_DEFINITION"
+    NODE_IF			= "IF"
+    NODE_ELSE       = "ELSE"
+    NODE_ELSE_IF    = "ELSE_IF"
+    NODE_FUN_CALL   = "FUNCTION_CALL"
+    NODE_LOOK_DEF   = "LOOKING_GLASS"
+    NODE_END_IF     = "END_IF"
+
+	OP_NONE		= "NO_OP"
+	OP_ADD      = "ADD"
+	OP_OR		= "OR"
+	OP_XOR		= "XOR"
+	OP_AND		= "AND"
+	OP_SUB		= "SUBTRACT"
+	OP_MUL		= "MULTIPLY"
+	OP_DIV		= "DIVIDE"
+	OP_MOD		= "MOD"
+	OP_NOT		= "NOT"
+	OP_NEG		= "NEGATE"
+	OP_LOR		= "LOGICAL_OR"
+	OP_LAND		= "LOGICAL_AND"
+	OP_EQ		= "EQUAL"
+	OP_UEQ		= "NOT_EQUAL"
+	OP_LT		= "LOWER_THAN"
+	OP_GT		= "GREATER_THAN"
+	OP_LTE		= "LOWER_THAN_EQUAL"
+	OP_GTE		= "GREATER_THAN_EQUAL"
+
+/*
 
 	NODE_OP			= 0
 	NODE_VAR		= 1
@@ -56,8 +102,10 @@
 	OP_UEQ		= 14
 	OP_LT		= 15
 	OP_GT		= 16
-	OP_LET		= 17
-	OP_GET		= 18
+	OP_LTE		= 17
+	OP_GTE		= 18
+
+*/
 
 }
 
@@ -72,39 +120,47 @@ root
 / io_line
 / assignment_line
 
-func_call
-= space fun:function newLine {counter++; return createNode(NODE_FUN_CALL, "function" ,fun)}
+function_body
+= instructions*
+
+instructions
+= loop_block
+/ if_block
+/ func_call
+/ io_line
+/ assignment_line
 
 if_block
-= space name:ifFun space cond:condition space 'so' space [\n]* ifB:ifbody {counter++; return createNode(NODE_IF, name, cond, ifB)}
+= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:start ifE:ifelse {counter++; return createNode(NODE_IF, cond, ifB, ifE)}
 
 ifelse
-= space 'or' space [\n]* ifBody:start ife:ifelse {counter++; return createNode(NODE_ELSE, "else", ifBody, ife)}
-/ space 'or maybe' space cond:condition space 'so' space [\n]* ifBody:start ife:ifelse {counter++; return createNode(NODE_ELSE, "maybe", cond, ifBody, ife)}
-/ space unsure newLine {return "endif"}
+= space 'or' space [\n]* ifBody:function_body ife:ifelse {counter++; return createNode(NODE_ELSE, "else", ifBody, ife)}
+/ space 'or maybe' space cond:condition space 'so' space [\n]* ifBody:function_body ife:ifelse {counter++; return createNode(NODE_ELSE_IF, cond, ifBody, ife)}
+/ space unsure newLine {counter++; return createNode( NODE_END_IF, "endif" ) }
 
-ifbody
-= space ifBody:start ifE:ifelse {counter++; return createNode(NODE_IF_BODY, "body", ifBody, ifE)}
+func_call
+= fun:function newLine { return fun; }
+/ fun:function separator { return fun; }
 
 function
-= identifier:id space '(' arglist:argument_fun* ')' {counter++; return createNode(NODE_FUN, identifier, arglist)}
-/ arg:id space 'went through' space identifier:id {counter++; return createNode(NODE_FUN, arg, identifier)}
+= space identifier:id space '(' arglist:argument_fun* ')' space {counter++; return createNode(NODE_FUN_CALL, identifier, arglist)}
+/ space arg:id space 'went through' space identifier:id {counter++; return createNode(NODE_FUN_CALL, arg, identifier)}
 
 argument_fun
 = space arg:legalArgs separator? space { return arg }
 
 func_block
-= space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:start {counter++; return createNode( NODE_FUN_DEF, type, def, funcB)}
-/ space 'The Looking-Glass' space identifier:id space 'changed a' space type:typeName [\n]* funcB:start {counter++; return createNode( NODE_LOOK_DEF, identifier, type, funcB)}
+= space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:function_body {counter++; return createNode( NODE_FUN_DEF, type, def, funcB) }
+/ space 'The Looking-Glass' space identifier:id space 'changed a' space type:typeName [\n]* funcB:function_body {counter++; return createNode( NODE_LOOK_DEF, identifier, type, funcB)}
 
 function_type
-= identifier:id space '(' space arglist:argument_type* space')' space {counter++; return createNode(NODE_FUN, identifier, arglist)}
+= identifier:id space '(' arglist:argument_type* ')' space {counter++; return createNode(NODE_FUN, identifier, arglist)}
 
 argument_type
-= space stype:spiderType? space type:typeName space identifier:id separator? { counter++; return createNode( NODE_TYPE, "funArgument", identifier, type, stype ) }
+= space stype:spiderType? space type:typeName space identifier:id separator? space { counter++; return createNode( NODE_TYPE, "argument", identifier, type, stype ) }
 
 loop_block
-= space 'eventually' space cond:condition space 'because' space [\n]* loop:start space [\n]* space 'enough times' newLine {counter++; return createNode( NODE_LOOP, cond, loop )}
+= space 'eventually' space cond:condition space 'because' space [\n]* loop:function_body space [\n]* space 'enough' space 'times' newLine {counter++; return createNode( NODE_LOOP, cond, loop )}
 
 io_line
 = single:io separator { return single }
@@ -128,7 +184,7 @@ assignment_line
 
 assignment
 = space identifier:id space name:function_name space type:typeName { counter++; return createNode( NODE_TYPE, name, identifier, type ) }
- / space arg:argument space name:function_name expr:legalArgs { counter++; return createNode( NODE_VAR, name, arg, expr ) }
+ / space arg:argument space name:function_name space expr:legalArgs { counter++; return createNode( NODE_VAR, name, arg, expr ) }
  / space identifier:id space name:function_name { counter++; return createNode( NODE_VAR, name, identifier ) }
 / space identifier:id space 'had' space expr:expression space type:typeName { counter++; return createNode( NODE_TYPE, 'array', identifier, expr, type ) }
 
@@ -163,8 +219,8 @@ equality_exp
 relational_exp
 = addExpr:add_expression space '<' space relExpr:relational_exp { counter++; return createNode(NODE_OP, OP_LT, addExpr, relExpr) }
 / addExpr:add_expression space '>' space relExpr:relational_exp { counter++; return createNode(NODE_OP, OP_GT, addExpr, relExpr) }
-/ addExpr:add_expression space '<=' space relExpr:relational_exp { counter++; return createNode(NODE_OP, OP_LET, addExpr, relExpr) }
-/ addExpr:add_expression space '>=' space relExpr:relational_exp  { counter++; return createNode(NODE_OP, OP_GET, addExpr, relExpr) }
+/ addExpr:add_expression space '<=' space relExpr:relational_exp { counter++; return createNode(NODE_OP, OP_LTE, addExpr, relExpr) }
+/ addExpr:add_expression space '>=' space relExpr:relational_exp  { counter++; return createNode(NODE_OP, OP_GTE, addExpr, relExpr) }
 / add_expression
 
 add_expression
@@ -192,18 +248,18 @@ primitive_expression
 / fun:function {return fun}
 / arg:argument {return arg}
 / str:string {return str}
-/ '(' expr:expression ')'
+/ space '(' space expr:expression space ')' space { return expr; }
 
 typeName
 = type:'letter'
 / type:'number'
-/ type: 'sentence'
+/ type:'sentence'
 
 spiderType
 = type:'spider' { return type }
 
 id
-= identifier:[A-Za-z_]+ idd:[0-9A-Za-z_]* { return identifier.join("")+idd.join("") }
+= identifierFirst:[A-Za-z] identifierRest:[0-9A-Za-z_]* { return identifierFirst + identifierRest.join("") }
 
 argument
 = identifier:id "\'s" space expr:expression space 'piece' { return [identifier, expr]}
@@ -227,7 +283,7 @@ function_input
 function_output
 = funcName:'said' { return funcName }
 / funcName:'thought' { return funcName }
-/ funcName: 'spoke' { return funcName }
+/ funcName:'spoke' { return funcName }
 
 ifFun
 = "either"
@@ -238,23 +294,23 @@ unsure
 / "Alice was unsure"
 
 newLine
-= (space 'too' space [\.] space [\n]*) {return 1}
-/ (space [\n\t]* space [\.\,\?] space [\n\t]*) {return 2 }
-/ (space 'and' space [\n]*)
-/ (space 'but' space [\n]*)
+= (space [\n\t]* space [\.\,\?] space [\n\t]*) { return }
+/ (space 'too' space [\.] space [\n]*) { return }
+/ (space 'and' space [\n]*) { return }
+/ (space 'but' space [\n]*) { return }
 
 space
 = [ \t]* { return }
 
 separator
-= ([\,] space [\n])
-/ ([\,]) {return 7}
-/ ([?][ ])
-/ ([ ]'then'[ ]) {return 8}
-/ ([ ]'or'[ ]){return 9}
-/ ([ ]'and'[ ]) {return 10}
-/ ([ ]'too'[ ]){return 11}
-/ ([ ]'but'[ ]){return 12}
+= ([\,] space [\n]) { return }
+/ ([\,]) { return }
+/ ([?][ ]) { return }
+/ ([ ]'then'[ ]) { return }
+/ ([ ]'or'[ ]) { return }
+/ ([ ]'and'[ ]) { return }
+/ ([ ]'too'[ ]) { return }
+/ ([ ]'but'[ ]) { return }
 
 not_op
 = '~' { return OP_NOT }
