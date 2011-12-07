@@ -5,7 +5,6 @@
 #include <map>
 
 #include "code_ast.hpp"
-#include "environment.hpp"
 
 llvm::Function * makeLLVMModule( Node & );
 

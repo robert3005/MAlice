@@ -7,8 +7,6 @@
 #include <utility>
 #include <list>
 
-#include "environment.hpp"
-
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
 #include "llvm/DerivedTypes.h"
@@ -39,6 +37,69 @@ class SymbolTable{
 	
 };
 */
+template <class T>
+class Environment{
+	public:
+		Environment(){
+			parent = 0;
+		}
+
+		Environment( Environment<T> * p ){
+			parent = p;
+		}
+
+		Environment<T> * getScope( std::string key ){
+			typename std::map<std::string, Environment<T> * >::iterator it;
+			it = scopes.find( key );
+
+			if( it != scopes.end() ){
+				return *it;
+			} else {
+				return 0;
+			}	
+		}
+
+		void addScope( std::string key ){
+			typename std::map<std::string, Environment<T> * >::iterator it;
+			it = scopes.find( key );
+
+			if( it != elements.end() ){
+				scopes[key] = new Environment<T>( this );
+			} else {
+				scopes[key] = new Environment<T>( this );
+			}
+		}
+
+		void add( std::string key, T * n ){
+			typename std::map<std::string, T* >::iterator it;
+			it = elements.find( key );
+
+			if( it != elements.end() ){
+				elements[key] = n;
+			} else {
+				elements[key] = n;
+			}
+		}
+		 
+		T * get( std::string key ){
+			typename std::map<std::string, T* >::iterator it;
+			it = elements.find( key );
+
+			if( it != elements.end() ){
+				return (*it).second;
+			} else if( parent != 0 ) {
+				return parent -> get( key );
+			} else {
+				return 0;
+			}
+		}
+
+	protected:
+		std::map< std::string, Environment<T> * > scopes;
+		std::map< std::string, T * > elements;
+		Environment<T> * parent;
+};
+
 class SimpleNode{
 	public:
 		SimpleNode();
@@ -110,8 +171,6 @@ class Node : public SimpleNode{
 		//virtual void say(); 
 
 	protected:
-		
-
 		static Node * createOPNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createVARNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createCONSTNode( SimpleNode&, std::list<std::pair<int, int> >& );

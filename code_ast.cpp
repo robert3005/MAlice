@@ -3,7 +3,6 @@
 
 #include "code_ast.hpp"
 
-
 using namespace llvm;
 using namespace std;
 
@@ -239,7 +238,6 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		dataChunkRaw = data.substr( 0, pos );
 
-
 		if(DEBUG) printf("%s\n", dataChunkRaw.c_str() );
 
 		if( i == 0 ){
@@ -261,8 +259,6 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 	}
 
 	node -> allocated = false;
-
-	mapOfIds[ node -> getVarId() ] = node;
 
 	if(DEBUG) printf( "Create TYPE - VAR Node id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
@@ -298,6 +294,8 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 			varId = dataChunkRaw;
 		} else if( i == 2 ){
 			varValue = dataChunkRaw;
+			if(DEBUG) printf( "VARNode %s\n", varValue.c_str() );
+
 		} 
 
 		if(data.length() > pos) data = data.substr( pos + 1 );
@@ -309,17 +307,9 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 	node -> setVarType( mapOfTypes[varId] );
 
 	if( varValue.length() > 0 ){ // set value of a variable
-		if(DEBUG) if( mapOfIds.find( varId ) != mapOfIds.end() ) printf("Istnieje!\n");
-		tn = mapOfIds[varId];
-		node -> tn = tn;
-		tn -> varNodeWithValue = node;
-		mapOfIds[varId] = node;
-
 		connections.push_back( make_pair( node -> getId(), atoi( varValue.c_str() ) ) );
-
 		node -> set = 1;
 	} else { // get value of a variable
-		node = mapOfIds[varId];
 		node -> set = 2;
 	}
 
@@ -472,16 +462,18 @@ Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	Value * V;
  		
 	if( set == 1 ){	
-		if( ! tn -> allocated ) tn -> codeGen( Builder, env );
-		alloca = tn -> alloca;
+		alloca = env.get( getVarId() ) -> alloca;
 		lhs = children[0] -> codeGen( Builder, env );
 		V = Builder.CreateStore( lhs, alloca );
 		//lhs -> dump();
 		set = 2;
-		if(DEBUG) printf("VAR Value stored\n");
+		env.add( getVarId(), this );
+
+		if(DEBUG) printf("VAR Value stored:\n");
+		lhs -> dump();
 	}
 	
-	
+	alloca = env.get( getVarId() ) -> alloca;
 	//lhs = children[0] -> codeGen( Builder, env );
 	V = Builder.CreateLoad( alloca );
 	//V -> dump();
@@ -531,6 +523,7 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
 	if(DEBUG) printf("TYPENode::codeGen %d\n", uniqueId);
+
 	if( !allocated ){
 		Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 		
@@ -541,9 +534,17 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		alloca = Alloca;	
 
 		if(DEBUG) printf("Memory allocated\n");
+
+		env.add( getVarId(), this);
+
 		allocated = true;
+
+		return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
+	} else if( env.get( getVarId() ) != this ) {
+		return env.get( getVarId() ) -> codeGen( Builder, env );
+	} else {
+		return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 	}
-	return varNodeWithValue -> codeGen( Builder, env );
 }
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
@@ -557,7 +558,7 @@ Value * RETNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	Value * v;
 
 	if( getVarId().length() > 0 ){
-		v = mapOfIds[ getVarId() ] -> codeGen( Builder, env );	
+		v = env.get( getVarId() ) -> codeGen( Builder, env );	
 	} else {
 		lhs = children[0] -> codeGen( Builder, env );
 		v = lhs; 

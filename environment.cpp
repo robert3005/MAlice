@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <string>
 #include "environment.hpp"
 
 using namespace std;
@@ -54,10 +56,23 @@ T * Environment<T>::get( string key ){
 	it = elements.find( key );
 
 	if( it != elements.end() ){
-		return *it;
+		return (*it).second;
 	} else if( parent != 0 ) {
 		return parent -> get( key );
 	} else {
 		return 0;
 	}
 }
+/*
+int main(){
+	Environment<string> * env = new Environment<string>();
+
+	string s = "kot";
+
+	env -> add( string("pies"), &s );
+
+	printf("%s\n", env -> get( string("pies") ) -> c_str() );
+
+	return 0;
+}
+*/
