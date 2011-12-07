@@ -16,7 +16,7 @@ void print_struct(NodePtr node, int indent) {
 	if(node->numberOfChildren != 0 ) {
 		cout << setw(indent) << " " << "children: " << endl << endl;
 		for(int i = 0; i < node->numberOfChildren; ++i) {
-			print_struct(node->children[i], (indent+1)*2);
+			print_struct(node->children[i], indent+2);
 		}
 	} else {
 		cout << endl;

@@ -8,6 +8,7 @@
 		var id;
 		var type;
 		var value;
+		var numberOfChildren;
 		var children;
 	};
 
@@ -23,13 +24,18 @@
 			if(arguments[i].isArray) {
 				n.children = n.children.concat(arguments[i]);	
 			} else {	
-				n.children.push( arguments[i] );
+				if(arguments[i] !== '' ) {
+								n.children.push( arguments[i] );
+				}
 			}
 		}
+
+		n.numberOfChildren = n.children.length;
 
 		return n;
 	};
 
+	NODE_ROOT		= "ROOT"
 	NODE_OP			= "OPERATOR"
 	NODE_VAR		= "VARIABLE"
 	NODE_CONST		= "CONSTANT"
@@ -46,6 +52,9 @@
     NODE_FUN_CALL   = "FUNCTION_CALL"
     NODE_LOOK_DEF   = "LOOKING_GLASS"
     NODE_END_IF     = "END_IF"
+    NODE_VAR_ARRAY  = "ARRAY"
+    NODE_STRING		= "STRING"
+
 
 	OP_NONE		= "NO_OP"
 	OP_ADD      = "ADD"
@@ -67,50 +76,10 @@
 	OP_LTE		= "LOWER_THAN_EQUAL"
 	OP_GTE		= "GREATER_THAN_EQUAL"
 
-/*
-
-	NODE_OP			= 0
-	NODE_VAR		= 1
-	NODE_CONST		= 2
-	NODE_TYPE		= 3
-	NODE_RETURN 	= 4
-	NODE_IO			= 5
-	NODE_LOOP 		= 6
-	NODE_LOOP_END 	= 7
-    NODE_FUN 		= 8
-    NODE_FUN_DEF 	= 9
-    NODE_IF			= 10
-    NODE_ELSE       = 11
-    NODE_FUN_CALL   = 12
-    NODE_LOOK_DEF   = 13
-    NODE_IF_BODY    = 14
-
-	OP_NONE		= -1
-	OP_ADD      = 1
-	OP_OR		= 2
-	OP_XOR		= 3
-	OP_AND		= 4
-	OP_SUB		= 5
-	OP_MUL		= 6
-	OP_DIV		= 7
-	OP_MOD		= 8
-	OP_NOT		= 9
-	OP_NEG		= 10
-	OP_LOR		= 11
-	OP_LAND		= 12
-	OP_EQ		= 13
-	OP_UEQ		= 14
-	OP_LT		= 15
-	OP_GT		= 16
-	OP_LTE		= 17
-	OP_GTE		= 18
-
-*/
-
 }
 
 start
-= root*
+= program:root* { return createNode(NODE_ROOT, "0", program);}
 
 root
 = loop_block
@@ -131,7 +100,7 @@ instructions
 / assignment_line
 
 if_block
-= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:start ifE:ifelse { return createNode(NODE_IF, "if", cond, ifB, ifE)}
+= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:root* ifE:ifelse { return createNode(NODE_IF, "if", cond, ifB, ifE)}
 
 ifelse
 = space 'or' space [\n]* ifBody:function_body ife:ifelse { return createNode(NODE_ELSE, "else", ifBody, ife)}
@@ -143,18 +112,18 @@ func_call
 / fun:function separator { return fun; }
 
 function
-= space identifier:id space '(' arglist:argument_fun* ')' space { return createNode(NODE_FUN_CALL, identifier, arglist)}
-/ space arg:id space 'went through' space identifier:id { return createNode(NODE_FUN_CALL, arg, identifier)}
+= space identifier:id space '(' arglist:argument_fun* ')' space { return createNode(NODE_FUN_CALL, "function_call", identifier, arglist)}
+/ space arg:id space 'went through' space identifier:id { return createNode(NODE_FUN_CALL, "function_call_by_reference", arg, identifier)}
 
 argument_fun
 = space arg:legalArgs separator? space { return arg }
 
 func_block
-= space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:function_body { return createNode( NODE_FUN_DEF, type, def, funcB) }
+= space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:function_body { return createNode( NODE_FUN_DEF, "function_definition", type, def, funcB) }
 / space 'The Looking-Glass' space identifier:id space 'changed a' space type:typeName [\n]* funcB:function_body { return createNode( NODE_LOOK_DEF, identifier, type, funcB)}
 
 function_type
-= identifier:id space '(' arglist:argument_type* ')' space { return createNode(NODE_FUN, identifier, arglist)}
+= identifier:id space '(' arglist:argument_type* ')' space { return createNode(NODE_FUN, "function", identifier, arglist)}
 
 argument_type
 = space stype:spiderType? space type:typeName space identifier:id separator? space {  return createNode( NODE_TYPE, "argument", identifier, type, stype ) }
@@ -183,10 +152,10 @@ assignment_line
 / single:assignment newLine { return single }
 
 assignment
-= space identifier:id space name:function_name space type:typeName {  return createNode( NODE_TYPE, name, identifier, type ) }
+= space identifier:id space name:function_name space type:typeName {  return createNode( NODE_VAR, name, identifier, type ) }
  / space arg:argument space name:function_name space expr:legalArgs {  return createNode( NODE_VAR, name, arg, expr ) }
  / space identifier:id space name:function_name {  return createNode( NODE_VAR, name, identifier ) }
-/ space identifier:id space 'had' space expr:expression space type:typeName {  return createNode( NODE_TYPE, 'array', identifier, expr, type ) }
+/ space identifier:id space 'had' space expr:expression space type:typeName {  return createNode( NODE_VAR_ARRAY, "array", identifier, expr, type ) }
 
 expression
 = logical_or_exp
@@ -243,30 +212,30 @@ unary_expression
 / primExpr:primitive_expression
 
 primitive_expression
-= num:[0-9]+ {  return createNode( NODE_CONST, num.join(""), 'number' ) }
-/ letter:([\'][^\'][\']) { return createNode( NODE_CONST, letter[1], 'letter' ) }
+= num:[0-9]+ {  return createNode( NODE_CONST, num.join(""), createNode( NODE_TYPE, "number" ) ) }
+/ letter:([\'][^\'][\']) { return createNode( NODE_CONST, letter[1], createNode( NODE_TYPE, "letter" ) ) }
 / fun:function {return fun}
 / arg:argument {return arg}
 / str:string {return str}
 / space '(' space expr:expression space ')' space { return expr; }
 
 typeName
-= type:'letter'
-/ type:'number'
-/ type:'sentence'
-
+= type:'letter' { return createNode( NODE_TYPE, type ); }
+/ type:'number' { return createNode( NODE_TYPE, type ); }
+/ type:'sentence' { return createNode( NODE_TYPE, type ); }
+ 
 spiderType
-= type:'spider' { return type }
+= type:'spider' { return createNode( NODE_TYPE, type ); }
 
 id
-= identifierFirst:[A-Za-z] identifierRest:[0-9A-Za-z_]* { return identifierFirst + identifierRest.join("") }
+= identifierFirst:[A-Za-z] identifierRest:[0-9A-Za-z_]* { return createNode( NODE_VAR, identifierFirst + identifierRest.join("") ) }
 
 argument
-= identifier:id "\'s" space expr:expression space 'piece' { return [identifier, expr]}
+= identifier:id "\'s" space expr:expression space 'piece' { return createNode( NODE_VAR_ARRAY, "array_element", identifier, expr ) }
 / id
 
 string
-= ([\"] str:[^\"]* [\"]) { return str.join("") }
+= ([\"] str:[^\"]* [\"]) { return createNode( NODE_STRING, str.join("") ) }
 
 condition
 = '(' space expr:expression space ')' { return expr }

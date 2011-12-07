@@ -135,11 +135,21 @@ module.exports=(function(){
         }
         
         
-        var result0 = [];
-        var result1 = parse_root();
-        while (result1 !== null) {
-          result0.push(result1);
-          var result1 = parse_root();
+        var savedPos0 = pos;
+        var result1 = [];
+        var result3 = parse_root();
+        while (result3 !== null) {
+          result1.push(result3);
+          var result3 = parse_root();
+        }
+        var result2 = result1 !== null
+          ? (function(program) { return createNode(NODE_ROOT, "0", program);})(result1)
+          : null;
+        if (result2 !== null) {
+          var result0 = result2;
+        } else {
+          var result0 = null;
+          pos = savedPos0;
         }
         
         
@@ -306,21 +316,21 @@ module.exports=(function(){
                     if (result9 !== null) {
                       var result10 = [];
                       if (input.substr(pos).match(/^[\n]/) !== null) {
-                        var result14 = input.charAt(pos);
+                        var result15 = input.charAt(pos);
                         pos++;
                       } else {
-                        var result14 = null;
+                        var result15 = null;
                         if (reportMatchFailures) {
                           matchFailed("[\\n]");
                         }
                       }
-                      while (result14 !== null) {
-                        result10.push(result14);
+                      while (result15 !== null) {
+                        result10.push(result15);
                         if (input.substr(pos).match(/^[\n]/) !== null) {
-                          var result14 = input.charAt(pos);
+                          var result15 = input.charAt(pos);
                           pos++;
                         } else {
-                          var result14 = null;
+                          var result15 = null;
                           if (reportMatchFailures) {
                             matchFailed("[\\n]");
                           }
@@ -329,7 +339,12 @@ module.exports=(function(){
                       if (result10 !== null) {
                         var result11 = parse_space();
                         if (result11 !== null) {
-                          var result12 = parse_start();
+                          var result12 = [];
+                          var result14 = parse_root();
+                          while (result14 !== null) {
+                            result12.push(result14);
+                            var result14 = parse_root();
+                          }
                           if (result12 !== null) {
                             var result13 = parse_ifelse();
                             if (result13 !== null) {
@@ -797,7 +812,7 @@ module.exports=(function(){
           pos = savedPos3;
         }
         var result12 = result11 !== null
-          ? (function(identifier, arglist) { return createNode(NODE_FUN_CALL, identifier, arglist)})(result11[1], result11[4])
+          ? (function(identifier, arglist) { return createNode(NODE_FUN_CALL, "function_call", identifier, arglist)})(result11[1], result11[4])
           : null;
         if (result12 !== null) {
           var result10 = result12;
@@ -856,7 +871,7 @@ module.exports=(function(){
             pos = savedPos1;
           }
           var result3 = result2 !== null
-            ? (function(arg, identifier) { return createNode(NODE_FUN_CALL, arg, identifier)})(result2[1], result2[5])
+            ? (function(arg, identifier) { return createNode(NODE_FUN_CALL, "function_call_by_reference", arg, identifier)})(result2[1], result2[5])
             : null;
           if (result3 !== null) {
             var result1 = result3;
@@ -1040,7 +1055,7 @@ module.exports=(function(){
           pos = savedPos3;
         }
         var result17 = result16 !== null
-          ? (function(def, type, funcB) { return createNode( NODE_FUN_DEF, type, def, funcB) })(result16[3], result16[6], result16[8])
+          ? (function(def, type, funcB) { return createNode( NODE_FUN_DEF, "function_definition", type, def, funcB) })(result16[3], result16[6], result16[8])
           : null;
         if (result17 !== null) {
           var result15 = result17;
@@ -1246,7 +1261,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(identifier, arglist) { return createNode(NODE_FUN, identifier, arglist)})(result1[0], result1[3])
+          ? (function(identifier, arglist) { return createNode(NODE_FUN, "function", identifier, arglist)})(result1[0], result1[3])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -2061,7 +2076,7 @@ module.exports=(function(){
           pos = savedPos7;
         }
         var result30 = result29 !== null
-          ? (function(identifier, name, type) {  return createNode( NODE_TYPE, name, identifier, type ) })(result29[1], result29[3], result29[5])
+          ? (function(identifier, name, type) {  return createNode( NODE_VAR, name, identifier, type ) })(result29[1], result29[3], result29[5])
           : null;
         if (result30 !== null) {
           var result28 = result30;
@@ -2222,7 +2237,7 @@ module.exports=(function(){
                 pos = savedPos1;
               }
               var result3 = result2 !== null
-                ? (function(identifier, expr, type) {  return createNode( NODE_TYPE, 'array', identifier, expr, type ) })(result2[1], result2[5], result2[7])
+                ? (function(identifier, expr, type) {  return createNode( NODE_VAR_ARRAY, "array", identifier, expr, type ) })(result2[1], result2[5], result2[7])
                 : null;
               if (result3 !== null) {
                 var result1 = result3;
@@ -3486,7 +3501,7 @@ module.exports=(function(){
           var result27 = null;
         }
         var result28 = result27 !== null
-          ? (function(num) {  return createNode( NODE_CONST, num.join(""), 'number' ) })(result27)
+          ? (function(num) {  return createNode( NODE_CONST, num.join(""), createNode( NODE_TYPE, "number" ) ) })(result27)
           : null;
         if (result28 !== null) {
           var result26 = result28;
@@ -3543,7 +3558,7 @@ module.exports=(function(){
             pos = savedPos6;
           }
           var result22 = result21 !== null
-            ? (function(letter) { return createNode( NODE_CONST, letter[1], 'letter' ) })(result21)
+            ? (function(letter) { return createNode( NODE_CONST, letter[1], createNode( NODE_TYPE, "letter" ) ) })(result21)
             : null;
           if (result22 !== null) {
             var result20 = result22;
@@ -3695,38 +3710,68 @@ module.exports=(function(){
         }
         
         
+        var savedPos2 = pos;
         if (input.substr(pos, 6) === "letter") {
-          var result3 = "letter";
+          var result8 = "letter";
           pos += 6;
         } else {
-          var result3 = null;
+          var result8 = null;
           if (reportMatchFailures) {
             matchFailed("\"letter\"");
           }
         }
-        if (result3 !== null) {
-          var result0 = result3;
+        var result9 = result8 !== null
+          ? (function(type) { return createNode( NODE_TYPE, type ); })(result8)
+          : null;
+        if (result9 !== null) {
+          var result7 = result9;
         } else {
+          var result7 = null;
+          pos = savedPos2;
+        }
+        if (result7 !== null) {
+          var result0 = result7;
+        } else {
+          var savedPos1 = pos;
           if (input.substr(pos, 6) === "number") {
-            var result2 = "number";
+            var result5 = "number";
             pos += 6;
           } else {
-            var result2 = null;
+            var result5 = null;
             if (reportMatchFailures) {
               matchFailed("\"number\"");
             }
           }
-          if (result2 !== null) {
-            var result0 = result2;
+          var result6 = result5 !== null
+            ? (function(type) { return createNode( NODE_TYPE, type ); })(result5)
+            : null;
+          if (result6 !== null) {
+            var result4 = result6;
           } else {
+            var result4 = null;
+            pos = savedPos1;
+          }
+          if (result4 !== null) {
+            var result0 = result4;
+          } else {
+            var savedPos0 = pos;
             if (input.substr(pos, 8) === "sentence") {
-              var result1 = "sentence";
+              var result2 = "sentence";
               pos += 8;
             } else {
-              var result1 = null;
+              var result2 = null;
               if (reportMatchFailures) {
                 matchFailed("\"sentence\"");
               }
+            }
+            var result3 = result2 !== null
+              ? (function(type) { return createNode( NODE_TYPE, type ); })(result2)
+              : null;
+            if (result3 !== null) {
+              var result1 = result3;
+            } else {
+              var result1 = null;
+              pos = savedPos0;
             }
             if (result1 !== null) {
               var result0 = result1;
@@ -3765,7 +3810,7 @@ module.exports=(function(){
           }
         }
         var result2 = result1 !== null
-          ? (function(type) { return type })(result1)
+          ? (function(type) { return createNode( NODE_TYPE, type ); })(result1)
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -3837,7 +3882,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(identifierFirst, identifierRest) { return identifierFirst + identifierRest.join("") })(result1[0], result1[1])
+          ? (function(identifierFirst, identifierRest) { return createNode( NODE_VAR, identifierFirst + identifierRest.join("") ) })(result1[0], result1[1])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -3920,7 +3965,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result4 = result3 !== null
-          ? (function(identifier, expr) { return [identifier, expr]})(result3[0], result3[3])
+          ? (function(identifier, expr) { return createNode( NODE_VAR_ARRAY, "array_element", identifier, expr ) })(result3[0], result3[3])
           : null;
         if (result4 !== null) {
           var result2 = result4;
@@ -4016,7 +4061,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(str) { return str.join("") })(result1[1])
+          ? (function(str) { return createNode( NODE_STRING, str.join("") ) })(result1[1])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -5440,6 +5485,9 @@ module.exports=(function(){
 			var value;
       
 
+			var numberOfChildren;
+      
+
 			var children;
       
 
@@ -5485,13 +5533,25 @@ module.exports=(function(){
 				} else {	
       
 
-					n.children.push( arguments[i] );
+					if(arguments[i] !== '' ) {
+      
+
+									n.children.push( arguments[i] );
+      
+
+					}
       
 
 				}
       
 
 			}
+      
+
+	
+      
+
+			n.numberOfChildren = n.children.length;
       
 
 	
@@ -5504,6 +5564,9 @@ module.exports=(function(){
       
 
 	
+      
+
+		NODE_ROOT		= "ROOT"
       
 
 		NODE_OP			= "OPERATOR"
@@ -5552,6 +5615,15 @@ module.exports=(function(){
       
 
 	    NODE_END_IF     = "END_IF"
+      
+
+	    NODE_VAR_ARRAY  = "ARRAY"
+      
+
+	    NODE_STRING		= "STRING"
+      
+
+	
       
 
 	
@@ -5612,126 +5684,6 @@ module.exports=(function(){
       
 
 		OP_GTE		= "GREATER_THAN_EQUAL"
-      
-
-	
-      
-
-	/*
-      
-
-	
-      
-
-		NODE_OP			= 0
-      
-
-		NODE_VAR		= 1
-      
-
-		NODE_CONST		= 2
-      
-
-		NODE_TYPE		= 3
-      
-
-		NODE_RETURN 	= 4
-      
-
-		NODE_IO			= 5
-      
-
-		NODE_LOOP 		= 6
-      
-
-		NODE_LOOP_END 	= 7
-      
-
-	    NODE_FUN 		= 8
-      
-
-	    NODE_FUN_DEF 	= 9
-      
-
-	    NODE_IF			= 10
-      
-
-	    NODE_ELSE       = 11
-      
-
-	    NODE_FUN_CALL   = 12
-      
-
-	    NODE_LOOK_DEF   = 13
-      
-
-	    NODE_IF_BODY    = 14
-      
-
-	
-      
-
-		OP_NONE		= -1
-      
-
-		OP_ADD      = 1
-      
-
-		OP_OR		= 2
-      
-
-		OP_XOR		= 3
-      
-
-		OP_AND		= 4
-      
-
-		OP_SUB		= 5
-      
-
-		OP_MUL		= 6
-      
-
-		OP_DIV		= 7
-      
-
-		OP_MOD		= 8
-      
-
-		OP_NOT		= 9
-      
-
-		OP_NEG		= 10
-      
-
-		OP_LOR		= 11
-      
-
-		OP_LAND		= 12
-      
-
-		OP_EQ		= 13
-      
-
-		OP_UEQ		= 14
-      
-
-		OP_LT		= 15
-      
-
-		OP_GT		= 16
-      
-
-		OP_LTE		= 17
-      
-
-		OP_GTE		= 18
-      
-
-	
-      
-
-	*/
       
 
 	
