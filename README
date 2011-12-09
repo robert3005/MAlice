@@ -9,7 +9,7 @@ Dependencies:
 	coffeeScript
 	PEG.js
 	node-ffi
-	jasmine-node (for tests)
+	jessie (for tests)
 
 In order to build ffi receiver program that currently only prints tree that has been passed
 execute following:
