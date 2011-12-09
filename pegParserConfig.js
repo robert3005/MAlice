@@ -146,16 +146,17 @@ legalArgs
 / expr:expression {return expr}
 / arg:argument {return arg}
 / str:string {return str}
+/ type:typeName { return type }
 
 assignment_line 
 = single:assignment separator { return single }
 / single:assignment newLine { return single }
 
 assignment
-= space identifier:id space name:function_name space type:typeName {  return createNode( NODE_VAR, name, identifier, type ) }
- / space arg:argument space name:function_name space expr:legalArgs {  return createNode( NODE_VAR, name, arg, expr ) }
- / space identifier:id space name:function_name {  return createNode( NODE_VAR, name, identifier ) }
+= space arg:argument space name:binary_operators space expr:legalArgs {  return createNode( NODE_VAR, name, arg, expr ) }
+/ space identifier:id space name:unary_operators {  return createNode( NODE_VAR, name, identifier ) }
 / space identifier:id space 'had' space expr:expression space type:typeName {  return createNode( NODE_VAR_ARRAY, "array", identifier, expr, type ) }
+
 
 expression
 = logical_or_exp
@@ -240,10 +241,12 @@ string
 condition
 = '(' space expr:expression space ')' { return expr }
 
-function_name
+binary_operators
 = funcName:'was a ' { return funcName }
 / funcName:'became ' { return funcName }
-/ funcName:'drank' { return funcName }
+
+unary_operators
+= funcName:'drank' { return funcName }
 / funcName:'ate' { return funcName }
 
 function_input

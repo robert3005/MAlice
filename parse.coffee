@@ -51,8 +51,8 @@ ffiStruct = new ffi.Library "./libstruct", {
 try
 	parseTree = parser.parse source
 	console.log (util.inspect parseTree, false, 50)
-	ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
-	#labelTree = semantics.analyse parseTree
+	#ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
+	labelTree = semantics.analyse parseTree
 catch e
 	if e.name is 'SemanticError'
 		sys.puts e
@@ -62,6 +62,4 @@ catch e
 		throw e
 	process.exit 1
 	
-#sys.puts (semantics.buildtree parseTree).join ""
-
 process.exit 0
