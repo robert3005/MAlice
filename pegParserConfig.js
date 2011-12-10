@@ -2,7 +2,7 @@
 
 	Array.prototype.isArray = true;
 
-	counter = 0
+	counter = 0;
 
 	function NODE() {
 		var id;
@@ -25,39 +25,36 @@
 				n.children = n.children.concat(arguments[i]);	
 			} else {	
 				if(arguments[i] !== '' ) {
-								n.children.push( arguments[i] );
+					n.children.push( arguments[i] );
 				}
 			}
 		}
 
 		n.numberOfChildren = n.children.length;
-
 		return n;
 	};
 
 	NODE_ROOT		= "ROOT"
 	NODE_OP			= "OPERATOR"
-	NODE_VAR		= "VARIABLE"
+	NODE_VAR 		= "VARIABLE"
 	NODE_CONST		= "CONSTANT"
 	NODE_TYPE		= "TYPE"
-	NODE_RETURN 	= "RETURN"
+	NODE_RETURN		= "RETURN"
 	NODE_IO			= "IO"
 	NODE_LOOP 		= "WHILE"
-	NODE_LOOP_END 	= "WHILE_END"
-    NODE_FUN 		= "FUNCTION"
-    NODE_FUN_DEF 	= "FUNCTION_DEFINITION"
-    NODE_IF			= "IF"
-    NODE_ELSE       = "ELSE"
-    NODE_ELSE_IF    = "ELSE_IF"
-    NODE_FUN_CALL   = "FUNCTION_CALL"
-    NODE_LOOK_DEF   = "LOOKING_GLASS"
-    NODE_END_IF     = "END_IF"
-    NODE_VAR_ARRAY  = "ARRAY"
-    NODE_STRING		= "STRING"
-
+	NODE_FUN 		= "FUNCTION"
+	NODE_FUN_DEF	= "FUNCTION_DEFINITION"
+	NODE_IF			= "IF"
+	NODE_ELSE		= "ELSE"
+	NODE_ELSE_IF	= "ELSE_IF"
+	NODE_FUN_CALL	= "FUNCTION_CALL"
+	NODE_LOOK_DEF	= "LOOKING_GLASS"
+	NODE_END_IF		= "END_IF"
+	NODE_VAR_ARRAY	= "ARRAY"
+	NODE_STRING		= "STRING"
 
 	OP_NONE		= "NO_OP"
-	OP_ADD      = "ADD"
+	OP_ADD		= "ADD"
 	OP_OR		= "OR"
 	OP_XOR		= "XOR"
 	OP_AND		= "AND"
@@ -79,7 +76,7 @@
 }
 
 start
-= program:root* { return createNode(NODE_ROOT, "0", program);}
+= program:root* { return createNode(NODE_ROOT, "root", program);}
 
 root
 = loop_block
@@ -142,19 +139,19 @@ io
 / space name:function_input space arg:argument { return createNode(NODE_IO, name, arg)} 
 
 legalArgs
-= fun:function {return fun}
+= type:typeName { return type }
+/ fun:function {return fun}
 / expr:expression {return expr}
 / arg:argument {return arg}
 / str:string {return str}
-/ type:typeName { return type }
 
 assignment_line 
 = single:assignment separator { return single }
 / single:assignment newLine { return single }
 
 assignment
-= space arg:argument space name:binary_operators space expr:legalArgs {  return createNode( NODE_VAR, name, arg, expr ) }
-/ space identifier:id space name:unary_operators {  return createNode( NODE_VAR, name, identifier ) }
+= space arg:argument space name:binary_operators space expr:legalArgs {  return createNode( NODE_FUN_CALL, name, arg, expr ) }
+/ space identifier:id space name:unary_operators {  return createNode( NODE_FUN_CALL, name, identifier ) }
 / space identifier:id space 'had' space expr:expression space type:typeName {  return createNode( NODE_VAR_ARRAY, "array", identifier, expr, type ) }
 
 
@@ -236,7 +233,7 @@ argument
 / id
 
 string
-= ([\"] str:[^\"]* [\"]) { return createNode( NODE_STRING, str.join("") ) }
+= ([\"] str:[^\"]* [\"]) { return createNode( NODE_CONST, str.join(""), createNode( NODE_TYPE, "sentence" ) ) }
 
 condition
 = '(' space expr:expression space ')' { return expr }

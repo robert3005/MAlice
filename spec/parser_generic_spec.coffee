@@ -27,6 +27,7 @@ prepareTestSuite = (directory) ->
 				[fileName, pass]
 			)
 
+###
 beforeEach () -> 
 	this.addMatchers
 		toThrowName: (expected) ->
@@ -52,9 +53,10 @@ beforeEach () ->
 					return "Expected function to throw an exception."
 
 			return result
+###
 
 directories.forEach ( dir, index, allDirs ) ->
-	describe 'parser test ' + dir , ->
+	describe 'Parsing sample files from: ' + dir , ->
 		(prepareTestSuite dir).forEach (spec, index, allFiles) ->
 			shouldFail = if spec[1] then 'not ' else ''
 			it 'should ' + shouldFail + 'fail on ' + spec[0], ->

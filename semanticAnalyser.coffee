@@ -148,11 +148,8 @@ module.exports = (() ->
 				when "number" then "NUMBER"
 				when "letter" then "LETTER"
 
-	analyser.SemanticError = (message, line, column) ->
+	analyser.SemanticError = (@message, @line, @column) ->
     	@name = 'SemanticError'
-    	@message = message
-    	@line = line
-    	@column = column
 
 	analyser.SemanticError.prototype = Error.prototype;
 

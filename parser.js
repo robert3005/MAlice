@@ -144,7 +144,7 @@ module.exports=(function(){
           var result3 = parse_root();
         }
         var result2 = result1 !== null
-          ? (function(program) { return createNode(NODE_ROOT, "0", program);})(result1)
+          ? (function(program) { return createNode(NODE_ROOT, "root", program);})(result1)
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -1882,9 +1882,9 @@ module.exports=(function(){
         
         
         var savedPos4 = pos;
-        var result14 = parse_function();
+        var result14 = parse_typeName();
         var result15 = result14 !== null
-          ? (function(fun) {return fun})(result14)
+          ? (function(type) { return type })(result14)
           : null;
         if (result15 !== null) {
           var result13 = result15;
@@ -1896,9 +1896,9 @@ module.exports=(function(){
           var result0 = result13;
         } else {
           var savedPos3 = pos;
-          var result11 = parse_logical_or_exp();
+          var result11 = parse_function();
           var result12 = result11 !== null
-            ? (function(expr) {return expr})(result11)
+            ? (function(fun) {return fun})(result11)
             : null;
           if (result12 !== null) {
             var result10 = result12;
@@ -1910,9 +1910,9 @@ module.exports=(function(){
             var result0 = result10;
           } else {
             var savedPos2 = pos;
-            var result8 = parse_argument();
+            var result8 = parse_logical_or_exp();
             var result9 = result8 !== null
-              ? (function(arg) {return arg})(result8)
+              ? (function(expr) {return expr})(result8)
               : null;
             if (result9 !== null) {
               var result7 = result9;
@@ -1924,9 +1924,9 @@ module.exports=(function(){
               var result0 = result7;
             } else {
               var savedPos1 = pos;
-              var result5 = parse_string();
+              var result5 = parse_argument();
               var result6 = result5 !== null
-                ? (function(str) {return str})(result5)
+                ? (function(arg) {return arg})(result5)
                 : null;
               if (result6 !== null) {
                 var result4 = result6;
@@ -1938,9 +1938,9 @@ module.exports=(function(){
                 var result0 = result4;
               } else {
                 var savedPos0 = pos;
-                var result2 = parse_typeName();
+                var result2 = parse_string();
                 var result3 = result2 !== null
-                  ? (function(type) { return type })(result2)
+                  ? (function(str) {return str})(result2)
                   : null;
                 if (result3 !== null) {
                   var result1 = result3;
@@ -2092,7 +2092,7 @@ module.exports=(function(){
           pos = savedPos5;
         }
         var result21 = result20 !== null
-          ? (function(arg, name, expr) {  return createNode( NODE_VAR, name, arg, expr ) })(result20[1], result20[3], result20[5])
+          ? (function(arg, name, expr) {  return createNode( NODE_FUN_CALL, name, arg, expr ) })(result20[1], result20[3], result20[5])
           : null;
         if (result21 !== null) {
           var result19 = result21;
@@ -2131,7 +2131,7 @@ module.exports=(function(){
             pos = savedPos3;
           }
           var result14 = result13 !== null
-            ? (function(identifier, name) {  return createNode( NODE_VAR, name, identifier ) })(result13[1], result13[3])
+            ? (function(identifier, name) {  return createNode( NODE_FUN_CALL, name, identifier ) })(result13[1], result13[3])
             : null;
           if (result14 !== null) {
             var result12 = result14;
@@ -4025,7 +4025,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(str) { return createNode( NODE_STRING, str.join("") ) })(result1[1])
+          ? (function(str) { return createNode( NODE_CONST, str.join(""), createNode( NODE_TYPE, "sentence" ) ) })(result1[1])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -5451,7 +5451,7 @@ module.exports=(function(){
 	
       
 
-		counter = 0
+		counter = 0;
       
 
 	
@@ -5520,7 +5520,7 @@ module.exports=(function(){
 					if(arguments[i] !== '' ) {
       
 
-									n.children.push( arguments[i] );
+						n.children.push( arguments[i] );
       
 
 					}
@@ -5538,9 +5538,6 @@ module.exports=(function(){
 			n.numberOfChildren = n.children.length;
       
 
-	
-      
-
 			return n;
       
 
@@ -5556,7 +5553,7 @@ module.exports=(function(){
 		NODE_OP			= "OPERATOR"
       
 
-		NODE_VAR		= "VARIABLE"
+		NODE_VAR 		= "VARIABLE"
       
 
 		NODE_CONST		= "CONSTANT"
@@ -5565,7 +5562,7 @@ module.exports=(function(){
 		NODE_TYPE		= "TYPE"
       
 
-		NODE_RETURN 	= "RETURN"
+		NODE_RETURN		= "RETURN"
       
 
 		NODE_IO			= "IO"
@@ -5574,40 +5571,34 @@ module.exports=(function(){
 		NODE_LOOP 		= "WHILE"
       
 
-		NODE_LOOP_END 	= "WHILE_END"
+		NODE_FUN 		= "FUNCTION"
       
 
-	    NODE_FUN 		= "FUNCTION"
+		NODE_FUN_DEF	= "FUNCTION_DEFINITION"
       
 
-	    NODE_FUN_DEF 	= "FUNCTION_DEFINITION"
+		NODE_IF			= "IF"
       
 
-	    NODE_IF			= "IF"
+		NODE_ELSE		= "ELSE"
       
 
-	    NODE_ELSE       = "ELSE"
+		NODE_ELSE_IF	= "ELSE_IF"
       
 
-	    NODE_ELSE_IF    = "ELSE_IF"
+		NODE_FUN_CALL	= "FUNCTION_CALL"
       
 
-	    NODE_FUN_CALL   = "FUNCTION_CALL"
+		NODE_LOOK_DEF	= "LOOKING_GLASS"
       
 
-	    NODE_LOOK_DEF   = "LOOKING_GLASS"
+		NODE_END_IF		= "END_IF"
       
 
-	    NODE_END_IF     = "END_IF"
+		NODE_VAR_ARRAY	= "ARRAY"
       
 
-	    NODE_VAR_ARRAY  = "ARRAY"
-      
-
-	    NODE_STRING		= "STRING"
-      
-
-	
+		NODE_STRING		= "STRING"
       
 
 	
@@ -5616,7 +5607,7 @@ module.exports=(function(){
 		OP_NONE		= "NO_OP"
       
 
-		OP_ADD      = "ADD"
+		OP_ADD		= "ADD"
       
 
 		OP_OR		= "OR"
