@@ -1544,7 +1544,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(cond, loop) { return createNode( NODE_LOOP, "while", cond, loop )})(result1[3], result1[8])
+          ? (function(cond, loop) { return createNode( NODE_LOOP, "while", createNode( NODE_OP, OP_NOT, cond), loop )})(result1[3], result1[8])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -5472,6 +5472,9 @@ module.exports=(function(){
 			var numberOfChildren;
       
 
+			var position;
+      
+
 			var children;
       
 
@@ -5533,6 +5536,9 @@ module.exports=(function(){
       
 
 	
+      
+
+			console.log(this.caller);
       
 
 			n.numberOfChildren = n.children.length;
