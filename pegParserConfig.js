@@ -55,7 +55,6 @@
 			}
 		}
 		var position = tagKey.split('@');
-		console.log(tagKey);
 		n.position = computePosition(position[1]);
 		n.numberOfChildren = n.children.length;
 		return n;
@@ -95,9 +94,9 @@
 	OP_LAND		= "LOGICAL_AND"
 	OP_EQ		= "EQUAL"
 	OP_UEQ		= "NOT_EQUAL"
-	OP_LT		= "LOWER_THAN"
+	OP_LT		= "LESS_THAN"
 	OP_GT		= "GREATER_THAN"
-	OP_LTE		= "LOWER_THAN_EQUAL"
+	OP_LTE		= "LESS_THAN_EQUAL"
 	OP_GTE		= "GREATER_THAN_EQUAL"
 
 }
@@ -303,7 +302,6 @@ separator
 / ([\,]) { return }
 / ([?][ ]) { return }
 / ([ ]'then'[ ]) { return }
-/ ([ ]'or'[ ]) { return }
 / ([ ]'and'[ ]) { return }
 / ([ ]'too'[ ]) { return }
 / ([ ]'but'[ ]) { return }

@@ -1,0 +1,6 @@
+The room fib(number n) contained a number
+  either (n <= 1) so
+    Alice found n.
+  or (n > 0)
+    Alice found (fib(n-1) + fib(n-2)).
+  Alice was unsure which.

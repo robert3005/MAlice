@@ -1,0 +1,7 @@
+The room simpleSum ( number l, number m ) contained a number
+  Alice found l+m.
+
+l was a letter.
+m was a number.
+
+simpleSum(l, m)

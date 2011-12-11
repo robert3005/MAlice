@@ -3,6 +3,7 @@ require.paths.push '/usr/local/lib/node_modules'
 PEG = require 'pegjs'
 fs = require 'fs'
 sys = require 'sys'
+util = require 'util'
 
 directories = ['milestone2/', 'milestone3/', 'milestone4/']
 extension = '.alice'
@@ -29,7 +30,6 @@ prepareTestSuite = (directory) ->
 				[fileName, pass]
 			)
 
-###
 beforeEach () -> 
 	this.addMatchers
 		toThrowName: (expected) ->
@@ -55,7 +55,6 @@ beforeEach () ->
 					return "Expected function to throw an exception."
 
 			return result
-###
 
 directories.forEach ( dir, index, allDirs ) ->
 	describe 'Parsing sample files from: ' + dir , ->
