@@ -38,13 +38,9 @@ parseTreeToC = (parseTree) ->
 	position.putInt32 parseTree.position.column, true
 	position.putInt32 parseTree.position.line, true
 	position = position.seek -8
+
 	root.position = position
-	console.log root.position.address
 	root.position.attach syntaxTree
-
-	#console.log root.position.getInt32(true)
-	#console.log root.position.getInt32() + "\n"
-
 	root.children = children
 	root.children.attach syntaxTree
 
