@@ -1,4 +1,7 @@
-  eventually ( i == p ) because
+i was a number and p was a number and w was a number and x was a number and v was a letter and u was a sentence.
+
+
+eventually ( i == p ) because
 
     w became w + 10.
     x became w * 10.
