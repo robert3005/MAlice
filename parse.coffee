@@ -11,6 +11,7 @@ Node = ffi.Struct [
 	["int32", "id"],
 	["string", "type"],
 	["string", "value"],
+	["pointer", "position"],
 	["int32", "numberOfChildren"],
 	["pointer", "children"]
 ]
@@ -24,7 +25,7 @@ parseTreeToC = (parseTree) ->
 		children = new ffi.Pointer ( Node.__structInfo__.size * parseTree.numberOfChildren )
 		children.putPointer (parseTreeToC node), true for node in parseTree.children 
 
-		children = children.seek -(parseTree.numberOfChildren * 8)
+		children = children.seek -(parseTree.numberOfChildren * ffi.Bindings.POINTER_SIZE)
 		children.attach syntaxTree
 		
 	root = new Node
@@ -32,6 +33,18 @@ parseTreeToC = (parseTree) ->
 	root.type = parseTree.type
 	root.value = parseTree.value
 	root.numberOfChildren = parseTree.numberOfChildren
+
+	position = new ffi.Pointer ( 8 )
+	position.putInt32 parseTree.position.column, true
+	position.putInt32 parseTree.position.line, true
+	position = position.seek -8
+	root.position = position
+	console.log root.position.address
+	root.position.attach syntaxTree
+
+	#console.log root.position.getInt32(true)
+	#console.log root.position.getInt32() + "\n"
+
 	root.children = children
 	root.children.attach syntaxTree
 
@@ -51,7 +64,7 @@ ffiStruct = new ffi.Library "./libstruct", {
 try
 	parseTree = parser.parse source
 	console.log (util.inspect parseTree, false, 50)
-	#ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
+	ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
 	labelTree = semantics.analyse parseTree
 catch e
 	if e.name is 'SemanticError'
