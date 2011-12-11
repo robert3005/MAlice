@@ -1,9 +1,10 @@
 require.paths.push '/usr/lib/node_modules'
+require.paths.push '/usr/local/lib/node_modules'
 PEG = require 'pegjs'
 fs = require 'fs'
 sys = require 'sys'
 
-directories = ['milestone2/', 'milestone3/']
+directories = ['milestone2/', 'milestone3/', 'milestone4/']
 extension = '.alice'
 
 parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
@@ -17,8 +18,9 @@ prepareTestSuite = (directory) ->
 	testSpec = testFiles.filter((file) ->
 				file.substr(-6) is extension
 			).sort((a, b) ->
-				fileNumberA = parseInt ((a.split '.alice')[0].split 'ex')[1]
-				fileNumberB = parseInt ((b.split '.alice')[0].split 'ex')[1]
+				fileNumberA = parseInt ((a.split '.alice')[0].split 'ex|test')[1]
+				fileNumberB = parseInt ((b.split '.alice')[0].split 'ex|test')[1]
+				#console.log fileNumberA, fileNumberB
 				# Have fun reading it, I know everyone will enjoy it. Looks like Haskell, doesn't it?
 				result = if isNaN fileNumberA then 1 else if isNaN fileNumberB then -1 else if fileNumberA < fileNumberB then -1 else if fileNumberA == fileNumberB then 0 else 1
 			).map((fileName, index, allFiles) ->

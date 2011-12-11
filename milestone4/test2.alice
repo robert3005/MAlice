@@ -1,0 +1,19 @@
+The room function(spider letter m, spider number n) contained a sentence
+  perhaps (m's 3 piece == 'a') so
+  	perhaps (n's 2 piece == 3) so
+  		n's 2 piece became 1
+  	or maybe
+  		n's 3 piece became 2
+  	or
+  		n's 4 piece became 3
+  	Alice was unsure which.
+    Alice found "first if".
+  or maybe (n's 2 piece >= 4) so
+    Alice found function(m,n).
+  or maybe (m's 1 piece < 'v') so
+    Alice found "third if.
+  Alice was unsure which.
+
+array1 had 10 number.
+array2 had 5 letter.
+Alice spoke room(array1, array2).
