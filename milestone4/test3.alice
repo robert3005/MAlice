@@ -1,0 +1,9 @@
+The room simpleSum ( number l, number m ) contained a number
+  Alice found l+m.
+
+The room fact(number n) contained a number
+  perhaps (n == 0) so
+    Alice found 1.
+  either
+    Alice found n * fact(n-1).
+  Alice was unsure.

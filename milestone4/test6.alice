@@ -1,0 +1,9 @@
+  eventually ( i == p ) because
+
+    w became w + 10.
+    x became w * 10.
+    y became z*(w+x).
+    u became w+x+y+p+q.
+    v became v+u.
+
+    i ate.
