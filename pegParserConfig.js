@@ -9,6 +9,7 @@
 		var type;
 		var value;
 		var numberOfChildren;
+		var position;
 		var children;
 	};
 
@@ -30,6 +31,7 @@
 			}
 		}
 
+		//console.log(cacheKey);
 		n.numberOfChildren = n.children.length;
 		return n;
 	};
@@ -126,7 +128,7 @@ argument_type
 = space stype:spiderType? space type:typeName space identifier:id separator? space {  return createNode( NODE_TYPE, "argument", identifier, type, stype ) }
 
 loop_block
-= space 'eventually' space cond:condition space 'because' space [\n]* loop:function_body space [\n]* space 'enough' space 'times' newLine { return createNode( NODE_LOOP, "while", cond, loop )}
+= space 'eventually' space cond:condition space 'because' space [\n]* loop:function_body space [\n]* space 'enough' space 'times' newLine { return createNode( NODE_LOOP, "while", createNode( NODE_OP, OP_NOT, cond), loop )}
 
 io_line
 = single:io separator { return single }
