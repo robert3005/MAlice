@@ -1,3 +1,11 @@
+/*
+We used a parser generator Pegjs. In the top of the file there are three
+functions, which are used to build a parse tree. computePosition is used
+to include in the parse tree the position of particular tokens. Every
+node has a unique id and type, value, position in the file. There is also
+variable children where additional values are kept and the number of
+children.  
+*/
 {
 
 	Array.prototype.isArray = true;
@@ -59,7 +67,11 @@
 		n.numberOfChildren = n.children.length;
 		return n;
 	};
-
+/*
+Below there is a list of node types and a list of operator types. Every time
+a node is created, a type has to be specified. The same process concerns
+the operations, every operation has a different type.
+*/
 	NODE_ROOT		= "ROOT"
 	NODE_OP			= "OPERATOR"
 	NODE_VAR 		= "VARIABLE"
@@ -101,6 +113,13 @@
 
 }
 
+/*
+Pegjs looks for a particular patterns. We created 6 main types of instructions:
+a loop, an if block, a function block, a function call, input/output statement
+and an assignment. Each instruction has a different behaviour. Patterns occur
+in the rules in the particular order, because they are matched from top to bottom.
+*/
+
 start
 = program:root* { return createNode( cacheKey, NODE_ROOT, "root", program);}
 
@@ -112,6 +131,10 @@ root
 / io_line
 / assignment_line
 
+/*
+This part concerns functions. In the functions every type may occur except for another function definition.
+*/
+
 function_body
 = instructions*
 
@@ -122,13 +145,25 @@ instructions
 / io_line
 / assignment_line
 
+/*
+If block. In the if block body every type may occur except for a function definition.
+In the else block there is: another reference to function_body and an another
+else case or a line which signalises the end of an if block.
+*/
+
 if_block
-= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:root* ifE:ifelse { return createNode( cacheKey, NODE_IF, "if", cond, ifB, ifE)}
+= space name:ifFun space cond:condition space 'so' space [\n]* space ifB:function_body ifE:ifelse { return createNode( cacheKey, NODE_IF, "if", cond, ifB, ifE)}
 
 ifelse
 = space 'or' space [\n]* ifBody:function_body ife:ifelse { return createNode( cacheKey, NODE_ELSE, "else", ifBody, ife)}
 / space 'or maybe' space cond:condition space 'so' space [\n]* ifBody:function_body ife:ifelse { return createNode( cacheKey, NODE_ELSE_IF, "else if", cond, ifBody, ife)}
 / space unsure newLine { return createNode( cacheKey, NODE_END_IF, "endif" ) }
+
+/*
+Function call finds a pattern of a type function(type var_name, type var_name ...).
+argument_fun is a rule which matches all the possible legal arguments for the
+functions.
+*/
 
 func_call
 = fun:function newLine { return fun; }
@@ -141,6 +176,13 @@ function
 argument_fun
 = space arg:legalArgs separator? space { return arg }
 
+/*
+Function block is the rule for matching two types of functions: room and looking-glass.
+In the function block there might be anything besides another function definition.
+Function_type matches the type which is returned by a function and argument_type matches
+all the types of function's arguments.
+*/
+
 func_block
 = space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:function_body { return createNode( cacheKey, NODE_FUN_DEF, "function_definition", type, def, funcB) }
 / space 'The Looking-Glass' space identifier:id space 'changed a' space type:typeName [\n]* funcB:function_body { return createNode( cacheKey, NODE_LOOK_DEF, identifier, type, funcB)}
@@ -151,35 +193,58 @@ function_type
 argument_type
 = space stype:spiderType? space type:typeName space identifier:id separator? space {  return createNode( cacheKey, NODE_TYPE, "argument", identifier, type, stype ) }
 
+/*
+Loop block contains anything besides a function definition.
+*/
+
 loop_block
 = space 'eventually' space cond:condition space 'because' space [\n]* loop:function_body space [\n]* space 'enough' space 'times' newLine { return createNode( cacheKey, NODE_LOOP, "while", createNode( cackeKey, NODE_OP, OP_NOT, cond), loop )}
+
+/*
+Io block matches all the input/output statements and creates appropriate nodes.
+Any of the legal arguments can be directed to standard output. Values of variables and
+elements of the array can be prompted from the user. Comment segements are also
+included in the io block.
+*/
 
 io_line
 = single:io separator { return single }
 / single:io newLine { return single }
 
 io
-= space arg:legalArgs space name:function_output space 'Alice' { return createNode( cacheKey, NODE_IO, name, arg)}
-/ space arg:legalArgs space name:function_output { return createNode( cacheKey, NODE_IO, name, arg)}
+= space arg:legalArgs space name:function_output { return createNode( cacheKey, NODE_IO, name, arg)}
 / space 'Alice' space 'found' space arg:legalArgs space { return createNode( cacheKey, NODE_IO, 'found', arg)}
 / space name:function_input space arg:argument { return createNode( cacheKey, NODE_IO, name, arg)} 
+/ space string space name:comment_function space 'Alice' { return createNode( cacheKey, NODE_IO, name, arg) }
+
+/*
+All the legal arguments. They are used in ouput operations, assignments and function calls.
+*/
 
 legalArgs
-= type:typeName { return type }
-/ fun:function {return fun}
+= fun:function {return fun}
 / expr:expression {return expr}
 / arg:argument {return arg}
 / str:string {return str}
+
+/*
+Assignments include functions 'was a', 'became', 'had', 'drank' and 'ate'.
+*/
 
 assignment_line 
 = single:assignment separator { return single }
 / single:assignment newLine { return single }
 
 assignment
-= space arg:argument space name:binary_operators space expr:legalArgs {  return createNode( cacheKey, NODE_FUN_CALL, name, arg, expr ) }
+= space arg:id space name:type_operator space type:typeName {  return createNode( cacheKey, NODE_FUN_CALL, name, arg, type ) }
+/ space arg:argument space name:binary_operators space expr:legalArgs {  return createNode( cacheKey, NODE_FUN_CALL, name, arg, expr ) }
 / space identifier:id space name:unary_operators {  return createNode( cacheKey, NODE_FUN_CALL, name, identifier ) }
 / space identifier:id space 'had' space expr:expression space type:typeName {  return createNode( cacheKey, NODE_VAR_ARRAY, "array", identifier, expr, type ) }
 
+/*
+All the possible expressions are covered below. They are sorted in order
+from the weakest to the strongest operator.
+*/
 
 expression
 = logical_or_exp
@@ -243,6 +308,10 @@ primitive_expression
 / str:string {return str}
 / space '(' space expr:expression space ')' space { return expr; }
 
+/*
+Legal types used in declarations.
+*/
+
 typeName
 = type:'letter' { return createNode( cacheKey, NODE_TYPE, type ); }
 / type:'number' { return createNode( cacheKey, NODE_TYPE, type ); }
@@ -253,6 +322,10 @@ spiderType
 
 id
 = identifierFirst:[A-Za-z] identifierRest:[0-9A-Za-z_]* { return createNode( cacheKey, NODE_VAR, identifierFirst + identifierRest.join("") ) }
+
+/*
+Arguments are identifiers and array's pieces.
+*/
 
 argument
 = identifier:id "\'s" space expr:expression space 'piece' { return createNode( cacheKey, NODE_VAR_ARRAY, "array_element", identifier, expr ) }
@@ -265,8 +338,10 @@ condition
 = '(' space expr:expression space ')' { return expr }
 
 binary_operators
+= funcName:'became ' { return funcName }
+
+type_operator
 = funcName:'was a ' { return funcName }
-/ funcName:'became ' { return funcName }
 
 unary_operators
 = funcName:'drank' { return funcName }
@@ -276,9 +351,11 @@ function_input
 = funcName:'what was' { return funcName }
 
 function_output
-= funcName:'said' { return funcName }
-/ funcName:'thought' { return funcName }
+= funcName:'said Alice' { return funcName }
 / funcName:'spoke' { return funcName }
+
+comment_function
+= funcName:'thought' { return funcName }
 
 ifFun
 = "either"
@@ -287,6 +364,10 @@ ifFun
 unsure
 = "Alice was unsure which"
 / "Alice was unsure"
+
+/*
+newLine, space and separators are used to indicate white spaces and various separators.
+*/
 
 newLine
 = (space [\n\t]* space [\.\,\?] space [\n\t]*) { return }
