@@ -23,7 +23,11 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> type = TYPE;
 	} else if( type.compare( "RET" ) == 0 ){
 		this -> type = RET;
-	}
+	} else if( type.compare( "IF" ) == 0 ){
+		this -> type = IF;
+	}  else if( type.compare( "WHILE" ) == 0 ){
+		this -> type = WHILE;
+	}  
 
 	if( op.compare( "NONE" ) == 0 ){
 		this -> op = NONE;
@@ -47,6 +51,16 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 		this -> op = UNR;
 	} else if( op.compare( "NOT" ) == 0 ){
 		this -> op = NEG;
+	} else if( op.compare( "E" ) == 0 ){
+		this -> op = E;
+	} else if( op.compare( "G" ) == 0 ){
+		this -> op = G;
+	} else if( op.compare( "S" ) == 0 ){
+		this -> op = S;
+	} else if( op.compare( "GOE" ) == 0 ){
+		this -> op = GOE;
+	} else if( op.compare( "SOE" ) == 0 ){
+		this -> op = SOE;
 	} 
 
 	this -> data = args;
@@ -82,9 +96,15 @@ Node::Node( SimpleNode& s ){
 	type = s.getType();
 	op = s.getOP();
 	data = s.getData();
+	generated = false;
 }
 
-Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
+bool Node::wasGenerated(){
+	//if( type == RET) return true;
+	return generated;
+}
+
+std::map<int, Node*> Node::createAST( std::map<int, SimpleNode*>& sn ){
 	std::list<std::pair<int, int> > connectionsQueue;
 	std::list<std::pair<int, int> >::iterator conIt;
 
@@ -107,7 +127,9 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 			case VAR: 	newNode = Node::createVARNode( *(*it).second, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
 			case CONST: newNode = Node::createCONSTNode( *(*it).second, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
 			case TYPE:	newNode = Node::createTYPENode( *(*it).second, connectionsQueue );  nodes[ newNode -> getId() ] = newNode; break;
-			case RET:	root = Node::createRETNode( *(*it).second, connectionsQueue ); 	nodes[ root -> getId() ] = root; break;
+			case RET:	newNode = Node::createRETNode( *(*it).second, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+			case IF:	newNode = Node::createIFNode( *(*it).second, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+			case WHILE:	newNode = Node::createWHILENode( *(*it).second, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			default: break;
 		}
 
@@ -128,9 +150,9 @@ Node * Node::createAST( std::map<int, SimpleNode*>& sn ){
 		}
 	}
 	
-	if(DEBUG) printf("root #%d\n", root -> getId());
+	//if(DEBUG) printf("root #%d\n", root -> getId());
 
-	return root;
+	return nodes;
 }
 
 Node * Node::createOPNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections ){
@@ -180,13 +202,10 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 				node -> setVarType( LETTER );
 			}
 		} else if( i == 1 ){ 
-			if( node -> getVarType() == STRING ){ 
-				node -> setValueString( dataChunkRaw );
-			} else if( node -> getVarType() == NUMBER ){
+			if( node -> getVarType() == NUMBER ){
 				node -> setValueNumber( atoi( dataChunkRaw.c_str() ) );
-				cout << node -> getValueNumber() << "\n";
 			} else {
-				node -> setValueLetter( dataChunkRaw[0] );
+				node -> setValueString( dataChunkRaw );
 			}
 		}
 
@@ -219,7 +238,6 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		dataChunkRaw = data.substr( 0, pos );
 
-
 		if(DEBUG) printf("%s\n", dataChunkRaw.c_str() );
 
 		if( i == 0 ){
@@ -241,8 +259,6 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 	}
 
 	node -> allocated = false;
-
-	mapOfIds[ node -> getVarId() ] = node;
 
 	if(DEBUG) printf( "Create TYPE - VAR Node id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
@@ -278,6 +294,8 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 			varId = dataChunkRaw;
 		} else if( i == 2 ){
 			varValue = dataChunkRaw;
+			if(DEBUG) printf( "VARNode %s\n", varValue.c_str() );
+
 		} 
 
 		if(data.length() > pos) data = data.substr( pos + 1 );
@@ -289,17 +307,9 @@ Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 	node -> setVarType( mapOfTypes[varId] );
 
 	if( varValue.length() > 0 ){ // set value of a variable
-		if(DEBUG) if( mapOfIds.find( varId ) != mapOfIds.end() ) printf("Istnieje!\n");
-		tn = mapOfIds[varId];
-		node -> tn = tn;
-		tn -> varNodeWithValue = node;
-		mapOfIds[varId] = node;
-
 		connections.push_back( make_pair( node -> getId(), atoi( varValue.c_str() ) ) );
-
 		node -> set = 1;
 	} else { // get value of a variable
-		node = mapOfIds[varId];
 		node -> set = 2;
 	}
 
@@ -322,8 +332,10 @@ Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
 		dataChunkRaw = data.substr( 0, pos );
 
-		if( i == 0 ){
+		if( i == 0 && dataChunkRaw.length() > 0){
 			node -> setVarId( dataChunkRaw );
+		} else if( i == 1 ) {
+			connections.push_back( make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
 		}
 
 		if(data.length() > pos) data = data.substr( pos + 1 );
@@ -332,6 +344,67 @@ Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 	}
 
 	if(DEBUG) printf( "Create RETNode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
+
+	return node;
+}
+
+Node * Node::createIFNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	IFNode * node = new IFNode( simpleNode );
+
+	std::size_t pos;
+
+	string dataChunkRaw;
+	
+	string data = node -> getData(); 
+
+	int i = 0;
+
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
+		dataChunkRaw = data.substr( 0, pos );
+
+		/*if( i == 0 && dataChunkRaw.length() > 0){
+			node -> setCondId( dataChunkRaw );
+		} else {*/
+			connections.push_back( make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
+		/*}*/
+
+		if(data.length() > pos) data = data.substr( pos + 1 );
+	
+		i++;
+	}
+
+	if(DEBUG) printf( "Create IFNode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
+
+	return node;
+}
+
+
+Node * Node::createWHILENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	WHILENode * node = new WHILENode( simpleNode );
+
+	std::size_t pos;
+
+	string dataChunkRaw;
+	
+	string data = node -> getData(); 
+
+	int i = 0;
+
+	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
+		dataChunkRaw = data.substr( 0, pos );
+
+		/*if( i == 0 && dataChunkRaw.length() > 0){
+			node -> setCondId( dataChunkRaw );
+		} else {*/
+			connections.push_back( make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
+		/*}*/
+
+		if(data.length() > pos) data = data.substr( pos + 1 );
+	
+		i++;
+	}
+
+	if(DEBUG) printf( "Create WHILENode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 }
@@ -382,22 +455,26 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 	
 }
 
-Value * VARNode::codeGen(IRBuilder<> & Builder){
+Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
+
 	if(DEBUG) printf("VARNode::codeGen %d\n", uniqueId);
 	Value * V;
  		
 	if( set == 1 ){	
-		if( ! tn -> allocated ) tn -> codeGen( Builder );
-		alloca = tn -> alloca;
-		lhs = children[0] -> codeGen( Builder );
+		alloca = env.get( getVarId() ) -> alloca;
+		lhs = children[0] -> codeGen( Builder, env );
 		V = Builder.CreateStore( lhs, alloca );
 		//lhs -> dump();
 		set = 2;
-		if(DEBUG) printf("VAR Value stored\n");
+		env.add( getVarId(), this );
+
+		if(DEBUG) printf("VAR Value stored:\n");
+		lhs -> dump();
 	}
 	
-	
-	//lhs = children[0] -> codeGen( Builder );
+	alloca = env.get( getVarId() ) -> alloca;
+	//lhs = children[0] -> codeGen( Builder, env );
 	V = Builder.CreateLoad( alloca );
 	//V -> dump();
 	if(DEBUG) printf("VAR Value loaded\n");
@@ -409,7 +486,8 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 	
 }
 
-Value* CONSTNode::codeGen(IRBuilder<> & Builder){
+Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
 	if(DEBUG) printf("CONSTNode::codeGen %d\n", uniqueId );
 	switch( this -> varType ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
@@ -419,13 +497,17 @@ Value* CONSTNode::codeGen(IRBuilder<> & Builder){
 }
 
 Value* CONSTNode::codeGenLETTER( CONSTNode& n ){
-	//printf("CONSTNode::codeGenLETTER CG\n");
-	return ConstantInt::get( Type::getInt8Ty( getGlobalContext() ), n.getValueLetter() );
+	if(DEBUG) printf("CONSTNode::codeGenLETTER CG\n");
+	out += n.getValueString();
+	//printf("STRING: %s\n", n.getValueString().c_str());
+	return ConstantArray::get( getGlobalContext(), n.getValueString(), true);
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
-	//printf("CONSTNode::codeGenSTRING CG\n");
-	return ConstantArray::get( theModule -> getContext(), n.getValueString(), true);
+	if(DEBUG) printf("CONSTNode::codeGenSTRING CG\n");
+	out += n.getValueString();
+	//printf("STRING: %s\n", n.getValueString().c_str());
+	return ConstantArray::get( getGlobalContext(), n.getValueString(), true);
 }
 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
@@ -438,8 +520,10 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 	
 }
 
-Value * TYPENode::codeGen(IRBuilder<> & Builder){
+Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
 	if(DEBUG) printf("TYPENode::codeGen %d\n", uniqueId);
+
 	if( !allocated ){
 		Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 		
@@ -450,32 +534,182 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder){
 		alloca = Alloca;	
 
 		if(DEBUG) printf("Memory allocated\n");
+
+		env.add( getVarId(), this);
+
 		allocated = true;
+
+		return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
+	} else if( env.get( getVarId() ) != this ) {
+		return env.get( getVarId() ) -> codeGen( Builder, env );
+	} else {
+		return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 	}
-	return varNodeWithValue -> codeGen( Builder );
 }
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
 
 }
 
-Value * RETNode::codeGen(IRBuilder<> & Builder){
+Value * RETNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
 	if(DEBUG) printf("RETNode::codeGen %d\n", uniqueId);
 	
-	Value * v = mapOfIds[ getVarId() ] -> codeGen( Builder );
-	
+	Value * v;
+
+	if( getVarId().length() > 0 ){
+		v = env.get( getVarId() ) -> codeGen( Builder, env );	
+	} else {
+		lhs = children[0] -> codeGen( Builder, env );
+		v = lhs; 
+	} 
+
+  	Builder.CreateRet( v );
 	return v;
+}
+
+IFNode::IFNode( SimpleNode& s) : Node( s ){
+	
+}
+
+void IFNode::setCondId( string id ){
+	cond_id = id;
+}
+
+Node * IFNode::getCondNode(){
+	if( cond_id.length() == 0 ){
+		cond = children[0];
+	}
+
+	return cond;
+}
+
+
+
+Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
+	else_node = children[1];
+	
+	std::vector< Node * >::iterator itc = children.begin();
+	itc++;
+	itc++;
+	for(; itc != children.end(); ++itc) {
+	    body.push_back( *itc );
+  	}
+
+	if(DEBUG) printf("IFNode::codeGen %d\n", uniqueId);
+	
+	Value * condV = getCondNode() -> codeGen( Builder, env );
+
+	condV = Builder.CreateICmpEQ( condV, 
+                              ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) ),
+                                "ifcond" );
+
+	Function *theFunction = Builder.GetInsertBlock() -> getParent();
+ 	
+	BasicBlock *thenBB = BasicBlock::Create( getGlobalContext(), "then", theFunction );
+	BasicBlock *elseBB = BasicBlock::Create( getGlobalContext(), "else" );
+	BasicBlock *mergeBB = BasicBlock::Create( getGlobalContext(), "ifcont" );
+
+	Builder.CreateCondBr(condV, thenBB, elseBB);
+
+    Builder.SetInsertPoint( thenBB );
+
+    Value *thenV;
+
+    for(std::list< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
+	    thenV = (*it) -> codeGen( Builder, env );
+	    //if (thenV == 0) return 0;
+  	}
+
+    Builder.CreateBr( mergeBB );
+    thenBB = Builder.GetInsertBlock();
+    
+    theFunction -> getBasicBlockList().push_back( elseBB );
+	Builder.SetInsertPoint( elseBB );
+	  
+	Value *elseV = else_node -> codeGen( Builder, env );
+	//if (elseV == 0) return 0;
+	  
+	Builder.CreateBr( mergeBB );
+	// Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+	elseBB = Builder.GetInsertBlock();
+
+	theFunction -> getBasicBlockList().push_back( mergeBB );
+    Builder.SetInsertPoint( mergeBB );
+    PHINode *PN = Builder.CreatePHI( Type::getInt32Ty( getGlobalContext() ) );
+  
+    PN -> addIncoming( thenV, thenBB );
+    PN -> addIncoming( elseV, elseBB );
+    
+    return PN;
+}
+
+WHILENode::WHILENode( SimpleNode& s) : IFNode( s ){
+	
+}
+
+Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
+	
+	std::vector< Node * >::iterator itc = children.begin();
+	itc++;
+	for(; itc != children.end(); ++itc) {
+	    body.push_back( *itc );
+  	}
+
+	if(DEBUG) printf("WHILENode::codeGen %d\n", uniqueId);
+	
+	Function *theFunction = Builder.GetInsertBlock() -> getParent();
+ 	
+	BasicBlock *whileBB = BasicBlock::Create( getGlobalContext(), "while", theFunction );
+	BasicBlock *bodyBB = BasicBlock::Create( getGlobalContext(), "body" );
+	BasicBlock *endBB = BasicBlock::Create( getGlobalContext(), "end" );
+
+	Builder.CreateBr( whileBB );
+    Builder.SetInsertPoint( whileBB );
+
+    Value * condV = getCondNode() -> codeGen( Builder, env );
+
+	condV = Builder.CreateICmpEQ( condV, 
+                              ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) ),
+                                "loopcond" );
+	Builder.CreateCondBr(condV, bodyBB, endBB);
+
+   
+
+	theFunction -> getBasicBlockList().push_back( bodyBB );
+    Builder.SetInsertPoint( bodyBB );
+
+    Value *thenV;
+
+    for(std::list< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
+	    thenV = (*it) -> codeGen( Builder, env );
+	    //if (thenV == 0) return 0;
+  	}
+
+    Builder.CreateBr( whileBB );
+    bodyBB = Builder.GetInsertBlock();
+
+    theFunction -> getBasicBlockList().push_back( endBB );
+	Builder.SetInsertPoint( endBB );    
+
+ 	
+    Value * ret = ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) );
+	//theFunction -> dump();
+    return ret;
+
 }
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){
 	
 }
 
-
-Value* OPNode::codeGen(IRBuilder<> & Builder){
+Value* OPNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
 	if(DEBUG) printf("OPNode::codeGen %d\n", uniqueId);
-	lhs = children[0] -> codeGen(Builder);
-	if(this -> op != UNR && this -> op != NEG) rhs = children[1] -> codeGen(Builder);
+	lhs = children[0] -> codeGen( Builder, env );
+	if(this -> op != UNR && this -> op != NEG) rhs = children[1] -> codeGen( Builder, env );
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( Builder, *this ); break;
@@ -488,6 +722,11 @@ Value* OPNode::codeGen(IRBuilder<> & Builder){
 		case MOD: return OPNode::codeGenMOD( Builder, *this ); break;
 		case UNR: return OPNode::codeGenUNR( Builder, *this ); break;
 		case NEG: return OPNode::codeGenNEG( Builder, *this ); break;
+		case S: return OPNode::codeGenS( Builder, *this ); break;
+		case G: return OPNode::codeGenG( Builder, *this ); break;
+		case E: return OPNode::codeGenE( Builder, *this ); break;
+		case GOE: return OPNode::codeGenGOE( Builder, *this ); break;
+		case SOE: return OPNode::codeGenSOE( Builder, *this ); break;
 	}
 }
 
@@ -545,17 +784,7 @@ Value* OPNode::codeGenDIV( llvm::IRBuilder<> & Builder, OPNode & n ){
 }
 
 Value* OPNode::codeGenMOD( llvm::IRBuilder<> & Builder, OPNode & n ){
-	//a - (n * int(a/n)).
-	return Builder.CreateSub( 
-			n.lhs,
-			Builder.CreateMul(
-				n.rhs,
-				Builder.CreateUDiv( 
-					n.lhs, 
-					n.rhs 
-				)
-			)
-		);
+	return Builder.CreateURem( n.lhs, n.rhs	);
 }
 
 Value* OPNode::codeGenUNR( llvm::IRBuilder<> & Builder, OPNode & n ){
@@ -564,5 +793,30 @@ Value* OPNode::codeGenUNR( llvm::IRBuilder<> & Builder, OPNode & n ){
 }
 
 Value* OPNode::codeGenNEG( llvm::IRBuilder<> & Builder, OPNode & n ){
-	return Builder.CreateSub( Builder.CreateNeg( n.lhs ), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 1 ) );
+	return Builder.CreateNot( n.lhs );
+}
+
+Value* OPNode::codeGenS( IRBuilder<> & Builder, OPNode & n ){
+	Value * b = Builder.CreateICmpULT( n.lhs, n.rhs );
+	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+}
+
+Value* OPNode::codeGenG( IRBuilder<> & Builder, OPNode & n ){
+	Value * b = Builder.CreateICmpUGT( n.lhs, n.rhs );
+	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+}
+
+Value* OPNode::codeGenE( IRBuilder<> & Builder, OPNode & n ){
+	Value * b = Builder.CreateICmpEQ( n.lhs, n.rhs );
+	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+}
+
+Value* OPNode::codeGenGOE( IRBuilder<> & Builder, OPNode & n ){
+	Value * b = Builder.CreateICmpUGE( n.lhs, n.rhs );
+	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+}
+
+Value* OPNode::codeGenSOE( IRBuilder<> & Builder, OPNode & n ){
+	Value * b = Builder.CreateICmpULE( n.lhs, n.rhs );
+	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
