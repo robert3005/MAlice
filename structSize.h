@@ -7,17 +7,18 @@ extern "C" {
 
 using namespace std;
 
-typedef struct Node * NodePtr;
+typedef struct node_struct * Node;
 
-struct Node {
+struct node_struct {
 	int id;
 	char * type;
 	char * value;
+	int * position;
 	int numberOfChildren;
-	NodePtr * children;
+	Node * children;
 };
 
-void print_struct(NodePtr node, int indent);
+void print_struct(Node node, int indent);
 
 #ifdef  __cplusplus
 }
