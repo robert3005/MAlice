@@ -63,7 +63,7 @@ try
 	labelTree = semantics.analyse parseTree
 catch e
 	if e.name is 'SemanticError'
-		sys.puts e
+		sys.puts e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
 	else if e.name is 'SyntaxError'
 		sys.puts e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
 	else

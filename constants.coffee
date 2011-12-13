@@ -14,6 +14,7 @@ module.exports = (() ->
         NODE_FUN_DEF: "FUNCTION_DEFINITION",
         NODE_FUN_CALL: "FUNCTION_CALL",
         NODE_LOOK_DEF: "LOOKING_GLASS",
+        NODE_LOOK: "THROUGH_LOOKING_GLASS",
         NODE_IF: "IF",
         NODE_ELSE_IF: "ELSE_IF",
         NODE_ELSE: "ELSE",
