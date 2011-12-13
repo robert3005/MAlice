@@ -1,155 +1,50 @@
 module.exports = (() ->
 	[RBTree, RBTNode] = require './rbtree.coffee'
+	Types = require './constants.coffee'
+
 	analyser =
 		analyse: (parseTree) ->
 			@checkTree = new RBTree
-			@counter = parseTree[parseTree.length-1]?.id + 1
-			@check node for node in parseTree 
+			@initialise()
+			@check parseTree 
 			@checkTree
+
 		check : (node) ->
-			switch node.value
-				when 'was a '
-					@checkVarName node.children[0]
-					if (@checkTree.rbFind node.children[0]) isnt null
-						throw new analyser.SemanticError "Variable '#{node.children[0]}' has been already declared"
-					else 
-						@checkTree.rbInsert new RBTNode node.children[0], node.children[1], node.id
-				when 'became '
-					@checkIfInTree node.children[0]
-					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'number' and (@checkTree.rbFind node.children[0]).argumentsType is 'letter'
-					then throw new analyser.SemanticError "Variable '#{node.children[0]}' was declared as a letter, not a number" 
-					if node.children[1]?.type is 2 and node.children[1]?.children[0] is 'letter' and (@checkTree.rbFind node.children[0]).argumentsType is 'number'
-					then throw new analyser.SemanticError "Variable '#{node.children[0]}' was declared as a number, not a letter" 
-					if (@checkTree.rbFind node.children[0]).argumentsType is 'number' and (@checkTree.rbFind node.children[1])?.argumentsType is 'letter'
-					then throw new analyser.SemanticError "Cannot assign '#{node.children[1]}' of type letter to '#{node.children[0]}' of type number"
-					if (@checkTree.rbFind node.children[0]).argumentsType is 'letter' and (@checkTree.rbFind node.children[1])?.argumentsType is 'number'
-					then throw new analyser.SemanticError "Cannot assign '#{node.children[1]}' of type number to '#{node.children[0]}' of type letter"
-					if node?.children[1]?.type is 0
-						@checkExpression node
-					else @checkIfInTree node.children[1]
-				when 'drank', 'ate'
-					@checkIfInTree node.children[0]
-					@checkTypeNum node.children[0]
-				when 'spoke'
-					@checkIfInTree node.children[0]
-				else throw new analyser.SemanticError "I do not recognise this function"
+			@check child for child in node.children
 
-		checkIfANumber: (node) ->
-			if node.children[0] isnt 'number'
-				throw new analyser.SemanticError "This operation supports only numbers, but '#{node.value}' is a letter"
-		
-		checkVarName: (name) ->
-			if name is 'a'
-			then throw new analyser.SemanticError "'a' is a reserved name"
+		functionTypeCheck: (types...) ->
+			functionHeader = types
+			(runTimeArgs...) =>
+				console.log functionHeader
+				functionHeader.map ((type, index ) ->
+					unify type, runTimeArgs[index]
+				).reduce ((previous, current) -> 
+					previous and current)
+					, yes
 
-		checkExpression: (node) ->
-			while node?.children[1]?.type is 0
-				@checkVarConst node.children[1].children[0]
-				node = node?.children[1]
-			@checkVarConst node?.children[1]
-	
-		checkVarConst: (node) ->
-			if node?.type is 2
-				@checkIfANumber node
-			else
-				@checkIfInTree node
-				@checkTypeNum node
+		unify: (typeA, typeB) ->
+			if typeA is 'Type' then yes else typeA is typeB
 
-		checkIfInTree: (variable) ->
-			if @checkTree.rbFind variable is null
-			then throw new analyser.SemanticError "Variable '#{variable}' has not been declared"
+		variableTypeCheck: (name) ->
+			@checkTree.rbFind name
 
-		checkTypeNum: (variable) ->
-			if (@checkTree.rbFind variable)?.argumentsType is 'letter'
-			then throw new analyser.SemanticError "The operation works only with numbers, but '#{variable}' is a letter"
+		###
+		NODE_TYPE represents generic type so we need to try to unify them
+		###
+		initialise: () ->
+			@checkTree.rbInsert (new RBTNode 'was a', null, @functionTypeCheck(Types.NODE_VAR, Types.NODE_TYPE))
+			@checkTree.rbInsert (new RBTNode 'became', null, @functionTypeCheck(Types.NODE_TYPE, Types.NODE_TYPE))
+			@checkTree.rbInsert (new RBTNode 'what was', null, @functionTypeCheck(Types.NODE_VAR))
+			@checkTree.rbInsert (new RBTNode 'spoke', null, @functionTypeCheck(Types.NODE_TYPE))
+			@checkTree.rbInsert (new RBTNode 'said Alice', null, @functionTypeCheck(Types.NODE_TYPE))
+			@checkTree.rbInsert (new RBTNode 'ate', Types.TYPE_NUMBER, @functionTypeCheck(Types.TYPE_NUMBER))
+			@checkTree.rbInsert (new RBTNode 'drank', Types.TYPE_NUMBER, @functionTypeCheck(Types.TYPE_NUMBER))
+			@checkTree.rbInsert (new RBTNode 'had', null, @functionTypeCheck(Types.NODE_VAR, Types.TYPE_NUMBER, Types.NODE_TYPE))
+			@checkTree.rbInsert (new RBTNode 'element', Types.NODE_TYPE, @functionTypeCheck(Types.NODE_TYPE, Types.TYPE_NUMBER))
+			@checkTree.rbInsert (new RBTNode Types.NODE_OP, Types.TYPE_NUMBER, @functionTypeCheck(Types.TYPE_NUMBER, Types.TYPE_NUMBER))
 
-		### Tree Encoding - tree is sent in this form to code generation part
-		x was a number counter#TYPE#NONE#NUMBER,x,|
-		x became 42    counter#VAR#NONE#,x,1,|1#CONST#NONE#NUMBER,42,|
-		x became 'a'   counter#VAR#NONE#,x,1,|1#CONST#NONE#LETTER,a,|
-		x became y	   counter#VAR#NONE#,x,1,|1#VAR#NONE#NUMBER,y,|
-		x became 1 + 2 counter#VAR#NONE#,x,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,1,|3#CONST#NONE#NUBMER,2,|
-		x became y + z counter#VAR#NONE#,x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,y,|3#VAR#NONE#NUBMER,z,|
-		x became ~5	   counter#VAR#NONE#,x,1,|1#OP#NEG#2,|2#CONST#NONE#NUMBER,5,|
-		x drank		   counter#VAR#NONE#,x,1,|1#OP#ADD#2,3,|2#VAR#NONE#NUMBER,x,|3#CONST#NONE#NUBMER,1,|
-		x spoke		   counter#RET#NONE#x,|
-		this became 4 + 6 + 8 + 10 counter#VAR#NONE#this,1,|1#OP#ADD#2,3,|2#CONST#NONE#NUMBER,4,|3#OP#ADD#4,5|4#CONST#NONE#NUMBER,6,|5#OP#ADD#6,7...
-		###	
-
-		buildtree: (parseTree) ->
-			toString = []
-			for node in parseTree
-				str = @changeToString node
-				toString.push str
-			toString
-		changeToString: (node) ->
-			toString = ''
-			switch node?.type
-				# was a only way to declare a type so node.type = 3, we are done
-				when 3 then toString += "#{node.id}##{@nodeType node}##{@opType node}##{@varType node.children[1]},#{node.children[0]},|"
-				# ok, so we have a VAR it might be either became or drank, ate
-				when 1 
-					if node.value is "ate" or node.value is "drank"
-						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@counter},|#{@drankAte node}"
-					else
-						toString += "#{node.id}##{@nodeType node}##{@opType node}#,#{node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[1]}"
-				# const value
-				when 2 
-					toString += "#{node.id}#CONST#NONE##{@varType node.children[0]},#{node.value},|"
-				# operations /node.value 10 is for the neg operation
-				when 0 
-					if node.value is 10 or node.value is 9
-						toString += "#{node.id}##{@nodeType node}##{@opType node}##{@tryLookup node.children[0]},|#{@changeToString node.children[0]}"
-					else toString += "#{node.id}##{@nodeType node}##{@opType node}##{@tryLookup node.children[0]},#{@tryLookup node.children[1]},|#{@changeToString node.children[0]}#{@changeToString node.children[1]}"
-				# spoke, return statement
-				when 4 then toString += "#{node.id}##{@nodeType node}##{@opType node}##{node.children[0]},|"
-				# ok, so else case is when we have no object just a variable reference i assume node.type returns undefined and it actually works
-				#else @getElementCommand node, counter
-			toString
-
-		tryLookup: (node) ->
-			lookup = @checkTree.rbFind node
-			if lookup isnt null
-				lookup.id
-			else
-				node.id
-
-		drankAte: (node) ->
-			switch node.value
-				when "drank" then "#{@counter++}#OP#SUB##{@tryLookup node.children[0]},#{++@counter},|#{@changeToString node.children[0]}#{@counter++}#CONST#NONE#NUBMER,1,|"
-				when "ate" then "#{@counter++}#OP#ADD##{@tryLookup node.children[0]},#{++@counter},|#{@changeToString node.children[0]}#{@counter++}#CONST#NONE#NUBMER,1,|"
-				else "UNEXPECTED ERROR"
-
-		nodeType: (node) ->
-			switch node.type
-				when 0 then "OP"
-				when 1 then "VAR"
-				when 2 then "CONST"
-				when 3 then "TYPE"
-				when 4 then "RET"
-
-		opType: (node) ->
-			switch node.value
-				when -1 then "NONE"
-				when 1 then "ADD"
-				when 2 then "OR"
-				when 3 then "XOR"
-				when 4 then "AND"
-				when 5 then "SUB"
-				when 6 then "MUL"
-				when 7 then "DIV"
-				when 8 then "MOD"
-				when 9 then "NOT"
-				when 10 then "NEG"
-				else "NONE"
-
-		varType: (node) ->
-			switch node
-				when "number" then "NUMBER"
-				when "letter" then "LETTER"
-
-	analyser.SemanticError = (@message, @line, @column) ->
-    	@name = 'SemanticError'
+		SemanticError: (@message, @line, @column) ->
+    		@name = 'SemanticError'
 
 	analyser.SemanticError.prototype = Error.prototype;
 
