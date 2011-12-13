@@ -11,3 +11,4 @@ test10.alice:fail
 test11.alice:pass
 test12.alice:pass
 test13.alice:pass
+test14.alice:pass
