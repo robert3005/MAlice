@@ -3,7 +3,7 @@ module.exports = (() ->
 	RED = 2
 
 	class RBTNode
-		constructor: (@key, @argumentsType, @id) ->
+		constructor: (@key, @returnType, @typeCheck) ->
 			@color = null
 			@left = null
 			@right = null
