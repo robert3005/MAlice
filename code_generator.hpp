@@ -62,7 +62,7 @@ map<int, SimpleNode* > CodeGenerator::parse( string rawData ){
 	return mapOfNodes;
 }
 
-Function * makeLLVMModule( map< int, Node * > & ast ){
+Function * makeLLVMModule( Node & ast ){
 	theModule = new Module( "alice", getGlobalContext() );
 
 	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), false);

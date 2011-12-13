@@ -413,7 +413,7 @@ Value* CONSTNode::codeGenLETTER( CONSTNode& n ){
 	if(DEBUG) printf("CONSTNode::codeGenLETTER CG\n");
 	out += n.getValueString();
 	//printf("STRING: %s\n", n.getValueString().c_str());
-	return ConstantInt::get( Type::getInt8Ty( getGlobalContext(), n.getValueNumber() ), 
+	return ConstantInt::get( Type::getInt8Ty( getGlobalContext() ), n.getValueNumber() );
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
@@ -437,9 +437,9 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
  	generated = true;
 	if(DEBUG) printf("TYPENode::codeGen %d\n", uniqueId );
 	switch( this -> varType ){
-		case STRING: return CONSTNode::codeGenSTRING( *this, Builder ); break;
-		case NUMBER: return CONSTNode::codeGenNUMBER( *this, Builder ); break;
-		case LETTER: return CONSTNode::codeGenLETTER( *this, Builder ); break;
+		case STRING: return TYPENode::codeGenSTRING( *this, Builder ); break;
+		case NUMBER: return TYPENode::codeGenNUMBER( *this, Builder  ); break;
+		case LETTER: return TYPENode::codeGenLETTER( *this, Builder  ); break;
 	}
 }
  
@@ -448,16 +448,16 @@ Value * TYPENode::codeGenSTRING(TYPENode & node, IRBuilder<> & Builder){
  		
 	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	
-	ArrayType* StringTy = ArrayType::get(IntegerType::get(mod->getContext(), 8), 1);
+	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 1);
 	AllocaInst * Alloca = TmpB.CreateAlloca(StringTy, 0);
 
-	alloca = Alloca;	
+	node.alloca = Alloca;	
 
 	if(DEBUG) printf("Memory allocated\n");
 
-	allocated = true;
+	node.allocated = true;
 
-	return alloca;		
+	return node.alloca;		
 }
 
 Value * TYPENode::codeGenNUMBER(TYPENode & node, IRBuilder<> & Builder){
@@ -467,13 +467,13 @@ Value * TYPENode::codeGenNUMBER(TYPENode & node, IRBuilder<> & Builder){
 	
 	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0);
  
-	alloca = Alloca;	
+	node.alloca = Alloca;	
  
 	if(DEBUG) printf("Memory allocated\n");
  
-	allocated = true;
+	node.allocated = true;
  
-	return alloca;
+	return node.alloca;
 }
  
 Value * TYPENode::codeGenLETTER(TYPENode & node, IRBuilder<> & Builder){
@@ -483,13 +483,13 @@ Value * TYPENode::codeGenLETTER(TYPENode & node, IRBuilder<> & Builder){
 	
 	AllocaInst * Alloca = TmpB.CreateAlloca(Type::getInt8Ty(getGlobalContext()), 0);
 
-	alloca = Alloca;	
+	node.alloca = Alloca;	
 
 	if(DEBUG) printf("Memory allocated\n");
 
-	allocated = true;
+	node.allocated = true;
 
-	return alloca;	
+	return node.alloca;	
 }
 
 ARRAYNode::ARRAYNode( SimpleNode& s) : Node( s ){
@@ -782,11 +782,6 @@ Value* OPNode::codeGenDIV( llvm::IRBuilder<> & Builder, OPNode & n ){
 
 Value* OPNode::codeGenMOD( llvm::IRBuilder<> & Builder, OPNode & n ){
 	return Builder.CreateURem( n.lhs, n.rhs	);
-}
-
-Value* OPNode::codeGenUNR( llvm::IRBuilder<> & Builder, OPNode & n ){
-	//need to think about it;
-	return 0;
 }
 
 Value* OPNode::codeGenNEG( llvm::IRBuilder<> & Builder, OPNode & n ){

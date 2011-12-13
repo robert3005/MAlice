@@ -17,6 +17,8 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
+#include "structSize.h"
+
 enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
 enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY};
@@ -297,9 +299,9 @@ class TYPENode : public Node{
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
 	protected:
-		static llvm::Value *codeGenSTRING( TYPENode & , IRBuilder<> &  );
-		static llvm::Value *codeGenNUMBER( TYPENode & , IRBuilder<> &  );
-		static llvm::Value *codeGenLETTER( TYPENode & , IRBuilder<> &  );
+		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
+		static llvm::Value *codeGenNUMBER( TYPENode & , llvm::IRBuilder<> &  );
+		static llvm::Value *codeGenLETTER( TYPENode & , llvm::IRBuilder<> &  );
 };
 
 
