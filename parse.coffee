@@ -1,10 +1,10 @@
 require.paths.push '/usr/lib/node_modules'
-PEG = require 'pegjs'
+peg = require 'pegjs'
 semantics = require './semanticAnalyser.coffee'
 sys = require 'sys'
 fs = require 'fs'
 util = require 'util' # only for development and debugging
-parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
+parser = peg.buildParser fs.readFileSync './pegParserConfig.js', 'utf-8'
 ffi = require 'node-ffi'
 
 Node = ffi.Struct [
@@ -51,7 +51,7 @@ arguments = process.argv.splice 2
 source = fs.readFileSync arguments[0], 'utf-8'
 source = source.replace /[ \t\r]{2,}/g, ' '
 
-sys.puts source
+#sys.puts source
 
 ffiStruct = new ffi.Library "./libstruct", {
 	"print_struct": [ "void", [ "pointer", "int32" ] ]
@@ -60,7 +60,7 @@ ffiStruct = new ffi.Library "./libstruct", {
 try
 	parseTree = parser.parse source
 	console.log (util.inspect parseTree, false, 50)
-	ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
+	#ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
 	labelTree = semantics.analyse parseTree
 catch e
 	if e.name is 'SemanticError'
