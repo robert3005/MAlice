@@ -195,6 +195,8 @@ class Node : public SimpleNode{
 		int set;
 
 		Node * tn;
+
+		int arrayType, arraySize; 
 };
 
 static std::map<std::string, VarType> mapOfTypes;
@@ -257,6 +259,21 @@ class CONSTNode : public Node{
 		static llvm::Value *codeGenSTRING( CONSTNode& );
 		static llvm::Value *codeGenNUMBER( CONSTNode& );
 		static llvm::Value *codeGenLETTER( CONSTNode& );
+};
+
+class ARRAYNode : public Node{
+	public:
+		CONSTNode();
+		CONSTNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+
+	protected:
+
+		static llvm::Value *codeGenSTRING( CONSTNode& );
+		static llvm::Value *codeGenNUMBER( CONSTNode& );
+		static llvm::Value *codeGenLETTER( CONSTNode& );
+
+		VarType arrayType;
 };
 
 class TYPENode : public Node{

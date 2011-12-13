@@ -493,6 +493,7 @@ Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
 		case LETTER: return CONSTNode::codeGenLETTER( *this ); break;
+		case ARRAY: return CONSTNode::codeGenARRAY( *this ); break;
 	}
 }
 
@@ -546,6 +547,16 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 	}
 }
+
+ARRAYNode::ARRAYNode( SimpleNode& s) : Node( s ){
+
+}
+
+Value * ARRAYNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	
+}
+
+
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
 
