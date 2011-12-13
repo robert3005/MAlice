@@ -25,6 +25,7 @@ module.exports=(function(){
         "func_call": parse_func_call,
         "function": parse_function,
         "function_body": parse_function_body,
+        "function_id": parse_function_id,
         "function_input": parse_function_input,
         "function_output": parse_function_output,
         "function_type": parse_function_type,
@@ -747,7 +748,7 @@ module.exports=(function(){
         var savedPos3 = pos;
         var result13 = parse_space();
         if (result13 !== null) {
-          var result14 = parse_id();
+          var result14 = parse_function_id();
           if (result14 !== null) {
             var result15 = parse_space();
             if (result15 !== null) {
@@ -810,7 +811,7 @@ module.exports=(function(){
           pos = savedPos3;
         }
         var result12 = result11 !== null
-          ? (function(identifier, arglist) { return createNode( cacheKey, Types.NODE_FUN_CALL, "function_call", identifier, arglist)})(result11[1], result11[4])
+          ? (function(identifier, arglist) { return createNode( cacheKey, Types.NODE_FUN_CALL, identifier, arglist)})(result11[1], result11[4])
           : null;
         if (result12 !== null) {
           var result10 = result12;
@@ -841,7 +842,7 @@ module.exports=(function(){
                 if (result7 !== null) {
                   var result8 = parse_space();
                   if (result8 !== null) {
-                    var result9 = parse_id();
+                    var result9 = parse_function_id();
                     if (result9 !== null) {
                       var result2 = [result4, result5, result6, result7, result8, result9];
                     } else {
@@ -869,7 +870,7 @@ module.exports=(function(){
             pos = savedPos1;
           }
           var result3 = result2 !== null
-            ? (function(arg, identifier) { return createNode( cacheKey, Types.NODE_FUN_CALL, "function_call_by_reference", arg, identifier)})(result2[1], result2[5])
+            ? (function(arg, identifier) { return createNode( cacheKey, Types.NODE_LOOK, identifier, arg )})(result2[1], result2[5])
             : null;
           if (result3 !== null) {
             var result1 = result3;
@@ -1080,7 +1081,7 @@ module.exports=(function(){
             if (result5 !== null) {
               var result6 = parse_space();
               if (result6 !== null) {
-                var result7 = parse_id();
+                var result7 = parse_function_id();
                 if (result7 !== null) {
                   var result8 = parse_space();
                   if (result8 !== null) {
@@ -1200,7 +1201,7 @@ module.exports=(function(){
         
         var savedPos0 = pos;
         var savedPos1 = pos;
-        var result3 = parse_id();
+        var result3 = parse_function_id();
         if (result3 !== null) {
           var result4 = parse_space();
           if (result4 !== null) {
@@ -1259,7 +1260,7 @@ module.exports=(function(){
           pos = savedPos1;
         }
         var result2 = result1 !== null
-          ? (function(identifier, arglist) { return createNode( cacheKey, Types.NODE_FUN, "function", identifier, arglist)})(result1[0], result1[3])
+          ? (function(identifier, arglist) { return createNode( cacheKey, Types.NODE_FUN, identifier, arglist)})(result1[0], result1[3])
           : null;
         if (result2 !== null) {
           var result0 = result2;
@@ -3809,6 +3810,78 @@ module.exports=(function(){
         }
         var result2 = result1 !== null
           ? (function() { return createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_ARRAY ); })()
+          : null;
+        if (result2 !== null) {
+          var result0 = result2;
+        } else {
+          var result0 = null;
+          pos = savedPos0;
+        }
+        
+        
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_function_id() {
+        var cacheKey = 'function_id@' + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        
+        var savedPos0 = pos;
+        var savedPos1 = pos;
+        if (input.substr(pos).match(/^[A-Za-z]/) !== null) {
+          var result3 = input.charAt(pos);
+          pos++;
+        } else {
+          var result3 = null;
+          if (reportMatchFailures) {
+            matchFailed("[A-Za-z]");
+          }
+        }
+        if (result3 !== null) {
+          var result4 = [];
+          if (input.substr(pos).match(/^[0-9A-Za-z_]/) !== null) {
+            var result5 = input.charAt(pos);
+            pos++;
+          } else {
+            var result5 = null;
+            if (reportMatchFailures) {
+              matchFailed("[0-9A-Za-z_]");
+            }
+          }
+          while (result5 !== null) {
+            result4.push(result5);
+            if (input.substr(pos).match(/^[0-9A-Za-z_]/) !== null) {
+              var result5 = input.charAt(pos);
+              pos++;
+            } else {
+              var result5 = null;
+              if (reportMatchFailures) {
+                matchFailed("[0-9A-Za-z_]");
+              }
+            }
+          }
+          if (result4 !== null) {
+            var result1 = [result3, result4];
+          } else {
+            var result1 = null;
+            pos = savedPos1;
+          }
+        } else {
+          var result1 = null;
+          pos = savedPos1;
+        }
+        var result2 = result1 !== null
+          ? (function(identifierFirst, identifierRest) { return identifierFirst + identifierRest.join("") })(result1[0], result1[1])
           : null;
         if (result2 !== null) {
           var result0 = result2;
