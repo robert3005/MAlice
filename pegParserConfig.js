@@ -181,7 +181,7 @@ io
 = space arg:legalArgs space name:function_output { return createNode( cacheKey, Types.NODE_IO, name, arg)}
 / space 'Alice' space 'found' space arg:legalArgs space { return createNode( cacheKey, Types.NODE_IO, 'found', arg)}
 / space name:function_input space arg:argument { return createNode( cacheKey, Types.NODE_IO, name, arg)} 
-/ space string space name:comment_function space 'Alice' { return createNode( cacheKey, Types.NODE_IO, name, arg) }
+/ space string space name:comment_function space 'Alice' { return createNode( cacheKey, Types.NODE_IO, name) }
 
 /*
 All the legal arguments. They are used in ouput operations, assignments and function calls.

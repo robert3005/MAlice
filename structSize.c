@@ -8,7 +8,23 @@ using namespace std;
 extern "C" {
 #endif
 
-void print_struct(Node node, int indent) {
+void compile(SNode node, string s){
+	/*CodeGenerator * codeGen = new CodeGenerator();
+	
+	Node * ast = Node::createAST( *node );
+	makeLLVMModule( *ast );
+	verifyModule( *theModule, PrintMessageAction );
+
+	ExecutionEngine *ee = EngineBuilder( theModule ).create();
+    Function* func = ee -> FindFunctionNamed("main");
+
+    ofstream myfile;
+  	myfile.open ( s.c_str() );
+  	myfile << theModule;
+  	myfile.close();*/
+}
+
+void print_struct(SNode node, int indent) {
 	cout << setw(indent) << " " << "id: " << node->id << endl;
 	cout << setw(indent) << " " << "type: " << node->type << endl;
 	cout << setw(indent) << " " << "value: " << node->value << endl;

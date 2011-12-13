@@ -73,13 +73,10 @@ Function * makeLLVMModule( map< int, Node * > & ast ){
 	Environment<Node> * env = new Environment<Node>();
 	//env -> add("main", Main);
 
-	for(std::map< int, Node * >::iterator it = ast.begin(); it != ast.end(); ++it) {
-	    ( *it ).second -> debug();
-	    if( ! ( *it ).second -> wasGenerated() ){
-		    ( *it ).second -> codeGen( Builder, *env );
-		    if(DEBUG) printf(" wasnt\n");
-  		}
-  	}  	
+	for(std::vector< Node * >::iterator it = ast.children.begin(); it != ast.children.end(); ++it) {
+	    ( *it ) -> debug();
+		( *it ) -> codeGen( Builder, *env );
+   	}  	  	
 	
 	/*
   	

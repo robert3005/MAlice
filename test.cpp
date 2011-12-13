@@ -40,10 +40,9 @@ pair<int, string> execute( string input ){
 	out = "";
 	
 	CodeGenerator * codeGen = new CodeGenerator();
-	map<int, SimpleNode*> dataFromParser;
-	dataFromParser = codeGen -> parse( input );
-	map< int, Node * > ast = Node::createAST( dataFromParser );
-	makeLLVMModule( ast );
+	node_struct data;
+	Node * ast = Node::createAST( data );
+	makeLLVMModule( *ast );
 	verifyModule( *theModule, PrintMessageAction );
 
 	ExecutionEngine *ee = EngineBuilder( theModule ).create();

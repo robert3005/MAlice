@@ -17,9 +17,9 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
-enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, OUT, IN};
-enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E};
-enum VarType {STRING = 0, NUMBER, LETTER};
+enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF};
+enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
+enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY};
 
 static llvm::Module * theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
@@ -94,15 +94,20 @@ class Environment{
 			}
 		}
 
+		bool is( std::string key ){
+			return (elements.find( key ) != elements.end());
+		}
+
 	protected:
 		std::map< std::string, Environment<T> * > scopes;
 		std::map< std::string, T * > elements;
 		Environment<T> * parent;
 };
 
-class SimpleNode{
+class SimpleNode : public node_struct{
 	public:
 		SimpleNode();
+		SimpleNode( node_struct & );
 		SimpleNode( std::string, std::string, std::string, std::string );
 
 		NodeType getType();
@@ -113,6 +118,9 @@ class SimpleNode{
 		void debug();
 
 		llvm::IRBuilder<> * builder;
+		std::vector<SimpleNode* > children;
+
+		std::string value;
 	protected:
 		int uniqueId; 
 
@@ -135,7 +143,8 @@ class Node : public SimpleNode{
 		virtual llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&) = 0;
 		void addChild( Node* );
 
-		static std::map<int, Node*> createAST( std::map<int, SimpleNode*> & ); //Factory
+		static Node * createAST( node_struct & ); //Factory
+		static Node * createNode( SimpleNode & ); 
 		
 		VarType getVarType();
 		void setVarType( VarType );
@@ -220,13 +229,16 @@ class OPNode : public Node{
 		static llvm::Value *codeGenMUL( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenDIV( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenMOD( llvm::IRBuilder<> &, OPNode& );
-		static llvm::Value *codeGenUNR( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenNEG( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenS( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenG( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenE( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenGOE( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenSOE( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenNOT( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenNE( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenBOR( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenBAND( llvm::IRBuilder<> &, OPNode& );
 
 };
 
@@ -254,6 +266,8 @@ class CONSTNode : public Node{
 		CONSTNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
+		llvm::Value *lhs;
+
 	protected:
 
 		static llvm::Value *codeGenSTRING( CONSTNode& );
@@ -263,8 +277,8 @@ class CONSTNode : public Node{
 
 class ARRAYNode : public Node{
 	public:
-		CONSTNode();
-		CONSTNode( SimpleNode& s);
+		ARRAYNode();
+		ARRAYNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
 	protected:
@@ -283,6 +297,9 @@ class TYPENode : public Node{
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
 	protected:
+		static llvm::Value *codeGenSTRING( TYPENode & , IRBuilder<> &  );
+		static llvm::Value *codeGenNUMBER( TYPENode & , IRBuilder<> &  );
+		static llvm::Value *codeGenLETTER( TYPENode & , IRBuilder<> &  );
 };
 
 
