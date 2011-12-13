@@ -136,8 +136,8 @@ func_call
 / fun:function separator { return fun; }
 
 function
-= space identifier:id space '(' arglist:argument_fun* ')' space { return createNode( cacheKey, Types.NODE_FUN_CALL, "function_call", identifier, arglist)}
-/ space arg:id space 'went through' space identifier:id { return createNode( cacheKey, Types.NODE_FUN_CALL, "function_call_by_reference", arg, identifier)}
+= space identifier:function_id space '(' arglist:argument_fun* ')' space { return createNode( cacheKey, Types.NODE_FUN_CALL, identifier, arglist)}
+/ space arg:id space 'went through' space identifier:function_id { return createNode( cacheKey, Types.NODE_LOOK, identifier, arg )}
 
 argument_fun
 = space arg:legalArgs separator? space { return arg }
@@ -151,10 +151,10 @@ all the types of function's arguments.
 
 func_block
 = space 'The room' space def:function_type 'contained a' space type:typeName [\n]* funcB:function_body { return createNode( cacheKey, Types.NODE_FUN_DEF, "function_definition", type, def, funcB) }
-/ space 'The Looking-Glass' space identifier:id space 'changed a' space type:typeName [\n]* funcB:function_body { return createNode( cacheKey, Types.NODE_LOOK_DEF, identifier, type, funcB)}
+/ space 'The Looking-Glass' space identifier:function_id space 'changed a' space type:typeName [\n]* funcB:function_body { return createNode( cacheKey, Types.NODE_LOOK_DEF, identifier, type, funcB)}
 
 function_type
-= identifier:id space '(' arglist:argument_type* ')' space { return createNode( cacheKey, Types.NODE_FUN, "function", identifier, arglist)}
+= identifier:function_id space '(' arglist:argument_type* ')' space { return createNode( cacheKey, Types.NODE_FUN, identifier, arglist)}
 
 argument_type
 = space stype:spiderType? space type:typeName space identifier:id separator? space {  return createNode( cacheKey, Types.NODE_TYPE, "argument", identifier, type, stype ) }
@@ -285,6 +285,9 @@ typeName
 
 spiderType
 = 'spider' { return createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_ARRAY ); }
+
+function_id
+= identifierFirst:[A-Za-z] identifierRest:[0-9A-Za-z_]* { return identifierFirst + identifierRest.join("") }
 
 id
 = identifierFirst:[A-Za-z] identifierRest:[0-9A-Za-z_]* { return createNode( cacheKey, Types.NODE_VAR, identifierFirst + identifierRest.join("") ) }
