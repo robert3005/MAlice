@@ -1,9 +1,11 @@
 require.paths.push '/usr/lib/node_modules'
-semantics = require './semanticAnalyser.coffee'
+semanticChecker = require './semanticAnalyser.coffee'
+semantics = new semanticChecker
 sys = require 'sys'
+peg = require 'pegjs'
 fs = require 'fs'
 util = require 'util' # only for development and debugging
-parser = require './parser.js'
+parser = peg.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
 ffi = require 'node-ffi'
 
 Node = ffi.Struct [
@@ -47,20 +49,27 @@ parseTreeToC = (parseTree) ->
 
 arguments = process.argv.splice 2
 
+saveFileName = (source) ->
+	pathTokens = arguments[0].split '/'
+	fileNameTokens = pathTokens.pop().split '.'
+	pathTokens.push fileNameTokens[0]
+	pathTokens.join '/'
+
 source = fs.readFileSync arguments[0], 'utf-8'
 source = source.replace /[ \t\r]{2,}/g, ' '
 
 #sys.puts source
-###
-ffiStruct = new ffi.Library "./libstruct", {
-	"print_struct": [ "void", [ "pointer", "int32" ] ]
+
+codeGen = new ffi.Library "./libstruct", {
+	"print_struct": [ "void", [ "pointer", "int32" ] ],
+	"compile": [ "void", [ "pointer", "string" ] ] 
 }
-###
+
 try
 	parseTree = parser.parse source
-	sys.puts (util.inspect parseTree, false, 50)
-	#ffiStruct.print_struct (parseTreeToC parseTree).ref(), 0 
-	labelTree = semantics.analyse parseTree
+	#sys.puts (util.inspect parseTree, false, 50)
+	codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
+	#semantics.analyse parseTree
 catch e
 	if e.name is 'SemanticError'
 		sys.puts e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
