@@ -352,7 +352,7 @@ class FUNCTIONDEFNode : public Node {
 		llvm::Function * F;
 
 		FUNCTIONNode * Fn;
-
+		std::string funName;
 		Environment<Node> * Fenv;
 
 	protected:
@@ -387,11 +387,7 @@ class IONode : public Node{
 		IONode();
 		IONode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
-		
-		llvm::Value *callWhatWas(llvm::IRBuilder<> &, Environment<Node>&);
-		llvm::Value *callSaidAlice(llvm::IRBuilder<> &, Environment<Node>&);
-		llvm::Value *callSpoke(llvm::IRBuilder<> &, Environment<Node>&);
-
+		std::string funName;
 	protected:
 };
 

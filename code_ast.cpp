@@ -731,7 +731,7 @@ Value* OPNode::codeGenSOE( IRBuilder<> & Builder, OPNode & n ){
 }
 
 FUNCTIONNode::FUNCTIONNode( SimpleNode& s) : Node( s ){
-
+	funName = s.value;
 }
 
 string FUNCTIONNode::getFunName(){
@@ -756,6 +756,7 @@ Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 
 FUNCTIONDEFNode::FUNCTIONDEFNode( SimpleNode& s) : Node( s ){
 	Fn = (FUNCTIONNode*)children[1];
+	funName = s.value;
 }
 
 Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
@@ -769,7 +770,7 @@ Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& en
 	Fn -> codeGen(Builder, env);
 
 	//Declare function type
-	//FT = FunctionType::get(((TYPENode*)children[0]) -> getLlvmType(), Fn -> getArgsTypes(), false);
+	FT = FunctionType::get(((TYPENode*)children[0]) -> getLlvmType(), Fn -> getArgsTypes(), false);
 	
 	//Define function
 	F = Function::Create(FT, Function::ExternalLinkage, Fn -> getFunName(), theModule);
@@ -786,6 +787,10 @@ Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& en
 	}
 
 	return F;
+}
+
+FUNCTIONCALLNode::FUNCTIONCALLNode( SimpleNode& s) : Node( s ){
+	funName = s.value;
 }
 
 Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
@@ -842,6 +847,84 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		for( int i = 0; i < f_argsNames.size(); i++ ){
 			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
 		}
-		return Builder.CreateCall(f, f_args, funName)
+		return Builder.CreateCall(f, f_args, funName);
+	}
+}
+
+IONode::IONode( SimpleNode& s) : Node( s ){
+	funName = s.value;
+}
+
+Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	if( funName.compare( "what was" ) == 0 ){
+		Node * x = env.get( children[0] -> getVarId() ); 
+
+		Function* func_scanf = theModule->getFunction("scanf");
+
+		ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 3);
+		GlobalVariable* gvar_array__str = new GlobalVariable(theModule, 
+		 /*Type=*/ArrayTy_0,
+		 /*isConstant=*/true,
+		 /*Linkage=*/GlobalValue::PrivateLinkage,
+		 /*Initializer=*/0, // has initializer, specified below
+		 /*Name=*/".str");
+		 gvar_array__str->setAlignment(1);
+
+		Constant* const_array_8 = ConstantArray::get(getGlobalContext(), "%d", true);
+		std::vector<Constant*> const_ptr_10_indices;
+		ConstantInt* const_int64_11 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
+		const_ptr_10_indices.push_back(const_int64_11);
+		const_ptr_10_indices.push_back(const_int64_11);
+		Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, const_ptr_10_indices);
+
+		std::vector<Value*> int32_14_params;
+		int32_14_params.push_back(const_ptr_10);
+		int32_14_params.push_back(x -> alloca);
+		CallInst* int32_14 = CallInst::Create(func_scanf, int32_14_params, "");
+
+		//Assign value to the variable
+		//Builder.CreateStore( val, x -> alloca );
+		 
+		return 0;
+	} else if( funName.compare( "had" ) == 0 ){
+		Node * x = children[0];
+
+		//Add variable to the scope
+		env.add( x -> getVarId(), x );
+
+		//Get type
+		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
+
+		//Get size
+		Value * size = children[1] -> codeGen( Builder, env );
+
+		//Get pointer of the type
+		PointerType* Pt = PointerType::get(t, 0);
+
+		//Allocate memory (type node)
+		x -> alloca = Builder.CreateAlloca(Pt, size);
+
+		return 0;
+	} else if( funName.compare( "was" ) == 0 ){
+		Node * x = children[0];
+
+		//Add variable to the scope
+		env.add( x -> getVarId(), x );
+
+		//Allocate memory (type node)
+		AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
+		
+		//Set variable's memory location
+		x -> alloca = alloca;
+
+		return 0;
+	} else{
+		Function * f = theModule -> getFunction( funName );
+		vector<Value *> f_args;
+		vector<string> f_argsNames = ((FUNCTIONDEFNode*) env.get( funName )) -> Fn -> getArgs();
+		for( int i = 0; i < f_argsNames.size(); i++ ){
+			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
+		}
+		return Builder.CreateCall(f, f_args, funName);
 	}
 }
