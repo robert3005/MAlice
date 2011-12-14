@@ -7,7 +7,7 @@ extern "C" {
 
 using namespace std;
 
-typedef struct node_struct * Node;
+typedef struct node_struct * SNode;
 
 struct node_struct {
 	int id;
@@ -15,10 +15,10 @@ struct node_struct {
 	char * value;
 	int * position;
 	int numberOfChildren;
-	Node * children;
+	SNode * children;
 };
 
-void print_struct(Node node, int indent);
+void print_struct(SNode node, int indent);
 
 #ifdef  __cplusplus
 }
