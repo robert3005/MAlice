@@ -40,6 +40,9 @@ module.exports = (() ->
         OP_LTE: "LESS_THAN_EQUAL",
         OP_GTE: "GREATER_THAN_EQUAL"
 
+        intOperators: [@OP_ADD, @OP_OR, @OP_XOR, @OP_AND, @OP_SUB, @OP_MUL, @OP_DIV, @OP_MOD, @OP_NEG, @OP_NOT]
+        boolOperators: [@OP_NOT, @OP_LOR, @OP_LAND, @OP_EQ, @OP_UEQ, @OP_LT, @OP_GT, @OP_LTE, @OP_GTE]
+
         TYPE_ARRAY: "array"
         TYPE_SENTENCE: "sentence"
         TYPE_LETTER: "letter"
