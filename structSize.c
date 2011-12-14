@@ -1,6 +1,9 @@
 #include <iostream>
 #include <iomanip>
+
 #include "structSize.h"
+#include "code_ast.hpp"
+#include "code_generator.hpp"
 
 using namespace std;
 
@@ -9,7 +12,7 @@ extern "C" {
 #endif
 
 void compile(SNode node, string s){
-	/*CodeGenerator * codeGen = new CodeGenerator();
+	CodeGenerator * codeGen = new CodeGenerator();
 	
 	Node * ast = Node::createAST( *node );
 	makeLLVMModule( *ast );
@@ -21,7 +24,7 @@ void compile(SNode node, string s){
     ofstream myfile;
   	myfile.open ( s.c_str() );
   	myfile << theModule;
-  	myfile.close();*/
+  	myfile.close();
 }
 
 void print_struct(SNode node, int indent) {

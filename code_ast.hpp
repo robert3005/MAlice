@@ -55,21 +55,14 @@ class Environment{
 			it = scopes.find( key );
 
 			if( it != scopes.end() ){
-				return *it;
+				return (*it).second;
 			} else {
 				return 0;
 			}	
 		}
 
 		void addScope( std::string key ){
-			typename std::map<std::string, Environment<T> * >::iterator it;
-			it = scopes.find( key );
-
-			if( it != elements.end() ){
-				scopes[key] = new Environment<T>( this );
-			} else {
-				scopes[key] = new Environment<T>( this );
-			}
+			scopes[key] = new Environment<T>( this );
 		}
 
 		void add( std::string key, T * n ){
@@ -252,7 +245,7 @@ class VARNode : public Node{
 		VARNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);
 
-		void setAlloca( llvm::AllocaInst & ):
+		void setAlloca( llvm::AllocaInst * );
 
 	protected:
 		llvm::Value *lhs;
@@ -298,9 +291,9 @@ class TYPENode : public Node{
 		TYPENode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
-		llvm::Type getLlvmType();
-		llvm::Type getLlvmArgType();
-		llvm::Type getArgType();
+		llvm::Type * getLlvmType();
+		llvm::Type * getLlvmArgType();
+		VarType getArgType();
 
 	protected:
 		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
@@ -332,23 +325,6 @@ class WHILENode : public IFNode {
 	
 };
 
-class FUNCTIONDEFNode : public Node {
-	public:
-		FUNCTIONDEFNode();
-		FUNCTIONDEFNode( SimpleNode& s);
-		llvm::Function *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
-		
-		llvm::FunctionType * FT;
-		llvm::Function * F;
-
-		FUNCTIONNode * Fn;
-
-		Environment<Node>& Fenv;
-
-	protected:
-
-};
-
 class FUNCTIONNode : public Node {
 	public:
 		FUNCTIONNode();
@@ -365,6 +341,25 @@ class FUNCTIONNode : public Node {
 		std::vector<llvm::Type*> args;
 		std::vector<std::string> argsNames;
 };
+
+class FUNCTIONDEFNode : public Node {
+	public:
+		FUNCTIONDEFNode();
+		FUNCTIONDEFNode( SimpleNode& s);
+		llvm::Function *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		llvm::FunctionType * FT;
+		llvm::Function * F;
+
+		FUNCTIONNode * Fn;
+
+		Environment<Node> * Fenv;
+
+	protected:
+
+};
+
+
 
 class FUNCTIONCALLNode : public Node {
 	public:
@@ -398,6 +393,6 @@ class IONode : public Node{
 		llvm::Value *callSpoke(llvm::IRBuilder<> &, Environment<Node>&);
 
 	protected:
-}
+};
 
 #endif

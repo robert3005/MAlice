@@ -171,8 +171,8 @@ Node * Node::createNode( SimpleNode& node){
 			case RET:	newNode = Node::createRETNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case IF:	newNode = Node::createIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case WHILE:	newNode = Node::createWHILENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
- 			case ARRAY:	newNode = Node::createARRAYNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
- 			case ARRAY_ELEM:	newNode = Node::createARRAYELEMNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			//case ARRAY:	newNode = Node::createARRAYNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			//case ARRAY_ELEM:	newNode = Node::createARRAYELEMNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			
  			default: break;
  	}
@@ -279,6 +279,10 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 	setVarId(s.value);
 }
 
+void VARNode::setAlloca( AllocaInst * a){
+	alloca = a;
+}
+
 Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	if( env.is( getVarId() ) ){
  		alloca = env.get( getVarId() ) -> alloca;
@@ -289,7 +293,19 @@ Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 
 //CONSTNode
 CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
-	switch( s.children[0] -> getVarType() ){
+	VarType v;
+
+	if( s.children[0] -> value.compare( "number" ) == 0 ){
+		v = NUMBER ;
+	} else if( s.children[0] -> value.compare( "letter" ) == 0 ){
+		v = LETTER ;
+	} else if( s.children[0] -> value.compare( "sentence" ) == 0 ){
+		v = STRING ;
+	} else if( s.children[0] -> value.compare( "argument" ) == 0 ){
+		v = T_NONE ;
+	}
+
+	switch( v ){
 		case STRING: setValueString( s.value ); break;
 		case NUMBER: setValueNumber( atoi(s.value.c_str()) ); break;
 		case LETTER: setValueLetter( s.value[0] ); break; 
@@ -349,7 +365,7 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		case LETTER: return TYPENode::codeGenLETTER( *this, Builder  ); break;
 		case T_NONE: {
 			AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
-			((VARNode)children[0]) -> setAlloca( *alloca );
+			((VARNode*)children[0]) -> setAlloca( alloca );
 			return children[0] -> codeGen( Builder, env);
 		}; break;
 	}
@@ -404,14 +420,13 @@ Value * TYPENode::codeGenLETTER(TYPENode & node, IRBuilder<> & Builder){
 	return node.alloca;	
 }
 
-ARRAYNode::ARRAYNode( SimpleNode& s) : Node( s ){
-
+Type * TYPENode::getLlvmType(){
+	switch( getVarType() ){
+		case STRING: return (Type*)ArrayType::get(IntegerType::get(getGlobalContext(), 8), 1); break;
+		case NUMBER: return (Type*)Type::getInt32Ty(getGlobalContext()); break;
+		case LETTER: return (Type*)Type::getInt8Ty(getGlobalContext()); break; 
+	}
 }
-
-Value * ARRAYNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
-	
-}
-
 
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
@@ -734,7 +749,7 @@ vector<string> FUNCTIONNode::getArgs(){
 Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	for(int i = 0; i < children.size(); i++){
 		children[i] -> codeGen(Builder, env);
-		args.push_back( ((TYPENode*)children[i]) -> gelLlvmType()) );
+		args.push_back( ((TYPENode*)children[i]) -> getLlvmType());
 	}	
 	return 0;
 }
@@ -745,23 +760,24 @@ FUNCTIONDEFNode::FUNCTIONDEFNode( SimpleNode& s) : Node( s ){
 
 Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	//Create new scope
-	env -> add( Fn -> getFunNam() , *this);
+	env.add( Fn -> getFunName() , this);
 
-	env -> addScope( Fn -> getFunName() );
-	env = env -> getScope( Fn -> getFunName() );
+	env.addScope( Fn -> getFunName() );
+	env = env.getScope( Fn -> getFunName() );
 
 	//Generate arguments
 	Fn -> codeGen(Builder, env);
 
 	//Declare function type
-	FT = FunctionType::get(((TYPENode*)children[0]) -> gelLlvmType()), Fn -> getArgsTypes(), false);
+	//FT = FunctionType::get(((TYPENode*)children[0]) -> getLlvmType(), Fn -> getArgsTypes(), false);
 	
 	//Define function
 	F = Function::Create(FT, Function::ExternalLinkage, Fn -> getFunName(), theModule);
 	
 
 	//Create new insertion block
-	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", TheFunction);
+	Function *theFunction = Builder.GetInsertBlock() -> getParent();
+	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", theFunction);
   	Builder.SetInsertPoint(BB);
 	
 	//Generate body
@@ -775,7 +791,7 @@ Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& en
 Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	if( funName.compare( "became" ) == 0 ){
 		//Get variable from environment
-		Node * x = env -> get( children[0] -> getVarName() ); 
+		Node * x = env.get( children[0] -> getVarId() ); 
 
 		//Get its new value
 		Value * val = children[1] -> codeGen( Builder, env );
@@ -784,20 +800,20 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		Value * V = Builder.CreateStore( val,x -> alloca );
 		return 0;
 	} else if( funName.compare( "ate" ) == 0 ){ //++
-		return Builder.CreateAdd( children[0] -> codeGen(), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
+		return Builder.CreateAdd( children[0] -> codeGen(Builder, env), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
 	} else if( funName.compare( "drank" ) == 0 ){ //--
-		return Builder.CreateSub( children[0] -> codeGen(), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
+		return Builder.CreateSub( children[0] -> codeGen(Builder, env), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
 	} else if( funName.compare( "had" ) == 0 ){
 		Node * x = children[0];
 
 		//Add variable to the scope
-		env -> add( x -> getVarName(), x );
+		env.add( x -> getVarId(), x );
 
 		//Get type
-		Type t = ((TYPENode)children[2]) -> getLlvmType();
+		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
 
 		//Get size
-		Value * size = children[1] -> codeGen();
+		Value * size = children[1] -> codeGen( Builder, env );
 
 		//Get pointer of the type
 		PointerType* Pt = PointerType::get(t, 0);
@@ -810,22 +826,22 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		Node * x = children[0];
 
 		//Add variable to the scope
-		env -> add( x -> getVarName(), x );
+		env.add( x -> getVarId(), x );
 
 		//Allocate memory (type node)
-		AllocaInst * alloca = children[1] -> codeGen( Builder, env );
+		AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
 		
 		//Set variable's memory location
 		x -> alloca = alloca;
 
 		return 0;
 	} else{
-		Function * F = ((Function*) env -> get( funName )) -> F;
-		vector<Value *> args;
-		vector<string> argsNames = ((Function*) env -> get( funName )) -> Fn -> getArgs();
-		for( int i = 0; i < argsNames.size(); i++ ){
-			args.push_back( env -> get( argsNames[i] ) -> codeGen() );
+		Function * f = theModule -> getFunction( funName );
+		vector<Value *> f_args;
+		vector<string> f_argsNames = ((FUNCTIONDEFNode*) env.get( funName )) -> Fn -> getArgs();
+		for( int i = 0; i < f_argsNames.size(); i++ ){
+			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
 		}
-		return Builder.CreateCall(F, args);	
+		return Builder.CreateCall(f, f_args, funName)
 	}
 }
