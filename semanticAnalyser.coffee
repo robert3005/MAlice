@@ -12,6 +12,7 @@ module.exports = (() ->
 			@check parseTree, @globalScopeName
 
 		check: (node, scope) ->
+			console.log node.type
 			switch node.type
 				when Types.NODE_ROOT
 					@check child, scope for child in node.children
@@ -67,8 +68,8 @@ module.exports = (() ->
 					else 				
 						# NEEDS WORK
 						typeCheck = functionNode.typeCheck
-						callingTypes = node.children.map (node, index) -> [node.type, node.value]
-						#console.log "function " + node.value + " called with " + callingTypes
+						callingTypes = node.children.map (node, index) -> node.type
+						console.log "function " + node.value + " called with " + callingTypes
 						typeCheck callingTypes
 				when Types.NODE_WHILE
 					@isBoolean node.children[0]

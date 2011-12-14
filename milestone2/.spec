@@ -1,6 +1,6 @@
 ex1.alice:pass
-ex2.alice:fail
-ex3.alice:fail
+ex2.alice:pass
+ex3.alice:pass
 ex4.alice:pass
 ex5.alice:pass
 ex6.alice:pass
@@ -12,7 +12,7 @@ ex11.alice:pass
 ex12.alice:pass
 ex13.alice:pass
 ex14.alice:pass
-ex15.alice:fail
+ex15.alice:pass
 ex16.alice:fail
 ex17.alice:pass
 ex101.alice:pass
@@ -21,16 +21,16 @@ ex104.alice:pass
 ex105.alice:pass
 ex106.alice:pass
 ex107.alice:pass
-ex108.alice:fail
+ex108.alice:pass
 ex109.alice:fail
 ex110.alice:pass
 ex111.alice:fail
 ex112.alice:pass
 ex113.alice:pass
-ex114.alice:fail
-ex115.alice:fail
+ex114.alice:pass
+ex115.alice:pass
 ex116.alice:pass
-ex117.alice:fail
+ex117.alice:pass
 ex118.alice:pass
 ex119.alice:pass
 ex120.alice:fail
@@ -56,6 +56,6 @@ ex139.alice:pass
 ex140.alice:pass
 ex141.alice:pass
 ex142.alice:pass
-ex143.alice:fail
+ex143.alice:pass
 ex144.alice:fail
 ex145.alice:fail
