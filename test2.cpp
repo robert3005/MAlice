@@ -52,7 +52,7 @@ int main(int, char const *[])
 	Function* func_scanf = Function::Create(FuncTyScanf, Function::ExternalLinkage, "scanf", theModule);
 	
 	 ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 3);
-	 GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_0, true, GlobalValue::PrivateLinkage, 0);
+	 GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_0, true, GlobalValue::PrivateLinkage, 0, ".str");
 	 
 	 // Constant Definitions
 	 Constant* const_array_8 = ConstantArray::get(getGlobalContext(), "%d", true);
@@ -72,5 +72,7 @@ int main(int, char const *[])
 
 	Builder.CreateCall(func_scanf, int32_14_params.begin(), int32_14_params.end());
 
+	ConstantArray::get( getGlobalContext(), "kotek", true) -> dump();
+	ConstantInt::get( Type::getInt8Ty( getGlobalContext() ), 'a' ) -> dump();
 	theModule -> dump();
 }

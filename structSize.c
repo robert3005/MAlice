@@ -18,13 +18,15 @@ void compile(SNode node, string s){
 	makeLLVMModule( *ast );
 	verifyModule( *theModule, PrintMessageAction );
 
-	ExecutionEngine *ee = EngineBuilder( theModule ).create();
-    Function* func = ee -> FindFunctionNamed("main");
+	//ExecutionEngine *ee = EngineBuilder( theModule ).create();
+    //Function* func = ee -> FindFunctionNamed("main");
 
     ofstream myfile;
   	myfile.open ( s.c_str() );
   	myfile << theModule;
   	myfile.close();
+
+  	theModule -> dump(); //print theModule to the output
 }
 
 void print_struct(SNode node, int indent) {

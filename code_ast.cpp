@@ -279,13 +279,19 @@ VARNode::VARNode( SimpleNode& s) : Node( s ){
 	setVarId(s.value);
 }
 
+//Sets pointer to memory allocated for this variable
 void VARNode::setAlloca( AllocaInst * a){
 	alloca = a;
 }
 
+//Loads variable from memory location
 Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	//Check if variable has been allocated
 	if( env.is( getVarId() ) ){
+		//Get memory location
  		alloca = env.get( getVarId() ) -> alloca;
+		
+		//Load data
 		Value * V = Builder.CreateLoad( alloca );
 		return V;
 	} else return 0;
@@ -295,6 +301,7 @@ Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 	VarType v;
 
+	//Determine type of CONSTNode
 	if( s.children[0] -> value.compare( "number" ) == 0 ){
 		v = NUMBER ;
 	} else if( s.children[0] -> value.compare( "letter" ) == 0 ){
@@ -305,6 +312,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 		v = T_NONE ;
 	}
 
+	//Set its value
 	switch( v ){
 		case STRING: setValueString( s.value ); break;
 		case NUMBER: setValueNumber( atoi(s.value.c_str()) ); break;
@@ -312,9 +320,12 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 	}
 }
 
+//Returns Value of the constant
 Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
 	if(DEBUG) printf("CONSTNode::codeGen %d\n", uniqueId );
+	
+	//Check type and generate corresponding code
 	switch( children[0] -> getVarType() ){
 		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
 		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
@@ -322,20 +333,19 @@ Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	}
 }
 
+//Generates code for a letter - 8 bit integer
 Value* CONSTNode::codeGenLETTER( CONSTNode& n ){
 	if(DEBUG) printf("CONSTNode::codeGenLETTER CG\n");
-	out += n.getValueString();
-	//printf("STRING: %s\n", n.getValueString().c_str());
 	return ConstantInt::get( Type::getInt8Ty( getGlobalContext() ), n.getValueLetter() );
 }
 
+//Generates code for a string - constant array of 8 bit integers
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
 	if(DEBUG) printf("CONSTNode::codeGenSTRING CG\n");
-	out += n.getValueString();
-	//printf("STRING: %s\n", n.getValueString().c_str());
 	return ConstantArray::get( getGlobalContext(), n.getValueString(), true);
 }
 
+//Generates code for a number - 32 bit integer 
 Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
 	if(DEBUG) printf("CONSTNode::codeGenNUMBER %d\n", n.getValueNumber());
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), n.getValueNumber() );
@@ -344,6 +354,7 @@ Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
 
 TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 		
+	//Sets type of the node
 	if( s.value.compare( "number" ) == 0 ){
 		setVarType( NUMBER );
 	} else if( s.value.compare( "letter" ) == 0 ){
@@ -356,6 +367,7 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 	
 }
 
+//Allocates memory for a given type, and returns address of the momory
 Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
  	generated = true;
 	if(DEBUG) printf("TYPENode::codeGen %d\n", uniqueId );
@@ -363,20 +375,25 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		case STRING: return TYPENode::codeGenSTRING( *this, Builder ); break;
 		case NUMBER: return TYPENode::codeGenNUMBER( *this, Builder  ); break;
 		case LETTER: return TYPENode::codeGenLETTER( *this, Builder  ); break;
-		case T_NONE: {
+		case T_NONE: { //argument of a function
+			//call codeGen for type node of the argument
 			AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
+			//set Alloca 
 			((VARNode*)children[0]) -> setAlloca( alloca );
-			return children[0] -> codeGen( Builder, env);
+			//create variable in the scope //TD??
+			children[0] -> codeGen( Builder, env);
+			return alloca;
 		}; break;
 	}
 }
- 
+
+
 Value * TYPENode::codeGenSTRING(TYPENode & node, IRBuilder<> & Builder){
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
  		
 	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	
-	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 1);
+	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 32), 1);
 	AllocaInst * Alloca = TmpB.CreateAlloca(StringTy, 0);
 
 	node.alloca = Alloca;	
@@ -855,6 +872,8 @@ IONode::IONode( SimpleNode& s) : Node( s ){
 	funName = s.value;
 }
 
+
+// Generates code responsible for handling IO operations
 Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	if( funName.compare( "what was" ) == 0 ){
 		Node * x = env.get( children[0] -> getVarId() ); 
@@ -878,7 +897,7 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		 ConstantInt* const_int64_11 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
 		 const_ptr_10_indices.push_back(const_int64_11);
 		 const_ptr_10_indices.push_back(const_int64_11);
-		 Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, &const_ptr_10_indices[0], const_ptr_10_indices.size());
+		 Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, const_ptr_10_indices);
 
 		switch( x -> getVarType() ){
 			case LETTER: gvar_array__str->setInitializer(tC); break;
