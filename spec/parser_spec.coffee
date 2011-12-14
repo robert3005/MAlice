@@ -11,7 +11,7 @@ parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
 
 
 prepareTestSuite = (directory) ->
-	testFilesSpec = (fs.readFileSync directory + '.spec', 'utf-8').split "\n"
+	testFilesSpec = (fs.readFileSync directory + 'parser.spec', 'utf-8').split "\n"
 
 	testSpec = testFilesSpec.map (fileName, index, allFiles) -> tokens = fileName.split ':'
 
