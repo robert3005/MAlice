@@ -332,13 +332,13 @@ class FUNCTIONNode : public Node {
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 		
 		std::string getFunName();
-		std::vector<llvm::Type*> getArgsTypes();
+		std::vector<const llvm::Type*> getArgsTypes();
 		std::vector<std::string> getArgs();
 
 		std::string funName;
 
 	protected:
-		std::vector<llvm::Type*> args;
+		std::vector<const llvm::Type*> args;
 		std::vector<std::string> argsNames;
 };
 
@@ -376,10 +376,10 @@ class FUNCTIONCALLNode : public Node {
 		std::string funName;
 
 		std::string getFunName();
-		std::vector<llvm::Type*> getArgs();
+		std::vector<const llvm::Type*> getArgs();
 
 	protected:
-		std::vector<llvm::Type*> args;
+		std::vector<const llvm::Type*> args;
 };
 
 class IONode : public Node{

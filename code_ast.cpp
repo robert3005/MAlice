@@ -738,7 +738,7 @@ string FUNCTIONNode::getFunName(){
 	return funName;
 }
 
-vector<Type*> FUNCTIONNode::getArgsTypes(){
+vector<const Type*> FUNCTIONNode::getArgsTypes(){
 	return args;
 }
 
@@ -847,7 +847,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		for( int i = 0; i < f_argsNames.size(); i++ ){
 			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
 		}
-		return Builder.CreateCall(f, f_args, funName);
+		return Builder.CreateCall(f, f_args.begin(), f_args.end(), funName);
 	}
 }
 
@@ -859,31 +859,37 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	if( funName.compare( "what was" ) == 0 ){
 		Node * x = env.get( children[0] -> getVarId() ); 
 
-		Function* func_scanf = theModule->getFunction("scanf");
+		vector<const Type*> FuncTy_7_args;
+		PointerType* PointerTy_4 = PointerType::get(IntegerType::get(getGlobalContext(), 8), 0);
+	 	FuncTy_7_args.push_back(PointerTy_4);
+	 	FunctionType* FuncTyScanf = FunctionType::get( IntegerType::get(getGlobalContext(), 32), FuncTy_7_args, true);
+		
+		Function* func_scanf = Function::Create(FuncTyScanf, Function::ExternalLinkage, "scanf", theModule);
+		
+		 ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 3);
+		 GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_0, true, GlobalValue::PrivateLinkage, 0);
+		 
+		 // Constant Definitions
+		 Constant* tD = ConstantArray::get(getGlobalContext(), "%s", true);
+		 Constant* tS = ConstantArray::get(getGlobalContext(), "%d", true);
+		 Constant* tC = ConstantArray::get(getGlobalContext(), "%c", true);
 
-		ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 3);
-		GlobalVariable* gvar_array__str = new GlobalVariable(theModule, 
-		 /*Type=*/ArrayTy_0,
-		 /*isConstant=*/true,
-		 /*Linkage=*/GlobalValue::PrivateLinkage,
-		 /*Initializer=*/0, // has initializer, specified below
-		 /*Name=*/".str");
-		 gvar_array__str->setAlignment(1);
+		 std::vector<Constant*> const_ptr_10_indices;
+		 ConstantInt* const_int64_11 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
+		 const_ptr_10_indices.push_back(const_int64_11);
+		 const_ptr_10_indices.push_back(const_int64_11);
+		 Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, &const_ptr_10_indices[0], const_ptr_10_indices.size());
 
-		Constant* const_array_8 = ConstantArray::get(getGlobalContext(), "%d", true);
-		std::vector<Constant*> const_ptr_10_indices;
-		ConstantInt* const_int64_11 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
-		const_ptr_10_indices.push_back(const_int64_11);
-		const_ptr_10_indices.push_back(const_int64_11);
-		Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, const_ptr_10_indices);
-
+		switch( x -> getVarType() ){
+			case LETTER: gvar_array__str->setInitializer(tC); break;
+			case NUMBER: gvar_array__str->setInitializer(tD); break;
+			case STRING: gvar_array__str->setInitializer(tS); break;
+		}
 		std::vector<Value*> int32_14_params;
-		int32_14_params.push_back(const_ptr_10);
-		int32_14_params.push_back(x -> alloca);
-		CallInst* int32_14 = CallInst::Create(func_scanf, int32_14_params, "");
+	  	int32_14_params.push_back(const_ptr_10);
+	  	int32_14_params.push_back(x -> alloca);
 
-		//Assign value to the variable
-		//Builder.CreateStore( val, x -> alloca );
+		Builder.CreateCall(func_scanf, int32_14_params.begin(), int32_14_params.end());
 		 
 		return 0;
 	} else if( funName.compare( "had" ) == 0 ){
@@ -925,6 +931,6 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		for( int i = 0; i < f_argsNames.size(); i++ ){
 			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
 		}
-		return Builder.CreateCall(f, f_args, funName);
+		return Builder.CreateCall(f, f_args.begin(), f_args.end());
 	}
 }
