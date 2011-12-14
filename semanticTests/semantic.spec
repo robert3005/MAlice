@@ -6,9 +6,9 @@ test5.alice:fail
 test6.alice:fail
 test7.alice:fail
 test8.alice:pass
-test9.alice:fail
+test9.alice:pass
 test10.alice:pass
-test11.alice:fail
-test12.alice:fail
-test13.alice:fail
+test11.alice:pass
+test12.alice:pass
+test13.alice:pass
 test14.alice:fail
