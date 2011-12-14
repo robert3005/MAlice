@@ -21,7 +21,7 @@
 
 enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
-enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY};
+enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY, T_NONE};
 
 static llvm::Module * theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
@@ -189,6 +189,8 @@ class Node : public SimpleNode{
 		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createIFNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createWHILENode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createARRAYNode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createARRAYELEMNode( SimpleNode&, std::list<std::pair<int, int> >& );
 
 		//TODO: decide which fields to leave here, and which to move down
 		std::string id;
@@ -250,6 +252,8 @@ class VARNode : public Node{
 		VARNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);
 
+		void setAlloca( llvm::AllocaInst & ):
+
 	protected:
 		llvm::Value *lhs;
 };		
@@ -277,17 +281,13 @@ class CONSTNode : public Node{
 		static llvm::Value *codeGenLETTER( CONSTNode& );
 };
 
-class ARRAYNode : public Node{
+class ARRAYELEMNode : public Node{
 	public:
-		ARRAYNode();
-		ARRAYNode( SimpleNode& s);
+		ARRAYELEMNode();
+		ARRAYELEMNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
 	protected:
-
-		static llvm::Value *codeGenSTRING( CONSTNode& );
-		static llvm::Value *codeGenNUMBER( CONSTNode& );
-		static llvm::Value *codeGenLETTER( CONSTNode& );
 
 		VarType arrayType;
 };
@@ -298,22 +298,14 @@ class TYPENode : public Node{
 		TYPENode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
+		llvm::Type getLlvmType();
+		llvm::Type getLlvmArgType();
+		llvm::Type getArgType();
+
 	protected:
 		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
 		static llvm::Value *codeGenNUMBER( TYPENode & , llvm::IRBuilder<> &  );
 		static llvm::Value *codeGenLETTER( TYPENode & , llvm::IRBuilder<> &  );
-};
-
-
-class FUNCTIONNode : public Node{
-	public:
-
-	protected:
-		std::vector< VarType > args_def;
-		VarType ret_def;
-
-		std::vector< Node * > args;
-		std::list< Node * > body;
 };
 
 class IFNode : public Node{
@@ -340,6 +332,72 @@ class WHILENode : public IFNode {
 	
 };
 
+class FUNCTIONDEFNode : public Node {
+	public:
+		FUNCTIONDEFNode();
+		FUNCTIONDEFNode( SimpleNode& s);
+		llvm::Function *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		llvm::FunctionType * FT;
+		llvm::Function * F;
 
+		FUNCTIONNode * Fn;
+
+		Environment<Node>& Fenv;
+
+	protected:
+
+};
+
+class FUNCTIONNode : public Node {
+	public:
+		FUNCTIONNode();
+		FUNCTIONNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		std::string getFunName();
+		std::vector<llvm::Type*> getArgsTypes();
+		std::vector<std::string> getArgs();
+
+		std::string funName;
+
+	protected:
+		std::vector<llvm::Type*> args;
+		std::vector<std::string> argsNames;
+};
+
+class FUNCTIONCALLNode : public Node {
+	public:
+		FUNCTIONCALLNode();
+		FUNCTIONCALLNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		llvm::Value *callWas(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callBecame(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callDrank(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callAte(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callHad(llvm::IRBuilder<> &, Environment<Node>&);
+
+		std::string funName;
+
+		std::string getFunName();
+		std::vector<llvm::Type*> getArgs();
+
+	protected:
+		std::vector<llvm::Type*> args;
+};
+
+class IONode : public Node{
+	public:
+		IONode();
+		IONode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		llvm::Value *callWhatWas(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callSaidAlice(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callSpoke(llvm::IRBuilder<> &, Environment<Node>&);
+
+	protected:
+}
 
 #endif

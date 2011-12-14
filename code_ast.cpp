@@ -171,6 +171,9 @@ Node * Node::createNode( SimpleNode& node){
 			case RET:	newNode = Node::createRETNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case IF:	newNode = Node::createIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case WHILE:	newNode = Node::createWHILENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case ARRAY:	newNode = Node::createARRAYNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case ARRAY_ELEM:	newNode = Node::createARRAYELEMNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			
  			default: break;
  	}
  	
@@ -199,44 +202,7 @@ Node * Node::createCONSTNode( SimpleNode& simpleNode, std::list<std::pair<int, i
 Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	Node * node = new TYPENode( simpleNode );
 
-	std::size_t pos;
-
-	string type;
-	
-	std::string dataChunkRaw;
-	
-	string data = node -> getData(); 
-
-	if(DEBUG) printf("%s\n", data.c_str() );
-
-	int i = 0;
-
-	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
-		dataChunkRaw = data.substr( 0, pos );
-
-		if(DEBUG) printf("%s\n", dataChunkRaw.c_str() );
-
-		if( i == 0 ){
-			if( dataChunkRaw.compare( "STRING" ) == 0 ){
-				node -> setVarType( STRING );
-			} else if( dataChunkRaw.compare( "NUMBER" ) == 0 ){
-				node -> setVarType( NUMBER );
-			} else if( dataChunkRaw.compare( "LETTER" ) == 0 ){
-				node -> setVarType( LETTER );
-			}
-		} else if( i == 1 ){ 
-			node -> setVarId( dataChunkRaw );
-			mapOfTypes[ node -> getVarId() ] = node -> getVarType();
-		}
-
-		if(data.length() > pos) data = data.substr( pos + 1 );
-	
-		i++;
-	}
-
 	node -> allocated = false;
-
-	if(DEBUG) printf( "Create TYPE - VAR Node id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 
@@ -245,36 +211,11 @@ Node * Node::createTYPENode( SimpleNode& simpleNode, std::list<std::pair<int, in
 Node * Node::createVARNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	Node * node = new VARNode( simpleNode );
 
-	
 	return node;
 }
 
 Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	Node * node = new RETNode( simpleNode );
-
-	std::size_t pos;
-
-	string dataChunkRaw;
-	
-	string data = node -> getData(); 
-
-	int i = 0;
-
-	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
-		dataChunkRaw = data.substr( 0, pos );
-
-		if( i == 0 && dataChunkRaw.length() > 0){
-			node -> setVarId( dataChunkRaw );
-		} else if( i == 1 ) {
-			connections.push_back( make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
-		}
-
-		if(data.length() > pos) data = data.substr( pos + 1 );
-	
-		i++;
-	}
-
-	if(DEBUG) printf( "Create RETNode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 }
@@ -282,60 +223,12 @@ Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 Node * Node::createIFNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	IFNode * node = new IFNode( simpleNode );
 
-	std::size_t pos;
-
-	string dataChunkRaw;
-	
-	string data = node -> getData(); 
-
-	int i = 0;
-
-	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
-		dataChunkRaw = data.substr( 0, pos );
-
-		/*if( i == 0 && dataChunkRaw.length() > 0){
-			node -> setCondId( dataChunkRaw );
-		} else {*/
-			connections.push_back( make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
-		/*}*/
-
-		if(data.length() > pos) data = data.substr( pos + 1 );
-	
-		i++;
-	}
-
-	if(DEBUG) printf( "Create IFNode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
-
 	return node;
 }
 
 
 Node * Node::createWHILENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
 	WHILENode * node = new WHILENode( simpleNode );
-
-	std::size_t pos;
-
-	string dataChunkRaw;
-	
-	string data = node -> getData(); 
-
-	int i = 0;
-
-	while( data.length() > 0 && std::string::npos != ( pos = data.find( "," ) ) ){
-		dataChunkRaw = data.substr( 0, pos );
-
-		/*if( i == 0 && dataChunkRaw.length() > 0){
-			node -> setCondId( dataChunkRaw );
-		} else {*/
-			connections.push_back( make_pair( node -> getId(), atoi( dataChunkRaw.c_str() ) ) );
-		/*}*/
-
-		if(data.length() > pos) data = data.substr( pos + 1 );
-	
-		i++;
-	}
-
-	if(DEBUG) printf( "Create WHILENode id: %d %s type: %d\n", node -> getId(), node -> getVarId().c_str(), node -> getVarType() );
 
 	return node;
 }
@@ -383,7 +276,7 @@ void Node::setValueLetter( char l ){
 }
 //VARNode
 VARNode::VARNode( SimpleNode& s) : Node( s ){
-	
+	setVarId(s.value);
 }
 
 Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
@@ -396,7 +289,11 @@ Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 
 //CONSTNode
 CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
-	
+	switch( s.children[0] -> getVarType() ){
+		case STRING: setValueString( s.value ); break;
+		case NUMBER: setValueNumber( atoi(s.value.c_str()) ); break;
+		case LETTER: setValueLetter( s.value[0] ); break; 
+	}
 }
 
 Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
@@ -413,7 +310,7 @@ Value* CONSTNode::codeGenLETTER( CONSTNode& n ){
 	if(DEBUG) printf("CONSTNode::codeGenLETTER CG\n");
 	out += n.getValueString();
 	//printf("STRING: %s\n", n.getValueString().c_str());
-	return ConstantInt::get( Type::getInt8Ty( getGlobalContext() ), n.getValueNumber() );
+	return ConstantInt::get( Type::getInt8Ty( getGlobalContext() ), n.getValueLetter() );
 }
 
 Value* CONSTNode::codeGenSTRING( CONSTNode& n ){
@@ -430,6 +327,16 @@ Value* CONSTNode::codeGenNUMBER( CONSTNode& n ){
 
 
 TYPENode::TYPENode( SimpleNode& s) : Node( s ){
+		
+	if( s.value.compare( "number" ) == 0 ){
+		setVarType( NUMBER );
+	} else if( s.value.compare( "letter" ) == 0 ){
+		setVarType( LETTER );
+	} else if( s.value.compare( "sentence" ) == 0 ){
+		setVarType( STRING );
+	} else if( s.value.compare( "argument" ) == 0 ){
+		setVarType( T_NONE );
+	}
 	
 }
 
@@ -440,6 +347,11 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		case STRING: return TYPENode::codeGenSTRING( *this, Builder ); break;
 		case NUMBER: return TYPENode::codeGenNUMBER( *this, Builder  ); break;
 		case LETTER: return TYPENode::codeGenLETTER( *this, Builder  ); break;
+		case T_NONE: {
+			AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
+			((VARNode)children[0]) -> setAlloca( *alloca );
+			return children[0] -> codeGen( Builder, env);
+		}; break;
 	}
 }
  
@@ -758,21 +670,6 @@ Value* OPNode::codeGenSUB( llvm::IRBuilder<> & Builder, OPNode & n ){
 }
 
 Value* OPNode::codeGenMUL( llvm::IRBuilder<> & Builder, OPNode & n ){
-	if( n.children[0] -> getType() == CONST && n.children[1] -> getType() == CONST ) {
-		int o = n.children[0] -> getValueNumber() * n.children[1] -> getValueNumber();
-		bool overflow = false;
-
-		if( n.children[0] -> getValueNumber() > 0 &&  n.children[1] -> getValueNumber() > 0){
-			overflow = o < n.children[0] -> getValueNumber() && o < n.children[1] -> getValueNumber();
-		} else {
-			overflow = o > n.children[0] -> getValueNumber() && o > n.children[1] -> getValueNumber();
-		}
-
-		if( overflow ){
-			cout << "This value is too big!";
-			exit( 1 );
-		}
-	}
 	return Builder.CreateMul( n.lhs, n.rhs );
 }
 
@@ -816,4 +713,119 @@ Value* OPNode::codeGenGOE( IRBuilder<> & Builder, OPNode & n ){
 Value* OPNode::codeGenSOE( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpULE( n.lhs, n.rhs );
 	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+}
+
+FUNCTIONNode::FUNCTIONNode( SimpleNode& s) : Node( s ){
+
+}
+
+string FUNCTIONNode::getFunName(){
+	return funName;
+}
+
+vector<Type*> FUNCTIONNode::getArgsTypes(){
+	return args;
+}
+
+vector<string> FUNCTIONNode::getArgs(){
+	return argsNames;
+}
+
+Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	for(int i = 0; i < children.size(); i++){
+		children[i] -> codeGen(Builder, env);
+		args.push_back( ((TYPENode*)children[i]) -> gelLlvmType()) );
+	}	
+	return 0;
+}
+
+FUNCTIONDEFNode::FUNCTIONDEFNode( SimpleNode& s) : Node( s ){
+	Fn = (FUNCTIONNode*)children[1];
+}
+
+Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	//Create new scope
+	env -> add( Fn -> getFunNam() , *this);
+
+	env -> addScope( Fn -> getFunName() );
+	env = env -> getScope( Fn -> getFunName() );
+
+	//Generate arguments
+	Fn -> codeGen(Builder, env);
+
+	//Declare function type
+	FT = FunctionType::get(((TYPENode*)children[0]) -> gelLlvmType()), Fn -> getArgsTypes(), false);
+	
+	//Define function
+	F = Function::Create(FT, Function::ExternalLinkage, Fn -> getFunName(), theModule);
+	
+
+	//Create new insertion block
+	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", TheFunction);
+  	Builder.SetInsertPoint(BB);
+	
+	//Generate body
+	for(int i = 2; i < children.size(); i++){
+		children[i] -> codeGen(Builder, env);
+	}
+
+	return F;
+}
+
+Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	if( funName.compare( "became" ) == 0 ){
+		//Get variable from environment
+		Node * x = env -> get( children[0] -> getVarName() ); 
+
+		//Get its new value
+		Value * val = children[1] -> codeGen( Builder, env );
+		
+		//Assign value to the variable
+		Value * V = Builder.CreateStore( val,x -> alloca );
+		return 0;
+	} else if( funName.compare( "ate" ) == 0 ){ //++
+		return Builder.CreateAdd( children[0] -> codeGen(), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
+	} else if( funName.compare( "drank" ) == 0 ){ //--
+		return Builder.CreateSub( children[0] -> codeGen(), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
+	} else if( funName.compare( "had" ) == 0 ){
+		Node * x = children[0];
+
+		//Add variable to the scope
+		env -> add( x -> getVarName(), x );
+
+		//Get type
+		Type t = ((TYPENode)children[2]) -> getLlvmType();
+
+		//Get size
+		Value * size = children[1] -> codeGen();
+
+		//Get pointer of the type
+		PointerType* Pt = PointerType::get(t, 0);
+
+		//Allocate memory (type node)
+		x -> alloca = Builder.CreateAlloca(Pt, size);
+
+		return 0;
+	} else if( funName.compare( "was" ) == 0 ){
+		Node * x = children[0];
+
+		//Add variable to the scope
+		env -> add( x -> getVarName(), x );
+
+		//Allocate memory (type node)
+		AllocaInst * alloca = children[1] -> codeGen( Builder, env );
+		
+		//Set variable's memory location
+		x -> alloca = alloca;
+
+		return 0;
+	} else{
+		Function * F = ((Function*) env -> get( funName )) -> F;
+		vector<Value *> args;
+		vector<string> argsNames = ((Function*) env -> get( funName )) -> Fn -> getArgs();
+		for( int i = 0; i < argsNames.size(); i++ ){
+			args.push_back( env -> get( argsNames[i] ) -> codeGen() );
+		}
+		return Builder.CreateCall(F, args);	
+	}
 }
