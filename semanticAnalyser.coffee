@@ -12,7 +12,7 @@ module.exports = (() ->
 			@check parseTree, @globalScopeName
 
 		check: (node, scope) ->
-			console.log node.type
+			#console.log node.type
 			switch node.type
 				when Types.NODE_ROOT
 					@check child, scope for child in node.children
@@ -69,7 +69,7 @@ module.exports = (() ->
 						# NEEDS WORK
 						typeCheck = functionNode.typeCheck
 						callingTypes = node.children.map (node, index) -> node.type
-						console.log "function " + node.value + " called with " + callingTypes
+						#console.log "function " + node.value + " called with " + callingTypes
 						typeCheck callingTypes
 				when Types.NODE_WHILE
 					@isBoolean node.children[0]
@@ -86,7 +86,7 @@ module.exports = (() ->
 					functionName = node.children[1].value
 					functionHeader = (node.children[1].children.splice 1).map (argument, index) ->
 						argument.children[1].value
-					console.log functionHeader
+					#console.log functionHeader
 					(@getScope scope).rbInsert (new RBTNode functionName, returnType, @functionTypeCheck(functionHeader))
 					@Dictionary[functionName] = [scope, new RBTree]
 					@check child, functionName for child in node.children.splice 2
@@ -110,7 +110,7 @@ module.exports = (() ->
 
 		functionTypeCheck: (types) ->
 			(runTimeArgs) =>
-				console.log "Checking " + types + " with run time params " + runTimeArgs
+				#console.log "Checking " + types + " with run time params " + runTimeArgs
 				unifiedTypes = @unify runTimeArgs, types, []
 				#unifiedTypes.reduce ((previous, current) => 
 				#	previous and current)
@@ -118,8 +118,9 @@ module.exports = (() ->
 
 		unify: (header, runtime, defined) ->
 			if header.length isnt runtime.length
-				console.log 'massive error'
-			console.log "unifying types " + header + " and " + runtime
+				no
+				#console.log 'massive error'
+			#console.log "unifying types " + header + " and " + runtime
 
 		lookupInScope: (scope, name) ->
 			@getScope(scope).rbFind name
