@@ -19,7 +19,7 @@
 
 #include "structSize.h"
 
-enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF};
+enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
 enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY, T_NONE};
 
@@ -183,8 +183,9 @@ class Node : public SimpleNode{
 		static Node * createIFNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createWHILENode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createARRAYNode( SimpleNode&, std::list<std::pair<int, int> >& );
-		static Node * createARRAYELEMNode( SimpleNode&, std::list<std::pair<int, int> >& );
-
+		static Node * createARRAYELNode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createELSENode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createENDIFNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		//TODO: decide which fields to leave here, and which to move down
 		std::string id;
 		VarType varType;
@@ -404,6 +405,15 @@ class IONode : public Node{
 		IONode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 		std::string funName;
+	protected:
+};
+
+class ARRAYELNode : public Node{
+	public:
+		ARRAYELNode();
+		ARRAYELNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		std::string arrName;
 	protected:
 };
 

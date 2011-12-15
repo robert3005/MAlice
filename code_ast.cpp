@@ -31,9 +31,9 @@ SimpleNode::SimpleNode( node_struct& s ){
 	} else if( string(s.type).compare( "ELSE_IF" ) == 0 ){
  		this -> type = IF;
 	} else if( string(s.type).compare( "ELSE" ) == 0 ){
-		this -> type = IF;
+		this -> type = ELSE;
 	} else if( string(s.type).compare( "END_IF" ) == 0 ){
-		this -> type = IF;
+		this -> type = END_IF;
 	} else if( string(s.type).compare( "WHILE" ) == 0 ){
  		this -> type = WHILE;
 	} else if( string(s.type).compare( "ARRAY" ) == 0 ){
@@ -172,7 +172,9 @@ Node * Node::createNode( SimpleNode& node){
 			case IF:	newNode = Node::createIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case WHILE:	newNode = Node::createWHILENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			//case ARRAY:	newNode = Node::createARRAYNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
- 			//case ARRAY_ELEM:	newNode = Node::createARRAYELEMNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case ARRAY_ELEM:	newNode = Node::createARRAYELNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case ELSE:	newNode = Node::createELSENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case END_IF:	newNode = Node::createENDIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			
  			default: break;
  	}
@@ -221,14 +223,32 @@ Node * Node::createRETNode( SimpleNode& simpleNode, std::list<std::pair<int, int
 }
 
 Node * Node::createIFNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
-	IFNode * node = new IFNode( simpleNode );
+	Node * node = new IFNode( simpleNode );
 
 	return node;
 }
 
 
 Node * Node::createWHILENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
-	WHILENode * node = new WHILENode( simpleNode );
+	Node * node = new WHILENode( simpleNode );
+
+	return node;
+}
+
+Node * Node::createARRAYELNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new ARRAYELNode( simpleNode );
+
+	return node;
+}
+
+Node * Node::createELSENode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new ELSENode( simpleNode );
+
+	return node;
+}
+
+Node * Node::createENDIFNode( SimpleNode& simpleNode, std::list<std::pair<int, int> >& connections){
+	Node * node = new ENDIFNode( simpleNode );
 
 	return node;
 }
@@ -1088,4 +1108,19 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 
 		Builder.CreateCall(func_printf, int32_25_params.begin(), int32_25_params.end());
 	}
+}
+
+ARRAYELNode::ARRAYELNode( SimpleNode& s) : Node( s ){
+	arrName = s.value;
+}
+
+
+// Generates code responsible for handling IO operations
+Value * ARRAYELNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	Node * arr = env.get(arrName);
+	Value * elNumber = children[1] -> codeGen(Builder, env);
+
+	 Value* ptr_10 = Builder.CreateGEP(arr -> alloca, elNumber);
+
+	return Builder.CreateLoad(ptr_10);
 }
