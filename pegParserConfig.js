@@ -21,6 +21,16 @@ children.
 		var children;
 	};
 
+	function hasOverflown(number) {
+		
+		num = parseInt(number, 10);
+		// since int is 32 bit maximum value is 2^31-1
+		position = computePosition(pos)
+		if( num > 2147483647 || num < -2147483648 ) {
+			throw new SyntaxError( "Number " + number + " exceeds 32bits", position.line, position.column )
+		}
+	};
+
 	function computePosition(position) {
 		var line = 1;
 		var column = 1;
@@ -267,7 +277,7 @@ unary_expression
 / primExpr:primitive_expression
 
 primitive_expression
-= num:[0-9]+ {  return createNode( cacheKey, Types.NODE_CONST, num.join(""), createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_NUMBER ) ) }
+= num:[0-9]+ {  hasOverflown(num.join("")); return createNode( cacheKey, Types.NODE_CONST, num.join(""), createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_NUMBER ) ) }
 / letter:([\'][^\'][\']) { return createNode( cacheKey, Types.NODE_CONST, letter[1], createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_LETTER ) ) }
 / fun:function {return fun}
 / arg:argument {return arg}
