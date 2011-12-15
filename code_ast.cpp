@@ -6,16 +6,19 @@
 using namespace llvm;
 using namespace std;
 
+static llvm::Module * theModule;
+
 #define DEBUG false
 //SimpleNode
 SimpleNode::SimpleNode(){}
 
 SimpleNode::SimpleNode( node_struct& s ){
-	this -> uniqueId = s.id;
+	cout << s.type << " " << s.value << " " << s.id << "\n";
+	uniqueId = s.id;
 	value = string(s.value);
 	position = s.position;
 	numberOfChildren = s.numberOfChildren;
-	
+
 	if( string(s.type).compare( "OPERATOR" ) == 0 ){
  		this -> type = OP;
 	} else if( string(s.type).compare( "VARIABLE" ) == 0 ){
@@ -48,6 +51,10 @@ SimpleNode::SimpleNode( node_struct& s ){
 		this -> type = FUNC_CALL;
 	} else if( string(s.type).compare( "LOOKING_GLASS" ) == 0 ){
 		this -> type = LOOK_DEF;
+	} else if( string(s.type).compare( "IO" ) == 0 ){
+		this -> type = IO;
+	} else if( string(s.type).compare( "ROOT" ) == 0 ){
+		this -> type = ROOT;
 	}
  
 	SimpleNode * child;
@@ -114,12 +121,8 @@ SimpleNode::SimpleNode(std::string uniqueId, std::string type, std::string op, s
 }
 
 void SimpleNode::debug(){
-	if(DEBUG) printf( "#%d - %d - %d: %s\n", uniqueId, type, op, data.c_str() );
+	if(DEBUG) printf( "#%d - %d - %d\n", uniqueId, type, op );
 }
-void Node::debug(){
-	if(DEBUG) printf( "#ID %d - TYPE %d - OP %d: DATA %s | VT %d VN %d VS %s\n", uniqueId, type, op, data.c_str(), varType, valueNumber, valueString.c_str() );
-}
-
 
 NodeType SimpleNode::getType(){
 	return type;
@@ -140,16 +143,11 @@ string SimpleNode::getData(){
 //Node
 Node::Node( SimpleNode& s ){
 	uniqueId = s.getId();
+	cout << "UI" << uniqueId << "\n";
 	type = s.getType();
 	op = s.getOP();
 	data = s.getData();
 	generated = false;
-
-	Node * child;
-	for(int i = 0; i < s.numberOfChildren; i++){
-		child = Node::createNode( *s.children[i] );
-		children.push_back(child);
-	}
 }
 
 bool Node::wasGenerated(){
@@ -158,11 +156,12 @@ bool Node::wasGenerated(){
 }
 
 Node * Node::createNode( SimpleNode& node){
+	cout << "CreateFrom:" << node.uniqueId << "\n";
 	Node* newNode;
 	
  	std::map<int, Node*> nodes;
 	std::list<std::pair<int, int> > connectionsQueue;
- 
+
 	switch( node.getType() ){
 			case OP: 	newNode = Node::createOPNode( node, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
 			case VAR: 	newNode = Node::createVARNode( node, connectionsQueue ); nodes[ newNode -> getId() ] = newNode; break;
@@ -171,18 +170,28 @@ Node * Node::createNode( SimpleNode& node){
 			case RET:	newNode = Node::createRETNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case IF:	newNode = Node::createIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
 			case WHILE:	newNode = Node::createWHILENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
- 			//case ARRAY:	newNode = Node::createARRAYNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case ROOT:	newNode = new ROOTNode( node ); 	nodes[ newNode -> getId() ] = newNode; break;
  			case ARRAY_ELEM:	newNode = Node::createARRAYELNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			case ELSE:	newNode = Node::createELSENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			case END_IF:	newNode = Node::createENDIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
+ 			case IO:	newNode = new IONode( node );   	nodes[ newNode -> getId() ] = newNode; break;
  			
  			default: break;
  	}
  	
+ 	Node * child;
+	for(int i = 0; i < node.numberOfChildren; i++){
+		cout << "Child:" << ( *node.children[i] ).uniqueId << "\n";
+		child = Node::createNode( *node.children[i] );
+		newNode -> children.push_back(child);
+		child -> debug();
+	}
+
 	return newNode;
 }
  
 Node *  Node::createAST( node_struct &node ){
+	cout << "CreateAST\n";
 	SimpleNode * root = new SimpleNode( node );
 	Node * rootN = Node::createNode( *root );	
 	return rootN;
@@ -265,16 +274,16 @@ void Node::setVarType( VarType v ){
 	varType = v;
 }
 string Node::getVarId(){
-	return id;
+	return varId;
 }
 void Node::setVarId( string s ){
-	id = s;
+	varId = s;
 }
 Value * Node::getValue(){
-	return value;
+	return valueLlvm;
 }
 void Node::setValue( Value * v ){
-	value = v;
+	valueLlvm = v;
 }
 string Node::getValueString(){
 	return valueString;
@@ -305,7 +314,7 @@ void VARNode::setAlloca( AllocaInst * a){
 }
 
 //Loads variable from memory location
-Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	//Check if variable has been allocated
 	if( env.is( getVarId() ) ){
 		//Get memory location
@@ -316,6 +325,8 @@ Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		return V;
 	} else return 0;
 }
+
+ROOTNode::ROOTNode( SimpleNode& s) : Node(s){};
 
 //CONSTNode
 CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
@@ -341,7 +352,7 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 }
 
 //Returns Value of the constant
-Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	generated = true;
 	typeNode = (TYPENode*)children[0];
 	
@@ -396,7 +407,7 @@ void TYPENode::setArrayLength( int l ){
 }
 
 //Allocates memory for a given type, and returns address of the momory
-Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
  	generated = true;
 	if(DEBUG) printf("TYPENode::codeGen %d\n", uniqueId );
 	switch( this -> varType ){
@@ -405,11 +416,11 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		case LETTER: return TYPENode::codeGenLETTER( *this, Builder  ); break;
 		case T_NONE: { //argument of a function
 			//call codeGen for type node of the argument
-			AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
+			AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env, theModule );
 			//set Alloca 
 			((VARNode*)children[0]) -> setAlloca( alloca );
 			//create argument in the scope 
-			children[0] -> codeGen( Builder, env);
+			children[0] -> codeGen( Builder, env, theModule );
 			return alloca;
 		}; break;
 	}
@@ -492,11 +503,11 @@ RETNode::RETNode( SimpleNode& s) : Node( s ){
 }
 
 //Generates code for the value it's supposed to return and creates a Ret statement
-Value * RETNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * RETNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	generated = true;
 	if(DEBUG) printf("RETNode::codeGen %d\n", uniqueId);
 	
-	Value * v = children[0] -> codeGen( Builder, env ); 
+	Value * v = children[0] -> codeGen( Builder, env, theModule ); 
 
   	Builder.CreateRet( v );
 	return v;
@@ -507,7 +518,7 @@ IFNode::IFNode( SimpleNode& s) : Node( s ){
 }
 
 //Generates code for if blocks
-Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	generated = true;
 	
 	//Extract condition, instructions and possible else node
@@ -516,7 +527,7 @@ Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	Node * else_node = children[numberOfChildren - 1];
 	
 	//Generate code for the condition
-	Value * condV = condition -> codeGen( Builder, env );
+	Value * condV = condition -> codeGen( Builder, env, theModule );
 
 	//Convert condition to bool
 	condV = Builder.CreateICmpEQ( condV, 
@@ -541,7 +552,7 @@ Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
     Value *thenV;
     //Generate instructions' code
     for(std::vector< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
-	    thenV = (*it) -> codeGen( Builder, env );
+	    thenV = (*it) -> codeGen( Builder, env, theModule );
   	}
 
   	//Create jump to merge block
@@ -553,7 +564,7 @@ Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	Builder.SetInsertPoint( elseBB );
 	  
 	//Generate code of else node - which is either Else, Else If or End If
-	Value *elseV = else_node -> codeGen( Builder, env );
+	Value *elseV = else_node -> codeGen( Builder, env, theModule );
 	  
 	//Create jump from else branch to the merging block
 	Builder.CreateBr( mergeBB );
@@ -578,14 +589,14 @@ ELSENode::ELSENode( SimpleNode& s) : Node( s ){
 }
 
 // Generates code for else{} element
-Value * ELSENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * ELSENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	generated = true;
 	
 	// get instructions and generate them
 	vector<Node *> body (children.begin(), children.end() - 1 );
 		
 	for(std::vector< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
-	    (*it) -> codeGen( Builder, env );
+	    (*it) -> codeGen( Builder, env, theModule );
   	}
 
     return 0;
@@ -596,7 +607,7 @@ ENDIFNode::ENDIFNode( SimpleNode& s) : Node( s ){
 }
 
 // Responsible for finishing generation of if else statement
-Value * ENDIFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * ENDIFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	return 0;
 }
 
@@ -605,7 +616,7 @@ WHILENode::WHILENode( SimpleNode& s) : Node( s ){
 }
 
 //Generates code for Looops
-Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	generated = true;
 	
 	//Get condition, and instructions which will be executed if it's true
@@ -626,7 +637,7 @@ Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
     Builder.SetInsertPoint( whileBB );
 
     //Generate condition, and convert its value to bool
-    Value * condV = condition -> codeGen( Builder, env );
+    Value * condV = condition -> codeGen( Builder, env, theModule );
 
 	condV = Builder.CreateICmpEQ( condV, 
                               ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) ),
@@ -640,7 +651,7 @@ Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 
     //Generate code of instructions
     for(std::vector< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
-	    (*it) -> codeGen( Builder, env );
+	    (*it) -> codeGen( Builder, env, theModule );
 	}
 
 	//Jump back to while branch (loop)
@@ -703,16 +714,16 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 }
 
 //Generate code specific for each operation
-Value* OPNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value* OPNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	generated = true;
 	if(DEBUG) printf("OPNode::codeGen %d\n", uniqueId);
 
 	//Generate code for left hand side of the operation
-	lhs = children[0] -> codeGen( Builder, env );
+	lhs = children[0] -> codeGen( Builder, env, theModule );
 
 
 	//Generate code for right hand side of the operation, if the operation has two arguments
-	if(this -> op != UNR && this -> op != NEG && this -> op != NOT) rhs = children[1] -> codeGen( Builder, env );
+	if(this -> op != UNR && this -> op != NEG && this -> op != NOT) rhs = children[1] -> codeGen( Builder, env, theModule );
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( Builder, *this ); break;
@@ -834,9 +845,9 @@ vector<string> FUNCTIONNode::getArgs(){
 }
 
 //Generates code for arguments of a function
-Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	for(int i = 0; i < children.size(); i++){
-		children[i] -> codeGen(Builder, env);
+		children[i] -> codeGen(Builder, env, theModule);
 
 		//collect types of arguments
 		args.push_back( ((TYPENode*)children[i]) -> getLlvmArgType());
@@ -849,7 +860,7 @@ FUNCTIONDEFNode::FUNCTIONDEFNode( SimpleNode& s) : Node( s ){
 
 }
 
-Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	//Set node responsible for definition of arguments
 	Fn = (FUNCTIONNode*)children[1];
 	
@@ -864,7 +875,7 @@ Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& en
 	env = env.getScope( Fn -> getFunName() );
 
 	//Generate arguments
-	Fn -> codeGen(Builder, env);
+	Fn -> codeGen(Builder, env, theModule);
 
 	//Declare function type
 	FT = FunctionType::get(((TYPENode*)children[0]) -> getLlvmType(), Fn -> getArgsTypes(), false);
@@ -880,7 +891,7 @@ Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& en
 	
 	//Generate body
 	for(int i = 2; i < children.size(); i++){
-		children[i] -> codeGen(Builder, env);
+		children[i] -> codeGen(Builder, env, theModule);
 	}
 
 	return F;
@@ -890,21 +901,21 @@ FUNCTIONCALLNode::FUNCTIONCALLNode( SimpleNode& s) : Node( s ){
 	funName = s.value;
 }
 
-Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	if( funName.compare( "became" ) == 0 ){
 		//Get variable from environment
 		Node * x = env.get( children[0] -> getVarId() ); 
 
 		//Get its new value
-		Value * val = children[1] -> codeGen( Builder, env );
+		Value * val = children[1] -> codeGen( Builder, env, theModule );
 		
 		//Assign value to the variable
 		Value * V = Builder.CreateStore( val, x -> alloca );
 		return 0;
 	} else if( funName.compare( "ate" ) == 0 ){ //++
-		return Builder.CreateAdd( children[0] -> codeGen(Builder, env), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
+		return Builder.CreateAdd( children[0] -> codeGen(Builder, env, theModule), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
 	} else if( funName.compare( "drank" ) == 0 ){ //--
-		return Builder.CreateSub( children[0] -> codeGen(Builder, env), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
+		return Builder.CreateSub( children[0] -> codeGen(Builder, env, theModule), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
 	} else if( funName.compare( "had" ) == 0 ){
 		Node * x = children[0];
 
@@ -912,7 +923,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		env.add( x -> getVarId(), x );
 
 		//Get size
-		Value * size = children[1] -> codeGen( Builder, env );
+		Value * size = children[1] -> codeGen( Builder, env, theModule );
 
 		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
 
@@ -930,7 +941,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		env.add( x -> getVarId(), x );
 
 		//Allocate memory (type node)
-		AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
+		AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env, theModule );
 		
 		//Set variable's memory location
 		x -> alloca = alloca;
@@ -941,7 +952,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		vector<Value *> f_args;
 		vector<string> f_argsNames = ((FUNCTIONDEFNode*) env.get( funName )) -> Fn -> getArgs();
 		for( int i = 0; i < f_argsNames.size(); i++ ){
-			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
+			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env, theModule) );
 		}
 		return Builder.CreateCall(f, f_args.begin(), f_args.end(), funName);
 	}
@@ -949,11 +960,13 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 
 IONode::IONode( SimpleNode& s) : Node( s ){
 	funName = s.value;
+	cout << "FName: " << funName << "\n";
 }
 
 
 // Generates code responsible for handling IO operations
-Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
+	if(DEBUG) printf("IONode::codeGen %d %s |\n", uniqueId, funName.c_str());
 	if( funName.compare( "what was" ) == 0 ){
 		Node * x = env.get( children[0] -> getVarId() ); 
 
@@ -998,7 +1011,7 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 
 	 	Constant* printfFormat; 
 	 	Constant* ptrToFormat;
-	 	Value * valueToPrint = children[0] -> codeGen( Builder, env);
+	 	Value * valueToPrint = children[0] -> codeGen( Builder, env, theModule);
 	 	Value * ptrToValue;
 	 	const Type * valToPrintTy = valueToPrint -> getType();
 	 
@@ -1045,12 +1058,13 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		return 0;
 	} else if( funName.compare( "found" ) == 0 ){
 
-		Value * v = children[0] -> codeGen( Builder, env ); 
+		Value * v = children[0] -> codeGen( Builder, env, theModule ); 
 
 	  	Builder.CreateRet( v );
 		return v;
 	
 	} else if( funName.compare( "said Alice" ) == 0 ){
+		if(DEBUG) cout << "Alice wants to speak\n"; 
 		ArrayType* ArrayTy_2 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 4);
 
     	PointerType* PointerTy_5 = PointerType::get(IntegerType::get(getGlobalContext(), 8), 0);
@@ -1058,12 +1072,18 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	 	FuncTy_12_args.push_back(PointerTy_5);
 	 	FunctionType* FuncTy_12 = FunctionType::get( IntegerType::get(getGlobalContext(), 32), FuncTy_12_args, true);
 
+	 	//theMod -> dump();
+
      	Function* func_printf = Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
- 		GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_2, true, GlobalValue::PrivateLinkage, 0, ".str");
+ 		GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_2, true, GlobalValue::PrivateLinkage, 0, ".printfF");
+ 		//GlobalVariable* gvar_array__str = new GlobalVariable( ArrayTy_2, true, GlobalValue::PrivateLinkage);
+ 		//theModule -> getGlobalList().push_back(gvar_array__str);
+
+ 		
 
 	 	Constant* printfFormat; 
 	 	Constant* ptrToFormat;
-	 	Value * valueToPrint = children[0] -> codeGen( Builder, env);
+	 	Value * valueToPrint = children[0] -> codeGen( Builder, env, theModule );
 	 	Value * ptrToValue;
 	 	const Type * valToPrintTy = valueToPrint -> getType();
 	 
@@ -1073,7 +1093,7 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	 	std::vector<Constant*> const_ptr_18_indices;
 	 	const_ptr_18_indices.push_back(const_int32_14);
 	 	const_ptr_18_indices.push_back(const_int32_14);
-	 
+	 	
 	 	ptrToFormat = ConstantExpr::getGetElementPtr(gvar_array__str, &const_ptr_18_indices[0], const_ptr_18_indices.size());
 	 
 		 if( valToPrintTy -> isIntegerTy(8)){
@@ -1085,7 +1105,7 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		 	printfFormat = ConstantArray::get(getGlobalContext(), "%s\x0A", true);
 		 	int arraySize = ((ConstantArray*)valueToPrint) -> getAsString().length();
 		 	
-		 	GlobalVariable* gvar_array_str = new GlobalVariable( *theModule, valToPrintTy, false, GlobalValue::ExternalLinkage, 0, ".str");
+		 	GlobalVariable* gvar_array_str = new GlobalVariable( *theModule, valToPrintTy, false, GlobalValue::ExternalLinkage, 0, ".toPrintf");
 		 	gvar_array_str -> setInitializer((Constant*)valueToPrint);
 
 		 	std::vector<Constant*> const_ptr_14_indices;
@@ -1101,7 +1121,7 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		}
 
 		gvar_array__str -> setInitializer(printfFormat);
-
+		
 	    std::vector<Value*> int32_25_params;
 	  	int32_25_params.push_back(ptrToFormat);
 	  	int32_25_params.push_back(ptrToValue);
@@ -1116,9 +1136,9 @@ ARRAYELNode::ARRAYELNode( SimpleNode& s) : Node( s ){
 
 
 // Generates code responsible for handling IO operations
-Value * ARRAYELNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+Value * ARRAYELNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	Node * arr = env.get(arrName);
-	Value * elNumber = children[1] -> codeGen(Builder, env);
+	Value * elNumber = children[1] -> codeGen(Builder, env, theModule);
 
 	Value* ptr_10 = Builder.CreateGEP(arr -> alloca, elNumber);
 

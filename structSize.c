@@ -2,33 +2,51 @@
 #include <iomanip>
 #include <fstream>
 
+#include "llvm/LLVMContext.h"
+#include "llvm/Module.h"
+#include "llvm/DerivedTypes.h"
+#include "llvm/Constants.h"
+#include "llvm/Instructions.h"
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Target/TargetSelect.h"
+#include "llvm/PassManager.h"
+#include "llvm/CallingConv.h"
+#include "llvm/Assembly/PrintModulePass.h"
+#include "llvm/System/DynamicLibrary.h"
 
 #include "structSize.h"
 #include "code_ast.hpp"
 #include "code_generator.hpp"
 
 using namespace std;
+using namespace llvm;
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-void compile(SNode node, string s){
-	CodeGenerator * codeGen = new CodeGenerator();
-	
+void compile(SNode node, char * s){
+	cout << "Create AST\n";
 	Node * ast = Node::createAST( *node );
-	makeLLVMModule( *ast );
+	cout << "Make module\n";
+	Module * theModule = makeLLVMModule( *ast );
 	verifyModule( *theModule, PrintMessageAction );
 
 	//ExecutionEngine *ee = EngineBuilder( theModule ).create();
     //Function* func = ee -> FindFunctionNamed("main");
 
     ofstream myfile;
-  	myfile.open ( s.c_str() );
+  	myfile.open ( "hello.c.ll" );
   	myfile << theModule;
   	myfile.close();
 
-  	theModule -> dump(); //print theModule to the output
+  	cout << theModule;
+  	//theModule -> dump(); //print theModule to the output
+
+  	PassManager PM;
+	PM.add( createPrintModulePass( &outs() ) );
+	PM.run( *theModule );
 }
 
 void print_struct(SNode node, int indent) {
