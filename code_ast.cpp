@@ -1120,7 +1120,9 @@ Value * ARRAYELNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	Node * arr = env.get(arrName);
 	Value * elNumber = children[1] -> codeGen(Builder, env);
 
-	 Value* ptr_10 = Builder.CreateGEP(arr -> alloca, elNumber);
+	Value* ptr_10 = Builder.CreateGEP(arr -> alloca, elNumber);
+
+	alloca = ptr_10;
 
 	return Builder.CreateLoad(ptr_10);
 }

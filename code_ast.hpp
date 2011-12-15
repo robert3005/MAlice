@@ -414,6 +414,7 @@ class ARRAYELNode : public Node{
 		ARRAYELNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 		std::string arrName;
+		llvm::Value * alloca;
 	protected:
 };
 
