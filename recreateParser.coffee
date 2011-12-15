@@ -5,7 +5,6 @@ sys = require 'sys'
 
 parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
 parserFileName = 'parser.js'
-oldParserFileName = 'parser.old.js'
 
 parserModule = "module.exports=" + parser.toSource()
 
@@ -15,12 +14,9 @@ fs.realpath parserFileName, (err, resolvedPath) ->
 			throw err if err 
 			console.log('New parser written')
 	else
-		fs.realpath oldParserFileName, (err, resolvedOldPath) ->
-			if not err
-				fs.unlink oldParserFileName, (err) ->
-					throw err if err
-					console.log('Old parser removed')
-			fs.rename parserFileName, oldParserFileName
-			fs.writeFile parserFileName, parserModule, 'utf8', (err) ->
+		fs.unlink parserFileName, (err) ->
 				throw err if err
-				console.log('New parser written')
+				console.log('Old parser removed')
+				fs.writeFile parserFileName, parserModule, 'utf8', (err) ->
+					throw err if err
+					console.log('New parser written')
