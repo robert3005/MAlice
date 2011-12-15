@@ -239,6 +239,26 @@ class OPNode : public Node{
 
 };
 
+class TYPENode : public Node{
+	public:
+		TYPENode();
+		TYPENode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+
+		llvm::Type * getLlvmType();
+		llvm::Type * getLlvmArgType();
+		std::string getArgName();
+		VarType getArgType();
+		void setArrayLength(int);
+
+	protected:
+		int arrayLength;
+
+		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
+		static llvm::Value *codeGenNUMBER( TYPENode & , llvm::IRBuilder<> &  );
+		static llvm::Value *codeGenLETTER( TYPENode & , llvm::IRBuilder<> &  );
+};
+
 class VARNode : public Node{
 	public:
 		VARNode();
@@ -283,42 +303,37 @@ class ARRAYELEMNode : public Node{
 		VarType arrayType;
 };
 
-class TYPENode : public Node{
-	public:
-		TYPENode();
-		TYPENode( SimpleNode& s);
-		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
-		llvm::Type * getLlvmType();
-		llvm::Type * getLlvmArgType();
-		VarType getArgType();
-		void setArrayLength(int);
-
-	protected:
-		int arrayLength;
-
-		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
-		static llvm::Value *codeGenNUMBER( TYPENode & , llvm::IRBuilder<> &  );
-		static llvm::Value *codeGenLETTER( TYPENode & , llvm::IRBuilder<> &  );
-};
 
 class IFNode : public Node{
 	public:
 		IFNode();
 		IFNode( SimpleNode& s);
-		void setCondId( std::string );
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
-		Node * getCondNode();
-
+		
 	protected:
-		Node * cond;
-		std::string cond_id;
-
-		Node * else_node;
-		std::list< Node * > body;	
 };
 
-class WHILENode : public IFNode {
+class ELSENode : public Node{
+	public:
+		ELSENode();
+		ELSENode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+	protected:
+};
+
+class ENDIFNode : public Node{
+	public:
+		ENDIFNode();
+		ENDIFNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+	protected:
+};
+
+
+class WHILENode : public Node {
 	public:
 		WHILENode();
 		WHILENode( SimpleNode& s);

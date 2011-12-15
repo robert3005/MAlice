@@ -402,7 +402,7 @@ Value * TYPENode::codeGenSTRING(TYPENode & node, IRBuilder<> & Builder){
 	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	
 	//Define string type
-	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 8), arrayLength);
+	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 8), node.arrayLength);
 	
 	//Allocate memory
 	AllocaInst * Alloca = TmpB.CreateAlloca(StringTy, 0);
@@ -459,6 +459,13 @@ Type * TYPENode::getLlvmType(){
 	}
 }
 
+Type * TYPENode::getLlvmArgType(){
+	return ((TYPENode*)children[1]) -> getLlvmType(); 
+}
+
+string TYPENode::getArgName(){
+	return ((VARNode*)children[0]) -> getVarId(); 
+}
 
 RETNode::RETNode( SimpleNode& s) : Node( s ){
 
@@ -479,70 +486,64 @@ IFNode::IFNode( SimpleNode& s) : Node( s ){
 	
 }
 
-void IFNode::setCondId( string id ){
-	cond_id = id;
-}
-
-Node * IFNode::getCondNode(){
-	if( cond_id.length() == 0 ){
-		cond = children[0];
-	}
-
-	return cond;
-}
-
-
-
+//Generates code for if blocks
 Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
-	else_node = children[1];
 	
-	std::vector< Node * >::iterator itc = children.begin();
-	itc++;
-	itc++;
-	for(; itc != children.end(); ++itc) {
-	    body.push_back( *itc );
-  	}
-
-	if(DEBUG) printf("IFNode::codeGen %d\n", uniqueId);
+	//Extract condition, instructions and possible else node
+	Node * condition = children[0];
+	vector<Node *> body (children.begin() + 1, children.end() - 1 );
+	Node * else_node = children[numberOfChildren - 1];
 	
-	Value * condV = getCondNode() -> codeGen( Builder, env );
+	//Generate code for the condition
+	Value * condV = condition -> codeGen( Builder, env );
 
+	//Convert condition to bool
 	condV = Builder.CreateICmpEQ( condV, 
                               ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) ),
                                 "ifcond" );
 
+    //Get overlaying function
 	Function *theFunction = Builder.GetInsertBlock() -> getParent();
  	
+ 	//Generate blocks for each branch, and a merging branch
 	BasicBlock *thenBB = BasicBlock::Create( getGlobalContext(), "then", theFunction );
 	BasicBlock *elseBB = BasicBlock::Create( getGlobalContext(), "else" );
 	BasicBlock *mergeBB = BasicBlock::Create( getGlobalContext(), "ifcont" );
 
+	//Create condition jump
 	Builder.CreateCondBr(condV, thenBB, elseBB);
 
+	//Start inserting code into BasicBlock thenBB
     Builder.SetInsertPoint( thenBB );
 
-    Value *thenV;
 
-    for(std::list< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
+    Value *thenV;
+    //Generate instructions' code
+    for(std::vector< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
 	    thenV = (*it) -> codeGen( Builder, env );
-	    //if (thenV == 0) return 0;
   	}
 
+  	//Create jump to merge block
     Builder.CreateBr( mergeBB );
     thenBB = Builder.GetInsertBlock();
     
+    //Insert elseBB BacicBlock, and start inserting into it
     theFunction -> getBasicBlockList().push_back( elseBB );
 	Builder.SetInsertPoint( elseBB );
 	  
+	//Generate code of else node - which is either Else, Else If or End If
 	Value *elseV = else_node -> codeGen( Builder, env );
-	//if (elseV == 0) return 0;
 	  
+	//Create jump from else branch to the merging block
 	Builder.CreateBr( mergeBB );
+
 	// Codegen of 'Else' can change the current block, update ElseBB for the PHI.
 	elseBB = Builder.GetInsertBlock();
 
 	theFunction -> getBasicBlockList().push_back( mergeBB );
+    
+    //Start inserting into merge Block, generate PhiNode
     Builder.SetInsertPoint( mergeBB );
     PHINode *PN = Builder.CreatePHI( Type::getInt32Ty( getGlobalContext() ) );
   
@@ -552,52 +553,81 @@ Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
     return PN;
 }
 
-WHILENode::WHILENode( SimpleNode& s) : IFNode( s ){
+ELSENode::ELSENode( SimpleNode& s) : Node( s ){
 	
 }
 
+// Generates code for else{} element
+Value * ELSENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	generated = true;
+	
+	// get instructions and generate them
+	vector<Node *> body (children.begin(), children.end() - 1 );
+		
+	for(std::vector< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
+	    (*it) -> codeGen( Builder, env );
+  	}
+
+    return 0;
+}
+
+ENDIFNode::ENDIFNode( SimpleNode& s) : Node( s ){
+	
+}
+
+// Responsible for finishing generation of if else statement
+Value * ENDIFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	return 0;
+}
+
+WHILENode::WHILENode( SimpleNode& s) : Node( s ){
+	
+}
+
+//Generates code for Looops
 Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
 	
-	std::vector< Node * >::iterator itc = children.begin();
-	itc++;
-	for(; itc != children.end(); ++itc) {
-	    body.push_back( *itc );
-  	}
-
+	//Get condition, and instructions which will be executed if it's true
+	Node * condition = children[0];
+	vector<Node *> body (children.begin() + 1, children.end());
+	
 	if(DEBUG) printf("WHILENode::codeGen %d\n", uniqueId);
 	
+	//Get necessary code building structures
 	Function *theFunction = Builder.GetInsertBlock() -> getParent();
  	
 	BasicBlock *whileBB = BasicBlock::Create( getGlobalContext(), "while", theFunction );
 	BasicBlock *bodyBB = BasicBlock::Create( getGlobalContext(), "body" );
 	BasicBlock *endBB = BasicBlock::Create( getGlobalContext(), "end" );
 
+	//Create jump to while branch (condition), and start insertion into it
 	Builder.CreateBr( whileBB );
     Builder.SetInsertPoint( whileBB );
 
-    Value * condV = getCondNode() -> codeGen( Builder, env );
+    //Generate condition, and convert its value to bool
+    Value * condV = condition -> codeGen( Builder, env );
 
 	condV = Builder.CreateICmpEQ( condV, 
                               ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) ),
                                 "loopcond" );
+	
+	//Create conditional jump, if condition is true execute instructions, otherwise terminate
 	Builder.CreateCondBr(condV, bodyBB, endBB);
-
-   
 
 	theFunction -> getBasicBlockList().push_back( bodyBB );
     Builder.SetInsertPoint( bodyBB );
 
-    Value *thenV;
+    //Generate code of instructions
+    for(std::vector< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
+	    (*it) -> codeGen( Builder, env );
+	}
 
-    for(std::list< Node * >::iterator it = body.begin(); it != body.end(); ++it) {
-	    thenV = (*it) -> codeGen( Builder, env );
-	    //if (thenV == 0) return 0;
-  	}
-
+	//Jump back to while branch (loop)
     Builder.CreateBr( whileBB );
     bodyBB = Builder.GetInsertBlock();
 
+    //Create terminating block
     theFunction -> getBasicBlockList().push_back( endBB );
 	Builder.SetInsertPoint( endBB );    
 
@@ -609,6 +639,8 @@ Value * WHILENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 }
 
 OPNode::OPNode( SimpleNode& s) : Node( s ){
+
+	//Set type of operation
 	if( s.value.compare( "NO_OP" ) == 0 ){
 		this -> op = NONE;
 	} else if( s.value.compare( "ADD" ) == 0 ){
@@ -650,11 +682,17 @@ OPNode::OPNode( SimpleNode& s) : Node( s ){
 	} 
 }
 
+//Generate code specific for each operation
 Value* OPNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
 	if(DEBUG) printf("OPNode::codeGen %d\n", uniqueId);
+
+	//Generate code for left hand side of the operation
 	lhs = children[0] -> codeGen( Builder, env );
-	if(this -> op != UNR && this -> op != NEG) rhs = children[1] -> codeGen( Builder, env );
+
+
+	//Generate code for right hand side of the operation, if the operation has two arguments
+	if(this -> op != UNR && this -> op != NEG && this -> op != NOT) rhs = children[1] -> codeGen( Builder, env );
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( Builder, *this ); break;
@@ -755,7 +793,9 @@ Value* OPNode::codeGenSOE( IRBuilder<> & Builder, OPNode & n ){
 	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
+
 FUNCTIONNode::FUNCTIONNode( SimpleNode& s) : Node( s ){
+	//Set name of the function
 	funName = s.value;
 }
 
@@ -763,32 +803,44 @@ string FUNCTIONNode::getFunName(){
 	return funName;
 }
 
+//Returns llvm types of arguments
 vector<const Type*> FUNCTIONNode::getArgsTypes(){
 	return args;
 }
 
+//Returns names of the arguments
 vector<string> FUNCTIONNode::getArgs(){
 	return argsNames;
 }
 
+//Generates code for arguments of a function
 Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	for(int i = 0; i < children.size(); i++){
 		children[i] -> codeGen(Builder, env);
-		args.push_back( ((TYPENode*)children[i]) -> getLlvmType());
+
+		//collect types of arguments
+		args.push_back( ((TYPENode*)children[i]) -> getLlvmArgType());
+		argsNames.push_back( ((TYPENode*)children[i]) -> getArgName());
 	}	
 	return 0;
 }
 
 FUNCTIONDEFNode::FUNCTIONDEFNode( SimpleNode& s) : Node( s ){
-	Fn = (FUNCTIONNode*)children[1];
-	funName = s.value;
+
 }
 
 Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
+	//Set node responsible for definition of arguments
+	Fn = (FUNCTIONNode*)children[1];
+	
+	//Set function name
+	funName = Fn -> getFunName();
+	
 	//Create new scope
-	env.add( Fn -> getFunName() , this);
+	env.add( Fn -> getFunName(), this);
 
 	env.addScope( Fn -> getFunName() );
+
 	env = env.getScope( Fn -> getFunName() );
 
 	//Generate arguments
@@ -827,7 +879,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		Value * val = children[1] -> codeGen( Builder, env );
 		
 		//Assign value to the variable
-		Value * V = Builder.CreateStore( val,x -> alloca );
+		Value * V = Builder.CreateStore( val, x -> alloca );
 		return 0;
 	} else if( funName.compare( "ate" ) == 0 ){ //++
 		return Builder.CreateAdd( children[0] -> codeGen(Builder, env), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
@@ -839,11 +891,10 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env)
 		//Add variable to the scope
 		env.add( x -> getVarId(), x );
 
-		//Get type
-		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
-
 		//Get size
 		Value * size = children[1] -> codeGen( Builder, env );
+
+		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
 
 		//Get pointer of the type
 		PointerType* Pt = PointerType::get(t, 0);
@@ -894,70 +945,147 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 		Function* func_scanf = Function::Create(FuncTyScanf, Function::ExternalLinkage, "scanf", theModule);
 		
 		 ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 3);
-		 GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_0, true, GlobalValue::PrivateLinkage, 0);
+		 GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_0, true, GlobalValue::PrivateLinkage, 0, ".str");
 		 
 		 // Constant Definitions
-		 Constant* tD = ConstantArray::get(getGlobalContext(), "%s", true);
-		 Constant* tS = ConstantArray::get(getGlobalContext(), "%d", true);
-		 Constant* tC = ConstantArray::get(getGlobalContext(), "%c", true);
+		 Constant* const_array_8 = ConstantArray::get(getGlobalContext(), "%d", true);
 
 		 std::vector<Constant*> const_ptr_10_indices;
 		 ConstantInt* const_int64_11 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
 		 const_ptr_10_indices.push_back(const_int64_11);
 		 const_ptr_10_indices.push_back(const_int64_11);
-		 Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, const_ptr_10_indices);
+		 Constant* const_ptr_10 = ConstantExpr::getGetElementPtr(gvar_array__str, &const_ptr_10_indices[0], const_ptr_10_indices.size());
 
-		switch( x -> getVarType() ){
-			case LETTER: gvar_array__str->setInitializer(tC); break;
-			case NUMBER: gvar_array__str->setInitializer(tD); break;
-			case STRING: gvar_array__str->setInitializer(tS); break;
-		}
+		 gvar_array__str->setInitializer(const_array_8);
+
 		std::vector<Value*> int32_14_params;
 	  	int32_14_params.push_back(const_ptr_10);
 	  	int32_14_params.push_back(x -> alloca);
 
 		Builder.CreateCall(func_scanf, int32_14_params.begin(), int32_14_params.end());
-		 
-		return 0;
-	} else if( funName.compare( "had" ) == 0 ){
-		Node * x = children[0];
-
-		//Add variable to the scope
-		env.add( x -> getVarId(), x );
-
-		//Get type
-		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
-
-		//Get size
-		Value * size = children[1] -> codeGen( Builder, env );
-
-		//Get pointer of the type
-		PointerType* Pt = PointerType::get(t, 0);
-
-		//Allocate memory (type node)
-		x -> alloca = Builder.CreateAlloca(Pt, size);
-
-		return 0;
-	} else if( funName.compare( "was" ) == 0 ){
-		Node * x = children[0];
-
-		//Add variable to the scope
-		env.add( x -> getVarId(), x );
-
-		//Allocate memory (type node)
-		AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
+		return Builder.CreateLoad(x->alloca);
+	} else if( funName.compare( "spoke" ) == 0 ){
 		
-		//Set variable's memory location
-		x -> alloca = alloca;
+		ArrayType* ArrayTy_2 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 4);
 
-		return 0;
-	} else{
-		Function * f = theModule -> getFunction( funName );
-		vector<Value *> f_args;
-		vector<string> f_argsNames = ((FUNCTIONDEFNode*) env.get( funName )) -> Fn -> getArgs();
-		for( int i = 0; i < f_argsNames.size(); i++ ){
-			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env) );
+    	PointerType* PointerTy_5 = PointerType::get(IntegerType::get(getGlobalContext(), 8), 0);
+		std::vector<const Type*>FuncTy_12_args;
+	 	FuncTy_12_args.push_back(PointerTy_5);
+	 	FunctionType* FuncTy_12 = FunctionType::get( IntegerType::get(getGlobalContext(), 32), FuncTy_12_args, true);
+
+     	Function* func_printf = Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
+ 		GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_2, true, GlobalValue::PrivateLinkage, 0, ".str");
+
+	 	Constant* printfFormat; 
+	 	Constant* ptrToFormat;
+	 	Value * valueToPrint = children[0] -> codeGen( Builder, env);
+	 	Value * ptrToValue;
+	 	const Type * valToPrintTy = valueToPrint -> getType();
+	 
+	 	ConstantInt* const_int32_14 = ConstantInt::get(getGlobalContext(), APInt(32, StringRef("0"), 10));
+	 	ConstantInt* const_int64_14 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
+	 
+	 	std::vector<Constant*> const_ptr_18_indices;
+	 	const_ptr_18_indices.push_back(const_int32_14);
+	 	const_ptr_18_indices.push_back(const_int32_14);
+	 
+	 	ptrToFormat = ConstantExpr::getGetElementPtr(gvar_array__str, &const_ptr_18_indices[0], const_ptr_18_indices.size());
+	 
+		 if( valToPrintTy -> isIntegerTy(8)){
+		 	printfFormat = ConstantArray::get(getGlobalContext(), "%c\x0A", true);
+		 	AllocaInst * allocaOfValue = Builder.CreateAlloca(valToPrintTy);
+		 	Builder.CreateStore(valueToPrint, allocaOfValue);
+		 	ptrToValue = Builder.CreateLoad(allocaOfValue);
+		 } else if( valToPrintTy -> isArrayTy()){
+		 	printfFormat = ConstantArray::get(getGlobalContext(), "%s\x0A", true);
+		 	int arraySize = ((ConstantArray*)valueToPrint) -> getAsString().length();
+		 	
+		 	GlobalVariable* gvar_array_str = new GlobalVariable( *theModule, valToPrintTy, false, GlobalValue::ExternalLinkage, 0, ".str");
+		 	gvar_array_str -> setInitializer((Constant*)valueToPrint);
+
+		 	std::vector<Constant*> const_ptr_14_indices;
+	 		const_ptr_14_indices.push_back(const_int32_14);
+	 		const_ptr_14_indices.push_back(const_int32_14);
+	 		ptrToValue = ConstantExpr::getGetElementPtr(gvar_array_str, &const_ptr_14_indices[0], const_ptr_14_indices.size());
+
+		} else {
+			printfFormat = ConstantArray::get(getGlobalContext(), "%d\x0A", true);	 	
+		 	AllocaInst * allocaOfValue = Builder.CreateAlloca(valToPrintTy);
+		 	Builder.CreateStore(valueToPrint, allocaOfValue);
+		 	ptrToValue = Builder.CreateLoad(allocaOfValue);	 	
 		}
-		return Builder.CreateCall(f, f_args.begin(), f_args.end());
+
+		gvar_array__str -> setInitializer(printfFormat);
+
+	    std::vector<Value*> int32_25_params;
+	  	int32_25_params.push_back(ptrToFormat);
+	  	int32_25_params.push_back(ptrToValue);
+
+		Builder.CreateCall(func_printf, int32_25_params.begin(), int32_25_params.end());
+		return 0;
+	} else if( funName.compare( "found" ) == 0 ){
+
+		Value * v = children[0] -> codeGen( Builder, env ); 
+
+	  	Builder.CreateRet( v );
+		return v;
+	
+	} else if( funName.compare( "said Alice" ) == 0 ){
+		ArrayType* ArrayTy_2 = ArrayType::get(IntegerType::get(getGlobalContext(), 8), 4);
+
+    	PointerType* PointerTy_5 = PointerType::get(IntegerType::get(getGlobalContext(), 8), 0);
+		std::vector<const Type*>FuncTy_12_args;
+	 	FuncTy_12_args.push_back(PointerTy_5);
+	 	FunctionType* FuncTy_12 = FunctionType::get( IntegerType::get(getGlobalContext(), 32), FuncTy_12_args, true);
+
+     	Function* func_printf = Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
+ 		GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_2, true, GlobalValue::PrivateLinkage, 0, ".str");
+
+	 	Constant* printfFormat; 
+	 	Constant* ptrToFormat;
+	 	Value * valueToPrint = children[0] -> codeGen( Builder, env);
+	 	Value * ptrToValue;
+	 	const Type * valToPrintTy = valueToPrint -> getType();
+	 
+	 	ConstantInt* const_int32_14 = ConstantInt::get(getGlobalContext(), APInt(32, StringRef("0"), 10));
+	 	ConstantInt* const_int64_14 = ConstantInt::get(getGlobalContext(), APInt(64, StringRef("0"), 10));
+	 
+	 	std::vector<Constant*> const_ptr_18_indices;
+	 	const_ptr_18_indices.push_back(const_int32_14);
+	 	const_ptr_18_indices.push_back(const_int32_14);
+	 
+	 	ptrToFormat = ConstantExpr::getGetElementPtr(gvar_array__str, &const_ptr_18_indices[0], const_ptr_18_indices.size());
+	 
+		 if( valToPrintTy -> isIntegerTy(8)){
+		 	printfFormat = ConstantArray::get(getGlobalContext(), "%c\x0A", true);
+		 	AllocaInst * allocaOfValue = Builder.CreateAlloca(valToPrintTy);
+		 	Builder.CreateStore(valueToPrint, allocaOfValue);
+		 	ptrToValue = Builder.CreateLoad(allocaOfValue);
+		 } else if( valToPrintTy -> isArrayTy()){
+		 	printfFormat = ConstantArray::get(getGlobalContext(), "%s\x0A", true);
+		 	int arraySize = ((ConstantArray*)valueToPrint) -> getAsString().length();
+		 	
+		 	GlobalVariable* gvar_array_str = new GlobalVariable( *theModule, valToPrintTy, false, GlobalValue::ExternalLinkage, 0, ".str");
+		 	gvar_array_str -> setInitializer((Constant*)valueToPrint);
+
+		 	std::vector<Constant*> const_ptr_14_indices;
+	 		const_ptr_14_indices.push_back(const_int32_14);
+	 		const_ptr_14_indices.push_back(const_int32_14);
+	 		ptrToValue = ConstantExpr::getGetElementPtr(gvar_array_str, &const_ptr_14_indices[0], const_ptr_14_indices.size());
+
+		} else {
+			printfFormat = ConstantArray::get(getGlobalContext(), "%d\x0A", true);	 	
+		 	AllocaInst * allocaOfValue = Builder.CreateAlloca(valToPrintTy);
+		 	Builder.CreateStore(valueToPrint, allocaOfValue);
+		 	ptrToValue = Builder.CreateLoad(allocaOfValue);	 	
+		}
+
+		gvar_array__str -> setInitializer(printfFormat);
+
+	    std::vector<Value*> int32_25_params;
+	  	int32_25_params.push_back(ptrToFormat);
+	  	int32_25_params.push_back(ptrToValue);
+
+		Builder.CreateCall(func_printf, int32_25_params.begin(), int32_25_params.end());
 	}
 }
