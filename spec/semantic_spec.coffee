@@ -1,5 +1,5 @@
 fs = require 'fs'
-semantics = require '../semanticAnalyser.coffee'
+semanticChecker = require '../semanticAnalyser.coffee'
 
 parser = require '../parser.js'
 
@@ -14,15 +14,18 @@ prepareTestSuite = (directory) ->
 							return tokens
 
 directories.forEach ( dir, index, allDirs ) ->
-	console.log jasmine.Matchers.prototype
 	describe 'Testing semantics from directory ' + dir , ->
+		semantics = new semanticChecker
+		afterEach ->
+			semantics = new semanticChecker
+
 		(prepareTestSuite dir).forEach (spec, index, allFiles) ->
 			shouldFail = if spec[1] then 'not ' else ''
 			it 'should ' + shouldFail + 'fail on ' + spec[0], ->
-				console.log spec
 				file = dir + spec[0]
 				data = fs.readFileSync file, 'utf-8'
 				data = data.replace /[ \t\r]{2,}/g, ' '
+				#semantics.analyse parser.parse data
 				expectation = expect( () -> semantics.analyse parser.parse data )
 				expectation = if spec[1] then expectation.not else expectation
 				expectation.toThrowName 'SemanticError'
