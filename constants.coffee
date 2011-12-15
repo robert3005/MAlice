@@ -9,6 +9,7 @@ class Types
                 @NODE_TYPE = "TYPE"
                 @NODE_RETURN = "RETURN"
                 @NODE_IO = "IO"
+                @NODE_COMMENT = "THOUGHT"
                 @NODE_LOOP = "WHILE"
                 @NODE_FUN = "FUNCTION"
                 @NODE_FUN_DEF = "FUNCTION_DEFINITION"
