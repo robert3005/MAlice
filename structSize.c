@@ -27,24 +27,16 @@ extern "C" {
 #endif
 
 void compile(SNode node, char * s){
-	cout << "Create AST\n";
+	//cout << "Create AST\n";
 	Node * ast = Node::createAST( *node );
-	cout << "Make module\n";
+	//cout << "Make module\n";
 	Module * theModule = makeLLVMModule( *ast );
 	verifyModule( *theModule, PrintMessageAction );
 
 	//ExecutionEngine *ee = EngineBuilder( theModule ).create();
     //Function* func = ee -> FindFunctionNamed("main");
 
-    ofstream myfile;
-  	myfile.open ( "hello.c.ll" );
-  	myfile << theModule;
-  	myfile.close();
-
-  	cout << theModule;
-  	//theModule -> dump(); //print theModule to the output
-
-  	PassManager PM;
+    PassManager PM;
 	PM.add( createPrintModulePass( &outs() ) );
 	PM.run( *theModule );
 }

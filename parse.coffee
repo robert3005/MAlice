@@ -67,9 +67,10 @@ codeGen = new ffi.Library "./libstruct", {
 
 try
 	parseTree = parser.parse source
+	semantics.analyse parseTree
 	#sys.puts (util.inspect parseTree, false, 50)
 	codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
-	semantics.analyse parseTree
+	
 catch e
 	if e.name is 'SemanticError'
 		console.error e.name + ": " + e.message + " at line " + e.line + ", col " + e.column

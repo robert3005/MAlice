@@ -13,7 +13,7 @@ static llvm::Module * theModule;
 SimpleNode::SimpleNode(){}
 
 SimpleNode::SimpleNode( node_struct& s ){
-	cout << s.type << " " << s.value << " " << s.id << "\n";
+	if(DEBUG) cout << s.type << " " << s.value << " " << s.id << "\n";
 	uniqueId = s.id;
 	value = string(s.value);
 	position = s.position;
@@ -143,7 +143,7 @@ string SimpleNode::getData(){
 //Node
 Node::Node( SimpleNode& s ){
 	uniqueId = s.getId();
-	cout << "UI" << uniqueId << "\n";
+	if(DEBUG)cout << "UI" << uniqueId << "\n";
 	type = s.getType();
 	op = s.getOP();
 	data = s.getData();
@@ -156,7 +156,7 @@ bool Node::wasGenerated(){
 }
 
 Node * Node::createNode( SimpleNode& node){
-	cout << "CreateFrom:" << node.uniqueId << "\n";
+	if(DEBUG)cout << "CreateFrom:" << node.uniqueId << "\n";
 	Node* newNode;
 	
  	std::map<int, Node*> nodes;
@@ -175,13 +175,14 @@ Node * Node::createNode( SimpleNode& node){
  			case ELSE:	newNode = Node::createELSENode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			case END_IF:	newNode = Node::createENDIFNode( node, connectionsQueue ); 	nodes[ newNode -> getId() ] = newNode; break;
  			case IO:	newNode = new IONode( node );   	nodes[ newNode -> getId() ] = newNode; break;
- 			
+ 			case FUNC_CALL: newNode = new FUNCTIONCALLNode( node );   	nodes[ newNode -> getId() ] = newNode; break;
+
  			default: break;
  	}
  	
  	Node * child;
 	for(int i = 0; i < node.numberOfChildren; i++){
-		cout << "Child:" << ( *node.children[i] ).uniqueId << "\n";
+		if(DEBUG)cout << "Child:" << ( *node.children[i] ).uniqueId << "\n";
 		child = Node::createNode( *node.children[i] );
 		newNode -> children.push_back(child);
 		child -> debug();
@@ -191,7 +192,7 @@ Node * Node::createNode( SimpleNode& node){
 }
  
 Node *  Node::createAST( node_struct &node ){
-	cout << "CreateAST\n";
+	if(DEBUG)cout << "CreateAST\n";
 	SimpleNode * root = new SimpleNode( node );
 	Node * rootN = Node::createNode( *root );	
 	return rootN;
@@ -902,6 +903,7 @@ FUNCTIONCALLNode::FUNCTIONCALLNode( SimpleNode& s) : Node( s ){
 }
 
 Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
+	if(DEBUG) cout << "FName: " << funName << "\n";
 	if( funName.compare( "became" ) == 0 ){
 		//Get variable from environment
 		Node * x = env.get( children[0] -> getVarId() ); 
@@ -934,7 +936,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env,
 		x -> alloca = Builder.CreateAlloca(Pt, size);
 
 		return 0;
-	} else if( funName.compare( "was" ) == 0 ){
+	} else if( funName.compare( "was a" ) == 0 ){
 		Node * x = children[0];
 
 		//Add variable to the scope
@@ -960,7 +962,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env,
 
 IONode::IONode( SimpleNode& s) : Node( s ){
 	funName = s.value;
-	cout << "FName: " << funName << "\n";
+	if(DEBUG)cout << "FName: " << funName << "\n";
 }
 
 
@@ -1006,7 +1008,10 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Mod
 	 	FuncTy_12_args.push_back(PointerTy_5);
 	 	FunctionType* FuncTy_12 = FunctionType::get( IntegerType::get(getGlobalContext(), 32), FuncTy_12_args, true);
 
-     	Function* func_printf = Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
+     	Function* func_printf = theModule -> getFunction("printf");
+  		if (func_printf == 0) 
+  			func_printf = Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
+ 		
  		GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_2, true, GlobalValue::PrivateLinkage, 0, ".str");
 
 	 	Constant* printfFormat; 
@@ -1074,7 +1079,9 @@ Value * IONode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Mod
 
 	 	//theMod -> dump();
 
-     	Function* func_printf = Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
+     	Function* func_printf = theModule -> getFunction("printf");
+  		if (func_printf == 0) 
+  			func_printf =  Function::Create( FuncTy_12, GlobalValue::ExternalLinkage,	"printf", theModule);
  		GlobalVariable* gvar_array__str = new GlobalVariable( *theModule, ArrayTy_2, true, GlobalValue::PrivateLinkage, 0, ".printfF");
  		//GlobalVariable* gvar_array__str = new GlobalVariable( ArrayTy_2, true, GlobalValue::PrivateLinkage);
  		//theModule -> getGlobalList().push_back(gvar_array__str);
