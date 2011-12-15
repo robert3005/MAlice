@@ -255,8 +255,6 @@ class RETNode : public Node{
 		RETNode();
 		RETNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);
-
-		llvm::Value *lhs;
 };
 
 class CONSTNode : public Node{
@@ -265,9 +263,9 @@ class CONSTNode : public Node{
 		CONSTNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
-		llvm::Value *lhs;
-
 	protected:
+		TYPENode * typeNode;
+		llvm::Value *val;
 
 		static llvm::Value *codeGenSTRING( CONSTNode& );
 		static llvm::Value *codeGenNUMBER( CONSTNode& );
@@ -294,8 +292,11 @@ class TYPENode : public Node{
 		llvm::Type * getLlvmType();
 		llvm::Type * getLlvmArgType();
 		VarType getArgType();
+		void setArrayLength(int);
 
 	protected:
+		int arrayLength;
+
 		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
 		static llvm::Value *codeGenNUMBER( TYPENode & , llvm::IRBuilder<> &  );
 		static llvm::Value *codeGenLETTER( TYPENode & , llvm::IRBuilder<> &  );

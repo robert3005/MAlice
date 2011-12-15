@@ -323,13 +323,15 @@ CONSTNode::CONSTNode( SimpleNode& s) : Node( s ){
 //Returns Value of the constant
 Value* CONSTNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
+	typeNode = (TYPENode*)children[0];
+	
 	if(DEBUG) printf("CONSTNode::codeGen %d\n", uniqueId );
 	
 	//Check type and generate corresponding code
-	switch( children[0] -> getVarType() ){
-		case STRING: return CONSTNode::codeGenSTRING( *this ); break;
-		case NUMBER: return CONSTNode::codeGenNUMBER( *this ); break;
-		case LETTER: return CONSTNode::codeGenLETTER( *this ); break;
+	switch( typeNode -> getVarType() ){
+		case STRING: return val = CONSTNode::codeGenSTRING( *this ); break;
+		case NUMBER: return val = CONSTNode::codeGenNUMBER( *this ); break;
+		case LETTER: return val = CONSTNode::codeGenLETTER( *this ); break;
 	}
 }
 
@@ -365,6 +367,12 @@ TYPENode::TYPENode( SimpleNode& s) : Node( s ){
 		setVarType( T_NONE );
 	}
 	
+	arrayLength = 1;
+}
+
+//sets the length of an array represented by this type
+void TYPENode::setArrayLength( int l ){
+	arrayLength = l;
 }
 
 //Allocates memory for a given type, and returns address of the momory
@@ -380,20 +388,23 @@ Value * TYPENode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 			AllocaInst * alloca = (AllocaInst *) children[1] -> codeGen( Builder, env );
 			//set Alloca 
 			((VARNode*)children[0]) -> setAlloca( alloca );
-			//create variable in the scope //TD??
+			//create argument in the scope 
 			children[0] -> codeGen( Builder, env);
 			return alloca;
 		}; break;
 	}
 }
 
-
+//Allocates memory for a string
 Value * TYPENode::codeGenSTRING(TYPENode & node, IRBuilder<> & Builder){
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
  		
 	IRBuilder<> TmpB( &TheFunction -> getEntryBlock(), TheFunction -> getEntryBlock().begin() );
 	
-	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 32), 1);
+	//Define string type
+	ArrayType* StringTy = ArrayType::get(IntegerType::get(getGlobalContext(), 8), arrayLength);
+	
+	//Allocate memory
 	AllocaInst * Alloca = TmpB.CreateAlloca(StringTy, 0);
 
 	node.alloca = Alloca;	
@@ -405,6 +416,7 @@ Value * TYPENode::codeGenSTRING(TYPENode & node, IRBuilder<> & Builder){
 	return node.alloca;		
 }
 
+//Allocate memory for a number
 Value * TYPENode::codeGenNUMBER(TYPENode & node, IRBuilder<> & Builder){
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
  		
@@ -421,6 +433,7 @@ Value * TYPENode::codeGenNUMBER(TYPENode & node, IRBuilder<> & Builder){
 	return node.alloca;
 }
  
+//Allocate memory for a letter
 Value * TYPENode::codeGenLETTER(TYPENode & node, IRBuilder<> & Builder){
 	Function *TheFunction = Builder.GetInsertBlock() -> getParent();
 		
@@ -437,9 +450,10 @@ Value * TYPENode::codeGenLETTER(TYPENode & node, IRBuilder<> & Builder){
 	return node.alloca;	
 }
 
+//Returns type of the node in its llvm representation
 Type * TYPENode::getLlvmType(){
 	switch( getVarType() ){
-		case STRING: return (Type*)ArrayType::get(IntegerType::get(getGlobalContext(), 8), 1); break;
+		case STRING: return (Type*)ArrayType::get(IntegerType::get(getGlobalContext(), 8), arrayLength); break;
 		case NUMBER: return (Type*)Type::getInt32Ty(getGlobalContext()); break;
 		case LETTER: return (Type*)Type::getInt8Ty(getGlobalContext()); break; 
 	}
@@ -450,18 +464,12 @@ RETNode::RETNode( SimpleNode& s) : Node( s ){
 
 }
 
+//Generates code for the value it's supposed to return and creates a Ret statement
 Value * RETNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env){
 	generated = true;
 	if(DEBUG) printf("RETNode::codeGen %d\n", uniqueId);
 	
-	Value * v;
-
-	if( getVarId().length() > 0 ){
-		v = env.get( getVarId() ) -> codeGen( Builder, env );	
-	} else {
-		lhs = children[0] -> codeGen( Builder, env );
-		v = lhs; 
-	} 
+	Value * v = children[0] -> codeGen( Builder, env ); 
 
   	Builder.CreateRet( v );
 	return v;
