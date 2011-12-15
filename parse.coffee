@@ -58,23 +58,23 @@ saveFileName = (source) ->
 source = fs.readFileSync arguments[0], 'utf-8'
 source = source.replace /[ \t\r]{2,}/g, ' '
 
-#sys.puts source
+###sys.puts source
 
 codeGen = new ffi.Library "./libstruct", {
 	"print_struct": [ "void", [ "pointer", "int32" ] ],
 	"compile": [ "void", [ "pointer", "string" ] ] 
 }
-
+###
 try
 	parseTree = parser.parse source
-	#sys.puts (util.inspect parseTree, false, 50)
-	codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
-	#semantics.analyse parseTree
+	sys.puts (util.inspect parseTree, false, 50)
+	#codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
+	semantics.analyse parseTree
 catch e
 	if e.name is 'SemanticError'
-		sys.puts e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
+		console.error e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
 	else if e.name is 'SyntaxError'
-		sys.puts e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
+		console.error e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
 	else
 		throw e
 	process.exit 1

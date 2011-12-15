@@ -1,11 +1,11 @@
 test1.alice:fail
-test2.alice:fail
+test2.alice:pass
 test3.alice:fail
-test4.alice:pass
+test4.alice:fail
 test5.alice:fail
-test6.alice:fail
+test6.alice:pass
 test7.alice:fail
-test8.alice:pass
+test8.alice:fail
 test9.alice:pass
 test10.alice:pass
 test11.alice:pass
