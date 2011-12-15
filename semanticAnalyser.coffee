@@ -60,21 +60,18 @@ module.exports = (() ->
 					
 						if rhs.type is Types.NODE_OP
 							@isNumerical rhs, scope
-							sameTypes = varType is Types.TYPE_NUMBER
+							varReturnType = Types.TYPE_NUMBER
 						else if rhs.type is Types.NODE_FUN_CALL
 							@check rhs, scope
-							valueReturnType = (@lookup @globalScopeName, rhs.value).returnType
-							sameTypes = varType is valueReturnType
+							varReturnType = (@lookup @globalScopeName, rhs.value).returnType
 						else if rhs.type is Types.NODE_VAR
 							varReturnType = (@totalLookup scope, rhs.value).returnType
-							sameTypes = varType is varReturnType
 						else if rhs.type is Types.NODE_VAR_ARRAY_ELEM
 							varReturnType = (@totalLookup scope, rhs.children[0].value).returnType
-							sameTypes = varType is varReturnType
 						else 
-							sameTypes = varType is rhs.children[0].value
+							varReturnType = rhs.children[0].value
 
-						if not sameTypes
+						if not varType is varReturnType
 							throw new SemanticError "both sides of assignment have to be of same type", position
 
 					else if functionName is 'ate' or functionName is 'drank'
