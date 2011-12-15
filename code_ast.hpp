@@ -17,9 +17,11 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
-enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, OUT, IN};
-enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E};
-enum VarType {STRING = 0, NUMBER, LETTER};
+#include "structSize.h"
+
+enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF};
+enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
+enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY, T_NONE};
 
 static llvm::Module * theModule;
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
@@ -53,21 +55,14 @@ class Environment{
 			it = scopes.find( key );
 
 			if( it != scopes.end() ){
-				return *it;
+				return (*it).second;
 			} else {
 				return 0;
 			}	
 		}
 
 		void addScope( std::string key ){
-			typename std::map<std::string, Environment<T> * >::iterator it;
-			it = scopes.find( key );
-
-			if( it != elements.end() ){
-				scopes[key] = new Environment<T>( this );
-			} else {
-				scopes[key] = new Environment<T>( this );
-			}
+			scopes[key] = new Environment<T>( this );
 		}
 
 		void add( std::string key, T * n ){
@@ -94,15 +89,20 @@ class Environment{
 			}
 		}
 
+		bool is( std::string key ){
+			return (elements.find( key ) != elements.end());
+		}
+
 	protected:
 		std::map< std::string, Environment<T> * > scopes;
 		std::map< std::string, T * > elements;
 		Environment<T> * parent;
 };
 
-class SimpleNode{
+class SimpleNode : public node_struct{
 	public:
 		SimpleNode();
+		SimpleNode( node_struct & );
 		SimpleNode( std::string, std::string, std::string, std::string );
 
 		NodeType getType();
@@ -113,6 +113,9 @@ class SimpleNode{
 		void debug();
 
 		llvm::IRBuilder<> * builder;
+		std::vector<SimpleNode* > children;
+
+		std::string value;
 	protected:
 		int uniqueId; 
 
@@ -135,7 +138,8 @@ class Node : public SimpleNode{
 		virtual llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&) = 0;
 		void addChild( Node* );
 
-		static std::map<int, Node*> createAST( std::map<int, SimpleNode*> & ); //Factory
+		static Node * createAST( node_struct & ); //Factory
+		static Node * createNode( SimpleNode & ); 
 		
 		VarType getVarType();
 		void setVarType( VarType );
@@ -178,7 +182,10 @@ class Node : public SimpleNode{
 		static Node * createRETNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createIFNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		static Node * createWHILENode( SimpleNode&, std::list<std::pair<int, int> >& );
-
+		static Node * createARRAYNode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createARRAYELNode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createELSENode( SimpleNode&, std::list<std::pair<int, int> >& );
+		static Node * createENDIFNode( SimpleNode&, std::list<std::pair<int, int> >& );
 		//TODO: decide which fields to leave here, and which to move down
 		std::string id;
 		VarType varType;
@@ -220,14 +227,37 @@ class OPNode : public Node{
 		static llvm::Value *codeGenMUL( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenDIV( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenMOD( llvm::IRBuilder<> &, OPNode& );
-		static llvm::Value *codeGenUNR( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenNEG( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenS( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenG( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenE( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenGOE( llvm::IRBuilder<> &, OPNode& );
 		static llvm::Value *codeGenSOE( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenNOT( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenNE( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenBOR( llvm::IRBuilder<> &, OPNode& );
+		static llvm::Value *codeGenBAND( llvm::IRBuilder<> &, OPNode& );
 
+};
+
+class TYPENode : public Node{
+	public:
+		TYPENode();
+		TYPENode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+
+		llvm::Type * getLlvmType();
+		llvm::Type * getLlvmArgType();
+		std::string getArgName();
+		VarType getArgType();
+		void setArrayLength(int);
+
+	protected:
+		int arrayLength;
+
+		static llvm::Value *codeGenSTRING( TYPENode & , llvm::IRBuilder<> &  );
+		static llvm::Value *codeGenNUMBER( TYPENode & , llvm::IRBuilder<> &  );
+		static llvm::Value *codeGenLETTER( TYPENode & , llvm::IRBuilder<> &  );
 };
 
 class VARNode : public Node{
@@ -235,6 +265,8 @@ class VARNode : public Node{
 		VARNode();
 		VARNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);
+
+		void setAlloca( llvm::AllocaInst * );
 
 	protected:
 		llvm::Value *lhs;
@@ -244,8 +276,6 @@ class RETNode : public Node{
 		RETNode();
 		RETNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);
-
-		llvm::Value *lhs;
 };
 
 class CONSTNode : public Node{
@@ -255,65 +285,56 @@ class CONSTNode : public Node{
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
 	protected:
+		TYPENode * typeNode;
+		llvm::Value *val;
 
 		static llvm::Value *codeGenSTRING( CONSTNode& );
 		static llvm::Value *codeGenNUMBER( CONSTNode& );
 		static llvm::Value *codeGenLETTER( CONSTNode& );
 };
 
-class ARRAYNode : public Node{
+class ARRAYELEMNode : public Node{
 	public:
-		CONSTNode();
-		CONSTNode( SimpleNode& s);
+		ARRAYELEMNode();
+		ARRAYELEMNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
 	protected:
-
-		static llvm::Value *codeGenSTRING( CONSTNode& );
-		static llvm::Value *codeGenNUMBER( CONSTNode& );
-		static llvm::Value *codeGenLETTER( CONSTNode& );
 
 		VarType arrayType;
 };
 
-class TYPENode : public Node{
-	public:
-		TYPENode();
-		TYPENode( SimpleNode& s);
-		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
 
-	protected:
-};
-
-
-class FUNCTIONNode : public Node{
-	public:
-
-	protected:
-		std::vector< VarType > args_def;
-		VarType ret_def;
-
-		std::vector< Node * > args;
-		std::list< Node * > body;
-};
 
 class IFNode : public Node{
 	public:
 		IFNode();
 		IFNode( SimpleNode& s);
-		void setCondId( std::string );
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
-		Node * getCondNode();
-
+		
 	protected:
-		Node * cond;
-		std::string cond_id;
-
-		Node * else_node;
-		std::list< Node * > body;	
 };
 
-class WHILENode : public IFNode {
+class ELSENode : public Node{
+	public:
+		ELSENode();
+		ELSENode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+	protected:
+};
+
+class ENDIFNode : public Node{
+	public:
+		ENDIFNode();
+		ENDIFNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+	protected:
+};
+
+
+class WHILENode : public Node {
 	public:
 		WHILENode();
 		WHILENode( SimpleNode& s);
@@ -321,6 +342,80 @@ class WHILENode : public IFNode {
 	
 };
 
+class FUNCTIONNode : public Node {
+	public:
+		FUNCTIONNode();
+		FUNCTIONNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		std::string getFunName();
+		std::vector<const llvm::Type*> getArgsTypes();
+		std::vector<std::string> getArgs();
 
+		std::string funName;
+
+	protected:
+		std::vector<const llvm::Type*> args;
+		std::vector<std::string> argsNames;
+};
+
+class FUNCTIONDEFNode : public Node {
+	public:
+		FUNCTIONDEFNode();
+		FUNCTIONDEFNode( SimpleNode& s);
+		llvm::Function *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		llvm::FunctionType * FT;
+		llvm::Function * F;
+
+		FUNCTIONNode * Fn;
+		std::string funName;
+		Environment<Node> * Fenv;
+
+	protected:
+
+};
+
+
+
+class FUNCTIONCALLNode : public Node {
+	public:
+		FUNCTIONCALLNode();
+		FUNCTIONCALLNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		
+		llvm::Value *callWas(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callBecame(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callDrank(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callAte(llvm::IRBuilder<> &, Environment<Node>&);
+		llvm::Value *callHad(llvm::IRBuilder<> &, Environment<Node>&);
+
+		std::string funName;
+
+		std::string getFunName();
+		std::vector<const llvm::Type*> getArgs();
+
+	protected:
+		std::vector<const llvm::Type*> args;
+};
+
+class IONode : public Node{
+	public:
+		IONode();
+		IONode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		std::string funName;
+	protected:
+};
+
+class ARRAYELNode : public Node{
+	public:
+		ARRAYELNode();
+		ARRAYELNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&);	
+		std::string arrName;
+		llvm::Value * alloca;
+	protected:
+};
 
 #endif
