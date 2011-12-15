@@ -1844,7 +1844,7 @@ module.exports=(function(){
                 pos = savedPos1;
               }
               var result3 = result2 !== null
-                ? (function(name) { return createNode( cacheKey, Types.NODE_IO, name) })(result2[3])
+                ? (function(name) { return createNode( cacheKey, Types.NODE_COMMENT, name ) })(result2[3])
                 : null;
               if (result3 !== null) {
                 var result1 = result3;
