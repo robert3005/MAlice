@@ -1,7 +1,8 @@
 module.exports = (() ->
 	[RBTree, RBTNode] = require './rbtree.coffee'
 	Types = require './constants.coffee'
-	
+	util = require 'util'
+
 	class Semantics
 
 		constructor: ->
@@ -13,6 +14,7 @@ module.exports = (() ->
 
 		analyse: (parseTree) ->
 			@findDeclarations parseTree, @globalScopeName
+			#console.log (util.inspect @Dictionary, false , 50)
 			@check parseTree, @globalScopeName
 
 		check: (node, scope) ->
@@ -71,8 +73,8 @@ module.exports = (() ->
 								varReturnType = (@totalLookup scope, rhs.children[0].value).returnType
 							else 
 								varReturnType = rhs.children[0].value
-
-							if not varType is varReturnType
+							
+							if varType isnt varReturnType
 								throw new SemanticError "both sides of assignment have to be of same type", position
 
 						else if functionName is 'ate' or functionName is 'drank'
@@ -82,7 +84,7 @@ module.exports = (() ->
 							if not varNode?
 								throw new SemanticError "Variable '" + varName + "' hasn't been declared", position
 
-							if not varNode.returnType is Types.TYPE_NUMBER
+							if varNode.returnType isnt Types.TYPE_NUMBER
 								throw new SemanticError "ate and drank functions are defined only for numbers", position
 								 
 						else 	
@@ -93,7 +95,7 @@ module.exports = (() ->
 							if not sameTypes
 								throw new SemanticError "Wrong argument type for function call " + functionName, node.position
 
-					when Types.NODE_WHILE
+					when Types.NODE_LOOP
 						[whileCondition, whileBody, position] = @ASTParser.whileBlock node
 						whileScope = Types.NODE_LOOP + "@" + position.line
 						@isBoolean whileCondition, scope
@@ -113,7 +115,7 @@ module.exports = (() ->
 							throw new SemanticError "function can only return one value", position
 						returnType = @computeExpressionType returnNode, scope
 						enclosingFunction = @lookup @globalScopeName, scope
-						if not returnType is enclosingFunction.returnType
+						if enclosingFunction? and returnType isnt enclosingFunction.returnType
 							throw new SemanticError "return type doesn't agree with function definition", position
 						@check returnNode, scope
 					
@@ -142,7 +144,7 @@ module.exports = (() ->
 			booleanType = null
 
 			condTypes = (exp) =>
-				
+
 				switch exp.type
 					
 					when Types.NODE_OP
@@ -234,8 +236,9 @@ module.exports = (() ->
 						if functionNode?
 							throw new SemanticError "Looking Glass '" + glassName + "' has already been declared", position
 						(@getScope @globalScopeName).rbInsert new RBTNode glassName, position, returnType, @functionTypeCheck [returnType]
-						@Dictionary[glassName] = [null, new RBTree]
-						(@getScope glassName).rbInsert new RBTNode 'it', position, returnType, @functionTypeCheck [returnType]
+						newScope = new RBTree
+						newScope.rbInsert new RBTNode 'it', position, returnType, @functionTypeCheck [returnType]
+						@Dictionary[glassName] = [null, newScope]
 						[retType, lookBody...] = node.children
 						@findDeclarations child, glassName for child in lookBody
 					
@@ -312,6 +315,10 @@ module.exports = (() ->
 				when Types.NODE_FUN_CALL
 					functionNode = @lookup @globalScopeName, node.value
 					@check child, scope for child in node.children
+
+					if not functionNode?
+						throw new SemanticError "call to undefined function: " + functionName, node.position
+
 					functionNode.returnType					
 
 		lookup: (scope, name) ->
