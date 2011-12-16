@@ -326,7 +326,9 @@ void VARNode::setAlloca( AllocaInst * a){
 //Loads variable from memory location
 Value * VARNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Module * theModule){
 	//Check if variable has been allocated
-	if( env.is( getVarId() ) ){
+	if( env.get( getVarId() ) -> getType() == ARG){
+		return env.get( getVarId() ) -> codeGen( Builder, env, theModule );
+	} else if( env.is( getVarId() ) ){
 		//Get memory location
  		alloca = env.get( getVarId() ) -> alloca;
 		
@@ -553,10 +555,10 @@ Value * IFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Mod
 
 
 	//Convert condition to bool
-	condV = Builder.CreateICmpEQ( condV, 
+	/*condV = Builder.CreateICmpEQ( condV, 
                               ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 0 ) ),
-                                "ifcond" );
-
+                                "ifcond" );*/
+    //theModule -> dump();
     //Get overlaying function
 	Function *theFunction = Builder.GetInsertBlock() -> getParent();
  	
@@ -754,9 +756,9 @@ Value* OPNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llvm::Modu
 	//Generate code for left hand side of the operation
 	lhs = children[0] -> codeGen( Builder, env, theModule );
 
-
-	//Generate code for right hand side of the operation, if the operation has two arguments
-	if(this -> op != UNR && this -> op != NEG && this -> op != NOT) rhs = children[1] -> codeGen( Builder, env, theModule );
+//Generate code for right hand side of the operation, if the operation has two arguments
+	if(this -> op != UNR && this -> op != NEG && this -> op != NOT) 
+		rhs = children[1] -> codeGen( Builder, env, theModule );
 	
 	switch( this -> op ){
 		case ADD: return OPNode::codeGenADD( Builder, *this ); break;
@@ -829,32 +831,38 @@ Value* OPNode::codeGenNEG( llvm::IRBuilder<> & Builder, OPNode & n ){
 
 Value* OPNode::codeGenS( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpULT( n.lhs, n.rhs );
-	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+	return b;
+	//return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
 Value* OPNode::codeGenG( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpUGT( n.lhs, n.rhs );
-	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+	return b;
+	//return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
 Value* OPNode::codeGenE( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpEQ( n.lhs, n.rhs );
-	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+	return b;
+	//return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
 Value* OPNode::codeGenNE( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpNE( n.lhs, n.rhs );
-	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+	return b;
+	//return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
 Value* OPNode::codeGenGOE( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpUGE( n.lhs, n.rhs );
-	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+	return b;
+	//return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
 Value* OPNode::codeGenSOE( IRBuilder<> & Builder, OPNode & n ){
 	Value * b = Builder.CreateICmpULE( n.lhs, n.rhs );
-	return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
+	return b;
+	//return Builder.CreateIntCast( b, Type::getInt32Ty(getGlobalContext()), false );
 }
 
 
@@ -884,14 +892,14 @@ Value * FUNCTIONNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env, llv
 	argsNames.clear();
 	Value * V;
 	for(int i = 0; i < children.size(); i++){
-		children[i] -> codeGen(Builder, env, theModule);
+		//children[i] -> codeGen(Builder, env, theModule);
 
 		//collect types of arguments
 		args.push_back( ((TYPENode*)children[i]) -> getLlvmArgType());
 		argsNames.push_back( ((TYPENode*)children[i]) -> getArgName());
-		if(argsAdded){
-			env.add( ((TYPENode*)children[i]) -> getArgName(), children[i] -> children[0]);
-		}
+		//if(argsAdded){
+		//	env.add( ((TYPENode*)children[i]) -> getArgName(), children[i] -> children[0]);
+		//}
 	}	
 	return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 }
@@ -937,9 +945,9 @@ Function * FUNCTIONDEFNode::codeGen(IRBuilder<> & Builder, Environment<Node>& en
     	AI -> setName(Fn -> argsNames[Idx]);
     	Fn -> argsValues.push_back(AI);
   		
-  		//ARGNode * argN = new ARGNode();
-  		//argN -> valueLlvm = AI;
-  		//env2 -> add( Fn -> argsNames[Idx], argN );
+  		ARGNode * argN = new ARGNode();
+  		argN -> valueLlvm = AI;
+  		env2 -> add( Fn -> argsNames[Idx], argN );
   	}
   	Fn -> argsAdded = true;
   	Fn -> codeGen(Builder, *env2, theModule);
@@ -978,32 +986,14 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env,
 
 		if( children[0] -> getType() == ARRAY_ELEM){
 			x = env.get( children[0] -> children[0] -> getVarId() );
-			//x is the array
-			/*AllocaInst ** all = &(children[0] -> alloca);
-			children[0] -> codeGen( Builder, env, theModule );
-			//if(!children[0] && DEBUG) cout << "PFFFF\n";
-			x -> valueLlvm -> dump();
-			//Get its new value
-			Value * val = children[1] -> codeGen( Builder, env, theModule );
-
-			//Assign value to the variable
-			Value * V = Builder.CreateStore( val, children[0] -> alloca );*/
-
-			//Get its new value
+			
 			Value * val = children[1] -> codeGen( Builder, env, theModule );
 			Value * elNumber = children[0] -> children[1] -> codeGen(Builder, env, theModule);
 
 			BasicBlock* label_13 = Builder.GetInsertBlock();
-		  	PointerType* PointerTy_1 = PointerType::get(IntegerType::get(getGlobalContext(), 32), 0);
-		  	AllocaInst* ptr_s = new AllocaInst(PointerTy_1, "s", label_13);
-			LoadInst* ptr_29 = new LoadInst(x->alloca, "", false, label_13);
-		  	CastInst* int64_31 = new SExtInst(elNumber, IntegerType::get(getGlobalContext(), 64), "", label_13);
-		  	GetElementPtrInst* ptr_32 = GetElementPtrInst::Create(ptr_29, int64_31, "", label_13);
-		  	StoreInst* void_33 = new StoreInst(ptr_32, ptr_s, false, label_13);
-		  	LoadInst* ptr_34 = new LoadInst(ptr_s, "", false, label_13);
-		  	ptr_34->setAlignment(8);
-		  	//Value * V = Builder.CreateStore( val, ptr_34 );
-		
+		  	Value * ptr = Builder.CreateInBoundsGEP(x->alloca, elNumber);
+		  	StoreInst* void_33 = Builder.CrateStore(val, ptr);
+
 		} else if( x -> getVarType() == STRING){
 			
 			//Get variable from environment
@@ -1041,6 +1031,7 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env,
 		return Builder.CreateSub( children[0] -> codeGen(Builder, env, theModule), ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), APInt( 32, 1 ) ) );
 	} else if( funName.compare( "had" ) == 0 ){
 		Node * x = children[0];
+		
 		//Add variable to the scope
 		env.add( x -> getVarId(), x );
 
@@ -1049,11 +1040,8 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env,
 
 		Type * t = ((TYPENode*)children[2]) -> getLlvmType();
 
-		//Get pointer of the type
-		PointerType* Pt = PointerType::get(t, 0);
-
 		//Allocate memory (type node)
-		x -> alloca = Builder.CreateAlloca(Pt, size);
+		x -> alloca = Builder.CreateAlloca(t, size);
 
 		return ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 );
 	} else if( funName.compare( "was a" ) == 0 ){
@@ -1076,9 +1064,11 @@ Value * FUNCTIONCALLNode::codeGen(IRBuilder<> & Builder, Environment<Node>& env,
 		vector<Value *> f_args;
 		vector<string> f_argsNames = ((FUNCTIONDEFNode*) env.get( funName )) -> Fn -> getArgs();
 		for( int i = 0; i < f_argsNames.size(); i++ ){
-			f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env, theModule) );
+			//f_args.push_back( env.get( f_argsNames[i] ) -> codeGen(Builder, env, theModule) );
+			Value * argV = children[i] -> codeGen( Builder, env, theModule );
+			f_args.push_back( argV );
 		}
-		return Builder.CreateCall(f, f_args.begin(), f_args.end(), funName);
+		return Builder.CreateCall(f, f_args.begin(), f_args.end());
 	}
 }
 

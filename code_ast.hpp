@@ -19,7 +19,7 @@
 
 #include "structSize.h"
 
-enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF, ROOT, COMMENT};
+enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF, ROOT, COMMENT, ARG};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
 enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY, T_NONE};
 
@@ -73,7 +73,6 @@ class Environment{
 			} else {
 				elements[key] = n;
 			}
-
 		}
 		 
 		T * get( std::string key ){
@@ -344,7 +343,7 @@ class WHILENode : public Node {
 
 class ARGNode : public Node{
 	public:
-		ARGNode();
+		ARGNode(){type= ARG;};
 		ARGNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&, llvm::Module *);	
 
