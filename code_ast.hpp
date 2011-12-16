@@ -17,7 +17,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetSelect.h"
 
-#include "structSize.h"
+#include "llvmGen.hpp"
 
 enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF, ROOT, COMMENT, ARG};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
@@ -26,78 +26,6 @@ enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY, T_NONE};
 static llvm::IRBuilder<> Builder( llvm::getGlobalContext() );
 static llvm::Function * Main;
 static llvm::BasicBlock * BB;
-
-static std::string out; //output stream :P
-
-
-/*
-typedef Value* Valueptr
-typedef Value * (*OPGenFunction)( *Module, *Builder );
-
-class SymbolTable{
-	
-};
-*/
-template <class T>
-class Environment{
-	public:
-		Environment(){
-			parent = 0;
-		}
-
-		Environment( Environment<T> * p ){
-			parent = p;
-		}
-
-		Environment<T> * getScope( std::string key ){
-			typename std::map<std::string, Environment<T> * >::iterator it;
-			it = scopes.find( key );
-
-			if( it != scopes.end() ){
-				return (*it).second;
-			} else {
-				return 0;
-			}	
-		}
-
-		void addScope( std::string key ){
-			scopes[key] = new Environment<T>( this );
-		}
-
-		void add( std::string key, T * n ){
-			typename std::map<std::string, T* >::iterator it;
-			it = elements.find( key );
-
-			if( it != elements.end() ){
-				elements[key] = n;
-			} else {
-				elements[key] = n;
-			}
-		}
-		 
-		T * get( std::string key ){
-			typename std::map<std::string, T* >::iterator it;
-			it = elements.find( key );
-
-			if( it != elements.end() ){
-				return (*it).second;
-			} else if( parent != 0 ) {
-
-				return parent -> get( key );
-			} else {
-				return 0;
-			}
-		}
-
-		bool is( std::string key ){
-			return (elements.find( key ) != elements.end());
-		}
-
-	protected:
-		std::map< std::string, Environment<T> * > scopes;
-		std::map< std::string, T * > elements;
-		Environment<T> * parent;
-};
 
 class SimpleNode : public node_struct{
 	public:

@@ -15,7 +15,7 @@
 #include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/System/DynamicLibrary.h"
 
-#include "structSize.h"
+#include "llvmGen.hpp"
 #include "code_ast.hpp"
 #include "code_generator.hpp"
 

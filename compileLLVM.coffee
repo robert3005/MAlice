@@ -20,11 +20,11 @@ Node = ffi.Struct [
 ]
 
 
-codeGen = new ffi.Library "./libstruct", {
+
+codeGen = new ffi.Library qualifiedPath + "/libllvmGen", {
 	"print_struct": [ "void", [ "pointer", "int32" ] ],
 	"compile": [ "void", [ "pointer", "string" ] ] 
 }
-
 
 
 ###
@@ -66,7 +66,7 @@ parseTreeToC = (parseTree) ->
 sourceFile = process.argv[2]
 
 saveFileName = (source) ->
-	pathTokens = sourceFile.split '/'
+	pathTokens = source.split '/'
 	fileNameTokens = pathTokens.pop().split '.'
 	pathTokens.push fileNameTokens[0]
 	(pathTokens.join '/') + '.ll'
@@ -90,7 +90,6 @@ fs.stat sourceFile, (err, stats) ->
 			try
 				parseTree = parser.parse source
 				semantics.analyse parseTree
-				#console.log parseTree
 				codeGen.compile (parseTreeToC parseTree).ref(), saveFileName sourceFile
 				process.exit 0
 			catch e

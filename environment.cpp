@@ -1,78 +1,65 @@
 #include <cstdio>
 #include <string>
-#include "environment.hpp"
 
 using namespace std;
 
-template <class T> 
-Environment<T>::Environment(){
-	parent = 0;
-}
+template <class T>
+class Environment{
+	public:
+		Environment(){
+			parent = 0;
+		}
 
-template <class T> 
-Environment<T>::Environment( Environment<T> * p ){
-	parent = p;
-}
+		Environment( Environment<T> * p ){
+			parent = p;
+		}
 
-template <class T> 
-Environment<T> * Environment<T>::getScope( string key ){
-	typename map<string, Environment<T> * >::iterator it;
-	it = scopes.find( key );
+		Environment<T> * getScope( std::string key ){
+			typename std::map<std::string, Environment<T> * >::iterator it;
+			it = scopes.find( key );
 
-	if( it != scopes.end() ){
-		return *it;
-	} else {
-		return 0;
-	}	
-}
+			if( it != scopes.end() ){
+				return (*it).second;
+			} else {
+				return 0;
+			}	
+		}
 
-template <class T> 
-void Environment<T>::addScope( string key ){
-	typename map<string, Environment<T> * >::iterator it;
-	it = scopes.find( key );
+		void addScope( std::string key ){
+			scopes[key] = new Environment<T>( this );
+		}
 
-	if( it != elements.end() ){
-		scopes[key] = new Environment<T>( this );
-	} else {
-		scopes[key] = new Environment<T>( this );
-	}
-}
+		void add( std::string key, T * n ){
+			typename std::map<std::string, T* >::iterator it;
+			it = elements.find( key );
 
-template <class T> 
-void Environment<T>::add( string key, T * n ){
-	typename map<string, T* >::iterator it;
-	it = elements.find( key );
+			if( it != elements.end() ){
+				elements[key] = n;
+			} else {
+				elements[key] = n;
+			}
+		}
+		 
+		T * get( std::string key ){
+			typename std::map<std::string, T* >::iterator it;
+			it = elements.find( key );
 
-	if( it != elements.end() ){
-		elements[key] = n;
-	} else {
-		elements[key] = n;
-	}
-}
+			if( it != elements.end() ){
+				return (*it).second;
+			} else if( parent != 0 ) {
 
-template <class T> 
-T * Environment<T>::get( string key ){
-	typename map<string, T* >::iterator it;
-	it = elements.find( key );
+				return parent -> get( key );
+			} else {
+				return 0;
+			}
+		}
 
-	if( it != elements.end() ){
-		return (*it).second;
-	} else if( parent != 0 ) {
-		return parent -> get( key );
-	} else {
-		return 0;
-	}
-}
-/*
-int main(){
-	Environment<string> * env = new Environment<string>();
+		bool is( std::string key ){
+			return (elements.find( key ) != elements.end());
+		}
 
-	string s = "kot";
-
-	env -> add( string("pies"), &s );
-
-	printf("%s\n", env -> get( string("pies") ) -> c_str() );
-
-	return 0;
-}
-*/
+	protected:
+		std::map< std::string, Environment<T> * > scopes;
+		std::map< std::string, T * > elements;
+		Environment<T> * parent;
+};

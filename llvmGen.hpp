@@ -1,5 +1,5 @@
-#ifndef STRUCT_SIZE_H
-#define STRUCT_SIZE_H
+#ifndef LLVMGEN_HPP
+#define LLVMGEN_HPP
 
 #ifdef  __cplusplus
 extern "C" {
