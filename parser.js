@@ -3500,7 +3500,7 @@ module.exports=(function(){
           var result27 = null;
         }
         var result28 = result27 !== null
-          ? (function(num) {  return createNode( cacheKey, Types.NODE_CONST, num.join(""), createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_NUMBER ) ) })(result27)
+          ? (function(num) {  hasOverflown(num.join("")); return createNode( cacheKey, Types.NODE_CONST, num.join(""), createNode( cacheKey, Types.NODE_TYPE, Types.TYPE_NUMBER ) ) })(result27)
           : null;
         if (result28 !== null) {
           var result26 = result28;
@@ -5550,6 +5550,36 @@ module.exports=(function(){
       
 
 			var children;
+      
+
+		};
+      
+
+	
+      
+
+		function hasOverflown(number) {
+      
+
+			
+      
+
+			num = parseInt(number, 10);
+      
+
+			// since int is 32 bit maximum value is 2^31-1
+      
+
+			position = computePosition(pos)
+      
+
+			if( num > 2147483647 || num < -2147483648 ) {
+      
+
+				throw new SyntaxError( "Number " + number + " exceeds 32bits", position.line, position.column )
+      
+
+			}
       
 
 		};
