@@ -78,15 +78,28 @@ children.
 		return n;
 	};
 
-	//console.log(process.argv)
-
+	// resolves directory in which compiler source code resides for including external modules
+	if(process.argv[0] === 'node') {
+		var qualifiedPath = process.cwd()
+		var relativePath = process.argv[2].split('/')
+		relativePath.pop()
+		if(relativePath.length > 0) {
+			qualifiedPath += '/' 
+		} 
+		qualifiedPath += relativePath.join('/')
+	} else {
+		var execScriptPath = process.argv[1]
+		var pathTokens = execScriptPath.split('/')
+		pathTokens.pop()
+		var qualifiedPath = pathTokens.join('/')
+	}	
 	/*
 	Node types and a list of operator types are defined for whole compiler in constants.coffee.
 	Every time a node is created, a type has to be specified. The same process concerns
 	the operations, every operation has a different type.
 	*/
 
-	var Types = require(process.cwd() + '/constants.coffee');
+	var Types = require(qualifiedPath + '/constants.coffee');
 }
 
 /*

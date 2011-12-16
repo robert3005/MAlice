@@ -5729,10 +5729,49 @@ module.exports=(function(){
 	
       
 
-		//console.log(process.argv)
+		// resolves directory in which compiler source code resides for including external modules
       
 
-	
+		if(process.argv[0] === 'node') {
+      
+
+			var qualifiedPath = process.cwd()
+      
+
+			var relativePath = process.argv[2].split('/')
+      
+
+			relativePath.pop()
+      
+
+			if(relativePath.length > 0) {
+      
+
+				qualifiedPath += '/' 
+      
+
+			} 
+      
+
+			qualifiedPath += relativePath.join('/')
+      
+
+		} else {
+      
+
+			var execScriptPath = process.argv[1]
+      
+
+			var pathTokens = execScriptPath.split('/')
+      
+
+			pathTokens.pop()
+      
+
+			var qualifiedPath = pathTokens.join('/')
+      
+
+		}	
       
 
 		/*
@@ -5753,7 +5792,7 @@ module.exports=(function(){
 	
       
 
-		var Types = require(process.cwd() + '/constants.coffee');
+		var Types = require(qualifiedPath + '/constants.coffee');
       
 
 	
