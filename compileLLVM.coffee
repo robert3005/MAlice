@@ -91,7 +91,7 @@ fs.stat sourceFile, (err, stats) ->
 				parseTree = parser.parse source
 				semantics.analyse parseTree
 				console.log parseTree
-				#codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
+				#codeGen.compile (parseTreeToC parseTree).ref(), saveFileName sourceFile
 				process.exit 0
 			catch e
 				if e.name is 'SyntaxError' or e.name is 'SemanticError'
