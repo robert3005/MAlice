@@ -19,7 +19,7 @@
 
 #include "structSize.h"
 
-enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF, ROOT};
+enum NodeType {OP = 0, VAR, CONST, TYPE, RET, WHILE, IF, FUNC, ARRAY, ARRAY_ELEM, IO, FUNC_DEF, FUNC_CALL, LOOK_DEF, ELSE, END_IF, ROOT, COMMENT};
 enum OPType {NONE = 0, ADD, OR, XOR, AND, SUB, MUL, DIV, MOD, UNR, NEG, G, GOE, S, SOE, E, BOOL_OR, BOOL_AND, NOT, NE};
 enum VarType {STRING = 0, NUMBER, LETTER, T_ARRAY, T_NONE};
 
@@ -73,6 +73,7 @@ class Environment{
 			} else {
 				elements[key] = n;
 			}
+
 		}
 		 
 		T * get( std::string key ){
@@ -82,6 +83,7 @@ class Environment{
 			if( it != elements.end() ){
 				return (*it).second;
 			} else if( parent != 0 ) {
+
 				return parent -> get( key );
 			} else {
 				return 0;
@@ -340,6 +342,14 @@ class WHILENode : public Node {
 	
 };
 
+class ARGNode : public Node{
+	public:
+		ARGNode();
+		ARGNode( SimpleNode& s);
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&, llvm::Module *);	
+
+};
+
 class FUNCTIONNode : public Node {
 	public:
 		FUNCTIONNode();
@@ -351,10 +361,11 @@ class FUNCTIONNode : public Node {
 		std::vector<std::string> getArgs();
 
 		std::string funName;
-
-	protected:
+		bool argsAdded;
+	//protected:
 		std::vector<const llvm::Type*> args;
 		std::vector<std::string> argsNames;
+		std::vector<llvm::Function::arg_iterator> argsValues;
 };
 
 class FUNCTIONDEFNode : public Node {
@@ -411,6 +422,7 @@ class ARRAYELNode : public Node{
 		ARRAYELNode();
 		ARRAYELNode( SimpleNode& s);
 		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&, llvm::Module * );	
+		llvm::Value *codeGenS(llvm::IRBuilder<> &, Environment<Node>&, llvm::Module *, llvm::Value * );	
 		std::string arrName;
 		llvm::Value * alloca;
 	protected:
@@ -424,4 +436,11 @@ class ROOTNode : public Node{
 	protected:
 };
 
+class COMMENTNode : public Node{
+	public:
+		COMMENTNode();
+		COMMENTNode( SimpleNode& );
+		llvm::Value *codeGen(llvm::IRBuilder<> &, Environment<Node>&, llvm::Module * );
+	protected:
+};
 #endif

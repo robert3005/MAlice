@@ -37,13 +37,16 @@ Module * makeLLVMModule( Node & ast ){
 	Environment<Node> * env = new Environment<Node>();
 	env -> addScope("main");
 
-	//cout << "Number Of Children" << ast.children.size() << "\n";
 	for(std::vector< Node * >::iterator it = ast.children.begin(); it != ast.children.end(); ++it) {
-	    //cout << ((SimpleNode*)(*it)) -> getOP();
-	    //( *it ) -> debug();
+		if( ( *it ) -> getType() == FUNC_DEF )
 		( *it ) -> codeGen( Builder, *env, theModule );
    	}  	  	
 	
+	for(std::vector< Node * >::iterator it = ast.children.begin(); it != ast.children.end(); ++it) {
+		if( ( *it ) -> getType() != FUNC_DEF )
+		( *it ) -> codeGen( Builder, *env, theModule );
+   	}
+
 	if( Builder.GetInsertBlock() -> getTerminator() == 0 ){
 		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( getGlobalContext() ), 0 ));
 	}
