@@ -12,3 +12,6 @@ test11.alice:pass
 test12.alice:pass
 test13.alice:pass
 test14.alice:fail
+dynArr.alice:pass
+test15.alice:pass
+test16.alice:fail
