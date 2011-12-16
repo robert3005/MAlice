@@ -25,6 +25,6 @@ directories.forEach ( dir, index, allDirs ) ->
 				file = dir + spec[0]
 				data = fs.readFileSync file, 'utf-8'
 				data = data.replace /[ \t\r]{2,}/g, ' '
-				expectation = expect( () -> semantics.analyse parser.parse data )
+				expectation = expect () -> semantics.analyse parser.parse data
 				expectation = if spec[1] then expectation.not else expectation
 				expectation.toThrowName 'SemanticError'

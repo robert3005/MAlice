@@ -1,13 +1,11 @@
 require.paths.push '/usr/lib/node_modules'
 require.paths.push '/usr/local/lib/node_modules'
-PEG = require 'pegjs'
+peg = require 'pegjs'
 fs = require 'fs'
-sys = require 'sys'
-util = require 'util'
 
 directories = ['milestone2/', 'milestone3/', 'milestone4/']
 
-parser = PEG.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
+parser = peg.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
 
 
 prepareTestSuite = (directory) ->
@@ -26,6 +24,6 @@ directories.forEach ( dir, index, allDirs ) ->
 				file = dir + spec[0]
 				data = fs.readFileSync file, 'utf-8'
 				data = data.replace /[ \t\r]{2,}/g, ' '
-				expectation = expect( () -> parser.parse data )
+				expectation = expect () -> parser.parse data
 				expectation = if spec[1] then expectation.not else expectation
 				expectation.toThrowName 'SyntaxError'

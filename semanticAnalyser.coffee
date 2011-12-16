@@ -13,7 +13,7 @@ class Semantics
 
 	analyse: (parseTree) ->
 		@findDeclarations parseTree, @globalScopeName
-		#console.log (util.inspect @Dictionary, false , 50)
+		#console.error (util.inspect @Dictionary, false, 50)
 		@check parseTree, @globalScopeName
 
 	check: (node, scope) ->
@@ -24,52 +24,36 @@ class Semantics
 					[varType, position] = @ASTParser.ioCall node
 					
 					if varType is Types.NODE_VAR
-					
-						if not (@totalLookup scope, node.children[0].value)?
-							throw new SemanticError "Variable '" + node.children[0].value + "' hasn't been defined", position
+						@isDefined node.children[0], scope
+
 					else if varType is Types.NODE_FUN_CALL
 						@check node.children[0], scope
-						functionNode = @totalLookup @globalScopeName, node.children[0].value
-						
-						if not functionNode?
-							throw new SemanticError "call to undefined function: " + node.children[0].value, position
+						@isDefined node.children[0], @globalScopeName
+
 					else if varType is Types.NODE_OP
 						@isOfType node.children[0], scope, Types.TYPE_NUMBER
 				
 				when Types.NODE_FUN_CALL
 					functionName = node.value
-					functionNode = @lookup @globalScopeName, functionName
+					functionNode = 	@isDefined node, @globalScopeName			
 					
 					if functionName is 'had' or functionName is 'was a' then return
-											
-					if not functionNode?
-						throw new SemanticError "call to undefined function: " + functionName, node.position
-			
+					
 					if functionName is 'became'
 						[lhs, rhs, position] = @ASTParser.functionCallBecame node
-						
-						if lhs.type is Types.NODE_VAR_ARRAY_ELEM 
-							varName = lhs.children[0].value
-							varNode = @totalLookup scope, lhs.children[0].value
-						else
-							varName = lhs.value
-							varNode = @totalLookup scope, lhs.value
 
-						if not varNode?
-							throw new SemanticError "Variable '" + varName + "' hasn't been defined" , position
-						varType = varNode.returnType
-					
+						varType = (@isDefined lhs, scope).returnType
 
 						if rhs.type is Types.NODE_OP
 							@isOfType rhs, scope, Types.TYPE_NUMBER 
 							varReturnType = Types.TYPE_NUMBER
 						else if rhs.type is Types.NODE_FUN_CALL
 							@check rhs, scope
-							varReturnType = (@lookup @globalScopeName, rhs.value).returnType
+							varReturnType = (@isDefined rhs, @globalScopeName).returnType
 						else if rhs.type is Types.NODE_VAR
-							varReturnType = (@totalLookup scope, rhs.value).returnType
+							varReturnType = (@isDefined rhs, scope).returnType
 						else if rhs.type is Types.NODE_VAR_ARRAY_ELEM
-							varReturnType = (@totalLookup scope, rhs.children[0].value).returnType
+							varReturnType = (@isDefined rhs, scope).returnType
 						else 
 							varReturnType = rhs.children[0].value
 						
@@ -77,20 +61,16 @@ class Semantics
 							throw new SemanticError "both sides of assignment have to be of same type", position
 
 					else if functionName is 'ate' or functionName is 'drank'
-						[varName, position] = @ASTParser.functionCallUnary node
-						varNode = @totalLookup scope, varName
-						
-						if not varNode?
-							throw new SemanticError "Variable '" + varName + "' hasn't been declared", position
 
-						if varNode.returnType isnt Types.TYPE_NUMBER
+						varReturnType = (@isDefined node.children[0], scope).returnType
+						if varReturnType isnt Types.TYPE_NUMBER
 							throw new SemanticError "ate and drank functions are defined only for numbers", position
 							 
 					else 	
 						typeCheck = functionNode.typeCheck
 						callingTypes = node.children.map (node, index) => @computeExpressionType node, scope
 						sameTypes = typeCheck callingTypes
-							
+
 						if not sameTypes
 							throw new SemanticError "Wrong argument type for function call " + functionName, node.position
 
@@ -110,10 +90,12 @@ class Semantics
 				
 				when Types.NODE_RETURN
 					[returnNode, position] = @ASTParser.returnCall node
+					
 					if node.children[1]?
 						throw new SemanticError "function can only return one value", position
 					returnType = @computeExpressionType returnNode, scope
 					enclosingFunction = @lookup @globalScopeName, scope
+					
 					if enclosingFunction? and returnType isnt enclosingFunction.returnType
 						throw new SemanticError "return type doesn't agree with function definition", position
 					@check returnNode, scope
@@ -124,12 +106,10 @@ class Semantics
 					@check child, functionName for child in functionBody
 				
 				when Types.NODE_LOOK
-					[glassName, argName, position] = @ASTParser.lookingGlassCall node
-					functionNode = @lookup @globalScopeName, glassName
-					if not functionNode?
-						throw new SemanticError	"call to undefined looking glass " + glassName, position
-					varNode = @totalLookup scope, argName
-					functionNode.typeCheck varNode.returnType
+					functionNode = @isDefined node, @globalScopeName
+					
+					varReturnType = (@isDefined node.children[0], scope).returnType
+					functionNode.typeCheck varReturnType
 				
 				when Types.NODE_LOOK_DEF
 					[glassName, returnType, position] = @ASTParser.lookingGlassDefinition node
@@ -151,7 +131,7 @@ class Semantics
 					condTypes subExp for subExp in exp.children
 					
 					if exp.value in Types.boolOperators
-						foundType = booleanType
+						foundType = expectedType
 					else
 						foundType = Types.TYPE_NUMBER
 				
@@ -159,27 +139,14 @@ class Semantics
 					foundType = exp.children[0].value
 
 				when Types.NODE_VAR
-					varNode = @totalLookup scope, exp.value
-				
-					if not varNode?
-							throw new SemanticError "Variable '" + exp.value + "' hasn't been declared", exp.position
-					foundType = varNode.returnType
+					foundType = (@isDefined exp, scope).returnType
 
 				when Types.NODE_VAR_ARRAY_ELEM
-					varArr = @totalLookup scope, exp.children[0].value
-					
-					if not varArr?
-							throw new SemanticError "Array '" + exp.children[0].value + "' hasn't been declared", exp.position
-					foundType = varArr.returnType
-
+					foundType = (@isDefined exp, scope).returnType
+		
 				when Types.NODE_FUN_CALL
-					functionName = exp.value
-					functionNode = @lookup @globalScopeName, functionName
-					
-					if not functionNode?
-						throw new SemanticError "call to undefined function: " + functionName, exp.position
-					foundType = functionNode.returnType
-
+					@check child, scope for child in exp.children
+					foundType = (@isDefined exp, @globalScopeName).returnType
 
 			if expectedType?
 				if foundType isnt expectedType 
@@ -188,6 +155,32 @@ class Semantics
 				expectedType = foundType
 
 		condTypes node
+
+	functionTypeCheck: (types) ->
+		(runTimeArgs) =>
+			unifiedTypes = types.map (typeVar, index) -> typeVar is runTimeArgs[index]
+			unifiedTypes.reduce ((previous, current) -> previous and current), yes
+
+	computeExpressionType: (node, scope) ->
+
+		switch node.type
+
+			when Types.NODE_VAR_ARRAY_ELEM
+				(@isDefined node, scope).returnType
+
+			when Types.NODE_VAR
+				(@isDefined node, scope).returnType
+
+			when Types.NODE_CONST
+				node.children[0].value
+								
+			when Types.NODE_OP
+				@isOfType node, scope, Types.TYPE_NUMBER
+				Types.TYPE_NUMBER
+			
+			when Types.NODE_FUN_CALL
+				@check child, scope for child in node.children
+				(@isDefined node, @globalScopeName).returnType
 
 	findDeclarations: (node, scope) ->
 		if node?
@@ -245,46 +238,6 @@ class Semantics
 				else 
 					@findDeclarations node, scope for node in node.children
 
-
-
-	functionTypeCheck: (types) ->
-		(runTimeArgs) =>
-			unifiedTypes = types.map (typeVar, index) -> typeVar is runTimeArgs[index]
-			unifiedTypes.reduce ((previous, current) -> previous and current), yes
-
-	computeExpressionType: (node, scope) ->
-		
-		switch node.type
-		
-			when Types.NODE_VAR_ARRAY_ELEM
-				varArr = @totalLookup scope, node.children[0].value
-				if not varArr?
-						throw new SemanticError "Array '" + node.children[0].value + "' hasn't been declared", node.position
-				varArr.returnType
-
-			when Types.NODE_VAR
-				varNode = @totalLookup scope, node.value
-				
-				if not varNode?
-					throw new SemanticError "Variable '" + node.value + "' hasn't been declared", node.position
-				varNode.returnType
-		
-			when Types.NODE_CONST
-				node.children[0].value
-								
-			when Types.NODE_OP
-				@isOfType node, scope, Types.TYPE_NUMBER
-				Types.TYPE_NUMBER
-			
-			when Types.NODE_FUN_CALL
-				functionNode = @lookup @globalScopeName, node.value
-				@check child, scope for child in node.children
-
-				if not functionNode?
-					throw new SemanticError "call to undefined function: " + functionName, node.position
-
-				functionNode.returnType					
-
 	lookup: (scope, name) ->
 		@getScope(scope).rbFind name
 
@@ -319,15 +272,46 @@ class Semantics
 		globalScope.rbInsert (new RBTNode 'element', null, null) # not actually needed for now but needs testing
 		globalScope.rbInsert (new RBTNode Types.NODE_OP, Types.TYPE_NUMBER, null)
 
-	buildErrorMessage: (node) ->
-		message = ''
+	isDefined: (node, scope) ->
 		
 		switch node.type
-		
+			
+			when Types.NODE_FUN_CALL
+				functionNode = @lookup scope, node.value
+
+				if not functionNode?
+					throw new SemanticError "call to undefined function: " + node.value, node.position
+				functionNode	
+								
 			when Types.NODE_VAR
-				message = Types.NODE_VAR.toLowerCase() + ' "' + node.value + '" hasn\'t been defined'
-		
-		message
+				varNode = @totalLookup scope, node.value
+				
+				if not varNode?
+					throw new SemanticError "Variable '" + node.value + "' hasn't been declared", node.position
+				
+				varNode
+
+			when Types.NODE_VAR_ARRAY_ELEM
+				varArr = @totalLookup scope, node.children[0].value
+				
+				if not varArr?
+						throw new SemanticError "Array '" + node.children[0].value + "' hasn't been declared", node.position
+				varArr
+
+			when Types.NODE_LOOK
+				glassNode = @lookup @globalScopeName, node.value
+				
+				if not glassNode?
+					throw new SemanticError	"call to undefined looking glass " + node.value, node.position
+
+				glassNode
+
+	SemanticError: class SemanticError extends Error
+	
+			constructor: (@message, position) ->
+				@line = position.line
+				@column = position.column
+				@name = 'SemanticError'
 	
 class AST
 	
@@ -359,23 +343,6 @@ class AST
 		position = node.position
 		[glassName, returnType, position]
 	
-	arrayElement: (node) ->
-		arrName = node.children[0].value
-		elementNumber = node.children[1].value
-		position = node.position
-		[arrName, elementNumber, position]
-
-	functionCall: (node) ->
-		functionName = node.value
-		functionArgs = node.children
-		position = node.position
-		[functionName, functionArgs, position]
-
-	functionCallUnary: (node) ->
-		varName = node.children[0].value
-		position = node.position
-		[varName, position]
-
 	functionCallBecame: (node) ->
 		lhs = node.children[0]
 		rhs = node.children[1]
@@ -387,12 +354,6 @@ class AST
 		position = node.position
 		[varType, position]
 	
-	lookingGlassCall: (node) ->
-		glassName = node.value
-		position = node.position
-		argName = node.children[0].value
-		[glassName, argName, position]
-
 	returnCall: (node) ->
 		returnNode = node.children[0]
 		position = node.position
@@ -407,12 +368,5 @@ class AST
 		[whileCondition, whileBody...] = node.children
 		position = node.position
 		[whileCondition, whileBody, position]
-
-class SemanticError extends Error
-	
-	constructor: (@message, position) ->
-		@line = position.line
-		@column = position.column
-		@name = 'SemanticError'
 
 module.exports = Semantics
