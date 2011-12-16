@@ -19,12 +19,10 @@ Node = ffi.Struct [
 	["pointer", "children"]
 ]
 
-###
 codeGen = new ffi.Library qualifiedPath + "/libllvmGen", {
 	"print_struct": [ "void", [ "pointer", "int32" ] ],
 	"compile": [ "void", [ "pointer", "string" ] ] 
 }
-###
 
 
 ###
@@ -90,8 +88,7 @@ fs.stat sourceFile, (err, stats) ->
 			try
 				parseTree = parser.parse source
 				semantics.analyse parseTree
-				console.log parseTree
-				#codeGen.compile (parseTreeToC parseTree).ref(), saveFileName sourceFile
+				codeGen.compile (parseTreeToC parseTree).ref(), saveFileName sourceFile
 				process.exit 0
 			catch e
 				if e.name is 'SyntaxError' or e.name is 'SemanticError'
