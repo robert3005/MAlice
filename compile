@@ -1,16 +1,12 @@
 #!/bin/bash
 FILENAME=`basename $1 .alice`
+LLVMFILENAME="$FILENAME.ll"
+ASSEMBLYFILENAME="$FILENAME.s"
 
-~/node_modules/coffee-script/bin/coffee parse.coffee $1 > /dev/null
+`npm prefix`/node_modules/coffee-script/bin/coffee compileLLVM.coffee $1
 
-rc=$?
-if [ $rc -eq 0 ]; then
-	~/node_modules/coffee-script/bin/coffee parse.coffee $1 > alice.in     
-	./cg <alice.in >alice.ll
+if [ -f $LLVMFILENAME ]; then
+	/usr/lib/llvm-2.8/bin/llc $LLVMFILENAME
 
-	/usr/lib/llvm-2.8/bin/llc alice.ll
-
-	gcc alice.s -o $FILENAME
-else
-	~/node_modules/coffee-script/bin/coffee parse.coffee $1
+	gcc $ASSEMBLYFILENAME -o $FILENAME
 fi

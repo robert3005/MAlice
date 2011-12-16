@@ -1,6 +1,5 @@
 [RBTree, RBTNode] = require './rbtree.coffee'
 Types = require './constants.coffee'
-util = require 'util'
 
 class Semantics
 
@@ -11,11 +10,18 @@ class Semantics
 		@Dictionary[@globalScopeName] = [null, new RBTree]
 		@initialise()
 
+	# builds label tree and performs semantic checking 
 	analyse: (parseTree) ->
 		@findDeclarations parseTree, @globalScopeName
-		#console.error (util.inspect @Dictionary, false, 50)
 		@check parseTree, @globalScopeName
 
+	# Actually performs semantic checking of the program
+	# for IO calls the values given need just to be defined
+	# for became both sides of the operation have to be of same type
+	# for ate and drank checks whether argument is a number
+	# for any other function call definition types and run time types need to be the same
+	# for loops and ifs checks whether condition evaluates to boolean type
+	# for return statements if there is enclosing function it tries to match function return type and type of return statement
 	check: (node, scope) ->
 		if node?
 			switch node.type
@@ -58,13 +64,13 @@ class Semantics
 							varReturnType = rhs.children[0].value
 						
 						if varType isnt varReturnType
-							throw new SemanticError "both sides of assignment have to be of same type", position
+								throw new SemanticError "Both sides of assignment have to be of same type\n" + "lhs is of type '" + varType + "'\n rhs is of type '" + varReturnType + "'", position
 
 					else if functionName is 'ate' or functionName is 'drank'
 
 						varReturnType = (@isDefined node.children[0], scope).returnType
 						if varReturnType isnt Types.TYPE_NUMBER
-							throw new SemanticError "ate and drank functions are defined only for numbers", position
+							throw new SemanticError "Trying to pass variable of type '" + varReturnType + "'.\n" + "Ate and drank operators are defined only for numbers", position
 							 
 					else 	
 						typeCheck = functionNode.typeCheck
@@ -72,10 +78,11 @@ class Semantics
 						sameTypes = typeCheck callingTypes
 
 						if not sameTypes
-							throw new SemanticError "Wrong argument type for function call " + functionName, node.position
+							throw new SemanticError "Could not find matching function for call '" + functionName + "'' with types '" + callingTypes.join "', '" + "'", node.position
 
 				when Types.NODE_LOOP
 					[whileCondition, whileBody, position] = @ASTParser.whileBlock node
+					# loops can have their own scope so we need to check variable existence in new scope
 					whileScope = Types.NODE_LOOP + "@" + position.line
 					@isOfType whileCondition, scope, null
 					@check child, whileScope for child in whileBody
@@ -92,12 +99,14 @@ class Semantics
 					[returnNode, position] = @ASTParser.returnCall node
 					
 					if node.children[1]?
-						throw new SemanticError "function can only return one value", position
+						throw new SemanticError "Functions can only return one value", position
+					
 					returnType = @computeExpressionType returnNode, scope
 					enclosingFunction = @lookup @globalScopeName, scope
-					
+					# return statement doesn't have to have enclosing function
 					if enclosingFunction? and returnType isnt enclosingFunction.returnType
-						throw new SemanticError "return type doesn't agree with function definition", position
+						throw new SemanticError "Return type: '" + returnType + "' doesn't agree with function '" + enclosingFunction.key + "' return type '" + enclosingFunction.returnType + "'", position
+					
 					@check returnNode, scope
 				
 				when Types.NODE_FUN_DEF
@@ -119,7 +128,7 @@ class Semantics
 				else 
 					@check child, scope for child in node.children
 
-	
+	# checks whether node in the current scope is of given type
 	isOfType: (node, scope, type) ->
 		expectedType = type
 
@@ -150,17 +159,19 @@ class Semantics
 
 			if expectedType?
 				if foundType isnt expectedType 
-					throw new SemanticError "Wrong type in boolean expression", exp.position
+					throw new SemanticError "Wrong type in expression.\n" + "Expected: " + expectedType + "\n Found: " + foundType, exp.position
 			else
 				expectedType = foundType
 
 		condTypes node
 
+	# function that defines how to perform type checking on user defined functions
 	functionTypeCheck: (types) ->
 		(runTimeArgs) =>
 			unifiedTypes = types.map (typeVar, index) -> typeVar is runTimeArgs[index]
 			unifiedTypes.reduce ((previous, current) -> previous and current), yes
 
+	# returns type of give node in its scope
 	computeExpressionType: (node, scope) ->
 
 		switch node.type
@@ -175,13 +186,14 @@ class Semantics
 				node.children[0].value
 								
 			when Types.NODE_OP
-				@isOfType node, scope, Types.TYPE_NUMBER
+				@isOfType node, scope, Types.TYPE_NUMBERO
 				Types.TYPE_NUMBER
 			
 			when Types.NODE_FUN_CALL
 				@check child, scope for child in node.children
 				(@isDefined node, @globalScopeName).returnType
 
+	# walks parse tree and populates label tree with definitions of functions and variables from parse tree
 	findDeclarations: (node, scope) ->
 		if node?
 			switch node.type
@@ -191,7 +203,7 @@ class Semantics
 					functionNode = @lookup @globalScopeName, glassName
 					
 					if functionNode?
-						throw new SemanticError "Looking Glass '" + glassName + "' has already been declared", position
+						throw new SemanticError "Function '" + glassName + "' has already been declared.\n Trying to redeclare", position
 					(@getScope @globalScopeName).rbInsert new RBTNode glassName, position, returnType, @functionTypeCheck [returnType]
 					newScope = new RBTree
 					newScope.rbInsert new RBTNode 'it', position, returnType, @functionTypeCheck [returnType]
@@ -204,7 +216,7 @@ class Semantics
 					functionNode = @lookup @globalScopeName, functionName
 				
 					if functionNode?
-						throw new SemanticError "Function '" + functionName + "' has already been declared", position
+						throw new SemanticError "Function '" + functionName + "' has already been declared.\n Trying to redeclare", position
 					(@getScope @globalScopeName).rbInsert new RBTNode functionName, position, returnType, @functionTypeCheck functionHeader
 					[retType, header, functionBody...] = node.children
 					newScope = new RBTree
@@ -226,21 +238,23 @@ class Semantics
 						[varName, varType, position] = @ASTParser.variableDeclaration node
 						varNode = @lookup scope, varName
 						if varNode?
-							throw new SemanticError "Variable '" + varName + "' has already been declared", position
+							throw new SemanticError "Variable '" + varName + "' has already been declared as '" + varNode.returnType + "'.\n Trying to redeclare as '" + varType + "'", position
 						(@getScope scope).rbInsert new RBTNode varName, position, varType, @functionTypeCheck [varType]
 				
 					if node.value is 'had'
 						[arrName, arrType, position] = @ASTParser.arrayDeclaration node
 						arrNode = @lookup scope, arrName
 						if arrNode?
-							throw new SemanticError "Array '" + arrName + "' has already been declared", position
+							throw new SemanticError "Array '" + arrName + "' has already been declared as '" + arrNode.returnType + "'.\n Trying to redeclare as '" + arrType + "'", position
 						(@getScope scope).rbInsert new RBTNode arrName, position, arrType, @functionTypeCheck [arrType]
 				else 
 					@findDeclarations node, scope for node in node.children
-
+	
+	# perform lookup of name within scope
 	lookup: (scope, name) ->
 		@getScope(scope).rbFind name
 
+	# performs lookup of name but bubbles up until no enclosing scope exists
 	totalLookup: (scope, name) ->
 
 		if scope?
@@ -259,6 +273,7 @@ class Semantics
 	getOuterScope: (scope) ->
 		@Dictionary[scope][0]
 
+	# Populates label tree with language defined functions to prevent overwriting
 	initialise: () ->
 		globalScope = @getScope(@globalScopeName)
 		globalScope.rbInsert (new RBTNode 'was a', null, null)
@@ -269,9 +284,10 @@ class Semantics
 		globalScope.rbInsert (new RBTNode 'ate', Types.TYPE_NUMBER, null)
 		globalScope.rbInsert (new RBTNode 'drank', Types.TYPE_NUMBER, null)
 		globalScope.rbInsert (new RBTNode 'had', null, null)
-		globalScope.rbInsert (new RBTNode 'element', null, null) # not actually needed for now but needs testing
 		globalScope.rbInsert (new RBTNode Types.NODE_OP, Types.TYPE_NUMBER, null)
 
+	# Checks whether node is defiend with the scope.
+	# If yes returns the label tree node associated with this parse tree node.
 	isDefined: (node, scope) ->
 		
 		switch node.type
@@ -280,7 +296,7 @@ class Semantics
 				functionNode = @lookup scope, node.value
 
 				if not functionNode?
-					throw new SemanticError "call to undefined function: " + node.value, node.position
+					throw new SemanticError "Call to undefined function: " + node.value, node.position
 				functionNode	
 								
 			when Types.NODE_VAR
@@ -302,10 +318,11 @@ class Semantics
 				glassNode = @lookup @globalScopeName, node.value
 				
 				if not glassNode?
-					throw new SemanticError	"call to undefined looking glass " + node.value, node.position
+					throw new SemanticError	"Call to undefined function: " + node.value, node.position
 
 				glassNode
 
+	# Class representing error of semantic analyser
 	SemanticError: class SemanticError extends Error
 	
 			constructor: (@message, position) ->

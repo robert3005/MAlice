@@ -1,13 +1,15 @@
-require.paths.push '/usr/lib/node_modules'
-semanticChecker = require './semanticAnalyser.coffee'
-semantics = new semanticChecker
-sys = require 'sys'
-peg = require 'pegjs'
-fs = require 'fs'
-util = require 'util' # only for development and debugging
-parser = peg.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
-ffi = require 'node-ffi'
+execScriptPath = process.argv[1]
+pathTokens = execScriptPath.split '/'
+pathTokens.pop()
+qualifiedPath = pathTokens.join '/'
 
+semanticChecker = require qualifiedPath + '/semanticAnalyser.coffee'
+semantics = new semanticChecker
+fs = require 'fs'
+ffi = require 'node-ffi'
+parser = require qualifiedPath + '/parser.js'
+
+# node-ffi struct representing parse tree on C++ side
 Node = ffi.Struct [
 	["int32", "id"],
 	["string", "type"],
@@ -17,8 +19,22 @@ Node = ffi.Struct [
 	["pointer", "children"]
 ]
 
+###
+codeGen = new ffi.Library "./libstruct", {
+	"print_struct": [ "void", [ "pointer", "int32" ] ],
+	"compile": [ "void", [ "pointer", "string" ] ] 
+}
+###
+
+
+###
+Function for creating C++ struct from JavaScript parse tree.
+Output is compliant with node_struct defined in structSize.h
+###
 parseTreeToC = (parseTree) ->
-	syntaxTree = {} # prevents C structs from being garbage collected
+	# Object that all pointers are bound to
+	# prevents C++ pointers from being garbage collected (especially null pointers)
+	syntaxTree = {}
 
 	children = new ffi.Pointer 0
 	children.attach syntaxTree
@@ -47,37 +63,40 @@ parseTreeToC = (parseTree) ->
 
 	return root
 
-arguments = process.argv.splice 2
+sourceFile = process.argv[2]
 
 saveFileName = (source) ->
-	pathTokens = arguments[0].split '/'
+	pathTokens = sourceFile.split '/'
 	fileNameTokens = pathTokens.pop().split '.'
 	pathTokens.push fileNameTokens[0]
-	pathTokens.join '/'
+	(pathTokens.join '/') + '.ll'
 
-source = fs.readFileSync arguments[0], 'utf-8'
-source = source.replace /[ \t\r]{2,}/g, ' '
-
-#sys.puts source
-
-codeGen = new ffi.Library "./libstruct", {
-	"print_struct": [ "void", [ "pointer", "int32" ] ],
-	"compile": [ "void", [ "pointer", "string" ] ] 
-}
-
-try
-	parseTree = parser.parse source
-	semantics.analyse parseTree
-	#sys.puts (util.inspect parseTree, false, 50)
-	codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
+# First we check whether source file to be compiled exists.
+# Then we parse it, check the semantic correctness and pass 
+# it to code generation to produce LLVM assembly
+fs.stat sourceFile, (err, stats) ->
 	
-catch e
-	if e.name is 'SemanticError'
-		console.error e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
-	else if e.name is 'SyntaxError'
-		console.error e.name + ": " + e.message + " at line " + e.line + ", col " + e.column
+	if err
+		console.error 'File: ' + sourceFile + ' doesn\'t exist'
+		process.exit 1
 	else
-		throw e
-	process.exit 1
-	
-process.exit 0
+		fs.readFile sourceFile, 'utf-8', (err, source) ->
+			
+			if err
+				console.error 'Error opening file ' + sourceFile
+				process.exit 1
+			
+			source = source.replace /[ \t\r]{2,}/g, ' '
+			try
+				parseTree = parser.parse source
+				semantics.analyse parseTree
+				console.log parseTree
+				#codeGen.compile (parseTreeToC parseTree).ref(), saveFileName arguments[0]
+				process.exit 0
+			catch e
+				if e.name is 'SyntaxError' or e.name is 'SemanticError'
+					console.error e.message + " at line: " + e.line + ", column: " + e.column + "."
+				else
+					console.error "Unexpected exception occured. Stack trace dumped."
+					throw e
+				process.exit 1

@@ -1,12 +1,9 @@
-require.paths.push '/usr/lib/node_modules'
-require.paths.push '/usr/local/lib/node_modules'
 peg = require 'pegjs'
 fs = require 'fs'
 
 directories = ['milestone2/', 'milestone3/', 'milestone4/']
 
 parser = peg.buildParser fs.readFileSync 'pegParserConfig.js', 'utf-8'
-
 
 prepareTestSuite = (directory) ->
 	testFilesSpec = (fs.readFileSync directory + 'parser.spec', 'utf-8').split "\n"

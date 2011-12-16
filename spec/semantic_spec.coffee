@@ -16,6 +16,7 @@ prepareTestSuite = (directory) ->
 directories.forEach ( dir, index, allDirs ) ->
 	describe 'Testing semantics from directory ' + dir , ->
 		semantics = new semanticChecker
+		
 		afterEach ->
 			semantics = new semanticChecker
 
