@@ -1,5 +1,5 @@
 # MAlice
-## compiler by:
+## Alice Compiler
 
 * Robert Kruszewski
 * Łukasz Koprowski
