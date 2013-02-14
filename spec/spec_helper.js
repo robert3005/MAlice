@@ -1,5 +1,3 @@
-require.paths.push('/usr/local/lib/node_modules');
-require.paths.push('/usr/lib/node_modules');
 var jessie = require('jessie')
 jessie.sugar()
 
